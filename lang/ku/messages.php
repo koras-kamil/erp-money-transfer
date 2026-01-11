@@ -37,5 +37,6 @@ return [
     'register'       => 'هەژمار دروست بکە',
 'total_currencies' => 'کۆی گشتی دراوەکان',
 'active_currencies' => 'دراوە چالاکەکان',
+'no_data'=>'هیچ داتایەک بەردەست نییە',
     
 ];

@@ -35,4 +35,9 @@ return [
     'check_inputs'  => 'Please check the input fields.',
     'delete_confirm'=> 'Deleted successfully.',
     'saved' => 'Sheet saved successfully!',  // <--- Updated this line
+
+    'no_changes_title' => 'No Changes Detected',
+    'no_changes_text' => 'There are no changes to save.',
+    'print' => 'Print',
+       'ok' => 'ok',
 ];

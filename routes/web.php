@@ -4,7 +4,7 @@ use App\Http\Controllers\CurrencyConfigController;
 use App\Http\Controllers\LanguageController;
 use App\Models\CurrencyConfig; // <--- Imported to count currencies for the Dashboard
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\CashBoxController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -92,3 +92,12 @@ Route::post('/logout', function () {
 
 // Load standard auth routes (Login, Register, Password Reset)
 require __DIR__.'/auth.php';
+
+Route::get('cash-boxes/trash', [CashBoxController::class, 'trash'])->name('cash-boxes.trash');
+Route::post('cash-boxes/{id}/restore', [CashBoxController::class, 'restore'])->name('cash-boxes.restore');
+Route::delete('cash-boxes/{id}/force-delete', [CashBoxController::class, 'forceDelete'])->name('cash-boxes.force-delete');
+Route::get('cash-boxes/export', [CashBoxController::class, 'export'])->name('cash-boxes.export');
+
+
+
+Route::resource('cash-boxes', CashBoxController::class);

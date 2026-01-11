@@ -38,4 +38,6 @@ return [
 
     'total_currencies' => 'Total Currencies',
 'active_currencies' => 'Active Currencies',
+'no_data'=>'No data available',
+
 ];

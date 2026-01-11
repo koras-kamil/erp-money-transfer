@@ -35,13 +35,17 @@
                 <span>{{ __('messages.dashboard') }}</span>
             </a>
 
-            <x-nav-group label="{{ __('menu.define') }}" :active="$isActiveGroup('define.*') || $isActiveGroup('currency.*')">
+            <x-nav-group label="{{ __('menu.define') }}" :active="$isActiveGroup('define.*') || $isActiveGroup('currency.*') || $isActiveGroup('cash-boxes.*')">
                 <x-slot:icon>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543-.94-3 .888-8 .888s-.888-.888-.888-.888z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9,9l9,9"/></svg>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3 .888-8 .888s-.888-.888-.888-.888z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9,9l9,9"/></svg>
                 </x-slot:icon>
 
                 <a href="{{ route('currency.index') }}" class="block px-3 py-2 text-[11px] font-medium rounded-lg transition-colors {{ $isActiveSub('currency.index') }}">
                     {{ __('menu.currency') }}
+                </a>
+
+                <a href="{{ route('cash-boxes.index') }}" class="block px-3 py-2 text-[11px] font-medium rounded-lg transition-colors {{ $isActiveSub('cash-boxes.index') }}">
+                    {{ __('cash_box.title') }}
                 </a>
                 
                 <a href="#" class="block px-3 py-2 text-[11px] font-medium rounded-lg transition-colors {{ $isActiveSub('users.index') }}">
