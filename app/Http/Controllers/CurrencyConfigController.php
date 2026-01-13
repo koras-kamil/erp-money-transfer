@@ -15,45 +15,48 @@ class CurrencyConfigController extends Controller
         return view('currency.index', compact('currencies'));
     }
 
-    public function store(Request $request)
-    {
-        // Use a transaction to ensure all data is saved correctly
-        DB::transaction(function () use ($request) {
-            $inputs = $request->input('currencies');
+   public function store(Request $request)
+{
+    DB::transaction(function () use ($request) {
+        $inputs = $request->input('currencies', []);
 
-            // 1. Loop through each row from the sheet
-            foreach ($inputs as $data) {
-                if (isset($data['id'])) {
-                    // Update existing row
-                    CurrencyConfig::where('id', $data['id'])->update([
+        foreach ($inputs as $data) {
+            if (isset($data['id'])) {
+                // ✅ FIX: Find the model instance first to trigger Activity Log
+                $currency = CurrencyConfig::find($data['id']);
+                
+                if ($currency) {
+                    $currency->update([
                         'currency_type' => $data['currency_type'],
                         'symbol'        => $data['symbol'],
                         'digit_number'  => $data['digit_number'],
                         'price_total'   => $data['price_total'],
                         'price_single'  => $data['price_single'],
-                        'price_sell'    => $data['price_sell'],
                         'branch'        => $data['branch'],
                         'is_active'     => isset($data['is_active']) ? 1 : 0,
                     ]);
-                } else {
-                    // Create new row (if ID is null)
-                    if (!empty($data['currency_type'])) { // Simple validation
-                        CurrencyConfig::create([
-                            'currency_type' => $data['currency_type'],
-                            'symbol'        => $data['symbol'],
-                            'digit_number'  => $data['digit_number'],
-                            'price_total'   => $data['price_total'],
-                            'price_single'  => $data['price_single'],
-                            'price_sell'    => $data['price_sell'],
-                            'branch'        => $data['branch'],
-                            'is_active'     => isset($data['is_active']) ? 1 : 0,
-                        ]);
-                    }
+                }
+            } else {
+                // Create new row
+                if (!empty($data['currency_type'])) {
+                    CurrencyConfig::create([
+                        'currency_type' => $data['currency_type'],
+                        'symbol'        => $data['symbol'],
+                        'digit_number'  => $data['digit_number'],
+                        'price_total'   => $data['price_total'],
+                        'price_single'  => $data['price_single'],
+                        'branch'        => $data['branch'],
+                        'is_active'     => isset($data['is_active']) ? 1 : 0,
+                    ]);
                 }
             }
-        });
+        }
+    });
 
-return back()->with('success', __('currency.saved'));    }
+    return back()->with('success', __('currency.saved'));
+}
+
+
 
     public function destroy($id)
 {

@@ -6,4 +6,5 @@ return [
     'users'       => 'User Management',
     'roles'       => 'Roles & Permissions',
     'reports'     => 'Reports',
+    'activity_log' =>'activity log'
 ];

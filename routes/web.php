@@ -101,3 +101,7 @@ Route::get('cash-boxes/export', [CashBoxController::class, 'export'])->name('cas
 
 
 Route::resource('cash-boxes', CashBoxController::class);
+
+Route::get('/activity-log', [App\Http\Controllers\ActivityLogController::class, 'index'])
+    ->name('activity-log.index')
+    ->middleware(['auth']); // Add 'role:Super Admin' later

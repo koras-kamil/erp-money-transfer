@@ -5,14 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+// 1. Add these imports
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 class CurrencyConfig extends Model
 {
-    use HasFactory;
+    // 2. Add the LogsActivity trait here
+    use HasFactory, LogsActivity;
 
-    // This must match your database table name
     protected $table = 'currency_configs';
 
-    // These fields are allowed to be saved via the "Sheet" form
     protected $fillable = [
         'currency_type',
         'symbol',
@@ -23,4 +26,14 @@ class CurrencyConfig extends Model
         'branch',
         'is_active',
     ];
+
+    // 3. Add this method to define how to log
+public function getActivitylogOptions(): LogOptions
+{
+    return LogOptions::defaults()
+        ->logAll()              // Tracks all fields in $fillable
+        ->logOnlyDirty()        // Only logs if data actually changed
+        ->dontSubmitEmptyLogs() // Prevents empty logs
+        ->logFillable();        // Important: ensures fillable fields are captured
+}
 }

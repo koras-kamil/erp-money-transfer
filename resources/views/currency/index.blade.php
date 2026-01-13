@@ -28,8 +28,8 @@
         /* PRINT SETTINGS - A4 PORTRAIT */
         @media print {
             @page { 
-                size: A4 portrait; /* Changed to Portrait */
-                margin: 5mm; /* Narrow margins to fit all columns */
+                size: A4 portrait;
+                margin: 5mm;
             }
 
             /* Hide UI Elements */
@@ -38,7 +38,6 @@
             .print\:hidden, 
             button, 
             .no-print,
-            /* Hide Actions column only */
             th:last-child, td:last-child { 
                 display: none !important; 
             }
@@ -60,20 +59,19 @@
             table { 
                 width: 100% !important; 
                 border-collapse: collapse !important; 
-                font-size: 8pt !important; /* Smaller font to fit Portrait width */
+                font-size: 8pt !important;
                 margin-top: 10px !important;
-                table-layout: fixed; /* Ensures columns respect width */
+                table-layout: fixed;
             }
 
             th, td { 
                 border: 1px solid #000 !important; 
-                padding: 3px 2px !important; /* Tight padding for Portrait */
+                padding: 3px 2px !important;
                 color: black !important; 
                 text-align: center !important;
                 word-wrap: break-word;
             }
 
-            /* Inputs flatten for print */
             input { 
                 border: none !important; 
                 background: transparent !important; 
@@ -136,13 +134,13 @@
                     <thead class="text-xs text-slate-700 uppercase bg-blue-100/50 border-b border-blue-200">
                         <tr>
                             <th class="px-2 py-3 w-[5%] text-center">#</th>
-                            <th class="px-2 py-3 w-[15%]">{{ __('currency.type') }}</th>
+                            <th class="px-2 py-3 w-[20%]">{{ __('currency.type') }}</th> {{-- Increased width --}}
                             <th class="px-2 py-3 w-[10%] text-center">{{ __('currency.symbol') }}</th>
                             <th class="px-2 py-3 w-[10%] text-center">{{ __('currency.digit') }}</th>
-                            <th class="px-2 py-3 w-[12%] text-center bg-slate-50">{{ __('currency.price_total') }}</th>
-                            <th class="px-2 py-3 w-[12%] text-center bg-slate-50">{{ __('currency.price_single') }}</th>
-                            <th class="px-2 py-3 w-[12%] text-center bg-slate-50">{{ __('currency.price_sell') }}</th>
-                            <th class="px-2 py-3 w-[14%]">{{ __('currency.branch') }}</th>
+                            <th class="px-2 py-3 w-[15%] text-center bg-slate-50">{{ __('currency.price_total') }}</th> {{-- Increased width --}}
+                            <th class="px-2 py-3 w-[15%] text-center bg-slate-50">{{ __('currency.price_single') }}</th> {{-- Increased width --}}
+                            {{-- REMOVED PRICE SELL COLUMN --}}
+                            <th class="px-2 py-3 w-[15%]">{{ __('currency.branch') }}</th> {{-- Increased width --}}
                             <th class="px-2 py-3 w-[5%] text-center">{{ __('currency.active') }}</th>
                             <th class="px-2 py-3 w-[5%] text-center print:hidden">{{ __('currency.actions') }}</th>
                         </tr>
@@ -159,7 +157,7 @@
                             <td class="px-2 py-2"><input type="number" name="currencies[{{ $index }}][digit_number]" value="{{ $currency->digit_number }}" class="sheet-input text-center"></td>
                             <td class="px-2 py-2 bg-slate-50/50"><input type="number" step="0.001" name="currencies[{{ $index }}][price_total]" value="{{ $currency->price_total }}" class="sheet-input text-center"></td>
                             <td class="px-2 py-2 bg-slate-50/50"><input type="number" step="0.001" name="currencies[{{ $index }}][price_single]" value="{{ $currency->price_single }}" class="sheet-input text-center"></td>
-                            <td class="px-2 py-2 bg-slate-50/50"><input type="number" step="0.001" name="currencies[{{ $index }}][price_sell]" value="{{ $currency->price_sell }}" class="sheet-input font-bold text-emerald-600 text-center"></td>
+                            {{-- REMOVED PRICE SELL INPUT --}}
                             <td class="px-2 py-2"><input type="text" name="currencies[{{ $index }}][branch]" value="{{ $currency->branch }}" class="sheet-input"></td>
                             <td class="px-2 py-2 text-center">
                                 <input type="checkbox" name="currencies[{{ $index }}][is_active]" value="1" {{ $currency->is_active ? 'checked' : '' }} class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer">
@@ -198,7 +196,7 @@
                     title: '{{ __("currency.no_changes_title") ?? "No Changes" }}',
                     text: '{{ __("currency.no_changes_text") ?? "Nothing was updated or written to be saved." }}',
                     icon: 'warning',
-                    confirmButtonColor: '#f59e0b', // Orange/Amber for warning
+                    confirmButtonColor: '#f59e0b',
                     confirmButtonText: 'OK',
                     customClass: {
                         popup: 'rounded-2xl shadow-xl border border-orange-100',
@@ -208,12 +206,11 @@
                 });
                 return;
             }
-            // If changes exist, submit the form
             document.getElementById('sheet-form').submit();
         }
 
         function addNewRow() {
-            markAsDirty(); // Adding a row counts as a change
+            markAsDirty();
             
             const tableBody = document.getElementById('sheet-body');
             const index = Date.now(); 
@@ -228,7 +225,7 @@
                     <td class="px-2 py-2"><input type="number" name="currencies[${index}][digit_number]" value="0" class="sheet-input text-center"></td>
                     <td class="px-2 py-2"><input type="number" step="0.001" name="currencies[${index}][price_total]" value="0" class="sheet-input text-center"></td>
                     <td class="px-2 py-2"><input type="number" step="0.001" name="currencies[${index}][price_single]" value="0" class="sheet-input text-center"></td>
-                    <td class="px-2 py-2"><input type="number" step="0.001" name="currencies[${index}][price_sell]" value="0" class="sheet-input font-bold text-emerald-600 text-center"></td>
+                    {{-- REMOVED PRICE SELL INPUT FROM JS --}}
                     <td class="px-2 py-2"><input type="text" name="currencies[${index}][branch]" class="sheet-input"></td>
                     <td class="px-2 py-2 text-center">
                         <input type="checkbox" name="currencies[${index}][is_active]" value="1" checked class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer">
@@ -278,8 +275,6 @@
 
         function removeVisualRow(button) {
             button.closest('tr').remove();
-            // Optional: If you want to check if the form is still dirty after removing a new row,
-            // you might need more complex logic, but usually keeping hasChanges=true is safer.
         }
     </script>
 </x-app-layout>

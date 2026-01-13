@@ -1,14 +1,14 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\CashBox;
 use App\Models\Branch;
 use App\Models\CurrencyConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Response; 
-// <--- Add this at top
-
+use Illuminate\Support\Facades\Response;
+use Barryvdh\DomPDF\Facade\Pdf; // Ensure you have this for PDF
 
 class CashBoxController extends Controller
 {
@@ -30,6 +30,7 @@ class CashBoxController extends Controller
             'balance' => 'required|numeric',
         ]);
 
+        // ✅ Logged: create() triggers the 'created' event
         CashBox::create([
             'name' => $request->name,
             'type' => $request->type,
@@ -46,6 +47,7 @@ class CashBoxController extends Controller
 
     public function destroy(CashBox $cashBox)
     {
+        // ✅ Logged: delete() on instance triggers 'deleted' event
         $cashBox->delete();
         return back()->with('success', __('cash_box.deleted'));
     }
@@ -58,7 +60,6 @@ class CashBoxController extends Controller
         return view('cash_boxes.edit', compact('cashBox', 'branches', 'currencies'));
     }
 
-    // 2. SAVE THE CHANGES
     public function update(Request $request, CashBox $cashBox)
     {
         $request->validate([
@@ -68,6 +69,7 @@ class CashBoxController extends Controller
             'balance' => 'required|numeric',
         ]);
 
+        // ✅ Logged: update() on instance triggers 'updated' event
         $cashBox->update([
             'name' => $request->name,
             'type' => $request->type,
@@ -75,13 +77,11 @@ class CashBoxController extends Controller
             'branch_id' => $request->branch_id,
             'balance' => $request->balance,
             'description' => $request->description,
-            // We use 'has' to check checkboxes. If checked = true, if not = false.
             'is_active' => $request->has('is_active'),
         ]);
 
         return redirect()->route('cash-boxes.index')->with('success', __('cash_box.updated'));
     }
-
 
     public function trash()
     {
@@ -89,21 +89,24 @@ class CashBoxController extends Controller
         return view('cash_boxes.trash', compact('cashBoxes'));
     }
 
-    // 2. RESTORE (Bring back from trash)
     public function restore($id)
     {
-        CashBox::onlyTrashed()->where('id', $id)->restore();
+        // ✅ FIX: Find the model instance first to trigger the log
+        $cashBox = CashBox::onlyTrashed()->findOrFail($id);
+        $cashBox->restore();
+        
         return back()->with('success', __('cash_box.restored'));
     }
 
-    // 3. FORCE DELETE (Delete forever)
     public function forceDelete($id)
     {
-        CashBox::onlyTrashed()->where('id', $id)->forceDelete();
+        // ✅ FIX: Find the model instance first to trigger the log
+        $cashBox = CashBox::onlyTrashed()->findOrFail($id);
+        $cashBox->forceDelete();
+        
         return back()->with('success', __('cash_box.permanently_deleted'));
     }
 
-    // 4. EXPORT TO EXCEL (CSV)
     public function export()
     {
         $filename = "cash_boxes_" . date('Y-m-d') . ".csv";
@@ -134,19 +137,11 @@ class CashBoxController extends Controller
         return Response::stream($callback, 200, $headers);
     }
 
-    // 2. ADD THIS NEW FUNCTION
     public function downloadPdf()
     {
-        // Get all cash boxes (you can also use filters here if you want)
         $cashBoxes = CashBox::with(['currency', 'branch', 'user'])->get();
-
-        // Load the specific PDF view (we will create this in Step 4)
         $pdf = Pdf::loadView('cash_boxes.pdf', compact('cashBoxes'));
-
-        // Set Paper Size to A4
-        $pdf->setPaper('a4', 'portrait'); // or 'landscape'
-
-        // Download the file
+        $pdf->setPaper('a4', 'portrait');
         return $pdf->download('cash_box_report.pdf');
     }
 }
