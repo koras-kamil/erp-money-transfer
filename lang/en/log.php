@@ -1,65 +1,43 @@
 <?php
 
 return [
-    // Header & Titles
-    'title' => 'Security Audit Log',
-    'system_audit' => 'System Audit Log',
-    'tracking_subtitle' => 'Detailed tracking of user actions and record modifications.',
-    'total_entries' => 'Total logs',
-
-    // Table Headers
-    'user' => 'Staff Member',
-    'action' => 'Activity',
-    'subject' => 'Module',
+    'title' => 'Activity Log',
+    'user' => 'User',
+    'action' => 'Action',
+    'subject' => 'Subject',
     'details' => 'Details',
-    'timestamp' => 'Date & Time',
-
-    // Modal / Pop-up
-    'view' => 'View Details',
-    'detail_view' => 'Activity Details',
+    'timestamp' => 'Time',
+    'system' => 'System',
+    'view' => 'View',
     'close' => 'Close',
-    'no_changes' => 'No attribute changes recorded',
-    'empty' => 'No activity records found.',
-    'old_value' => 'Old Value',
-    'new_value' => 'New Value',
-    'deleted_value' => 'Deleted Data',
+    'empty' => 'No activities found',
+    'detail_view' => 'Change Details',
+    'no_changes' => 'No specific changes recorded',
 
-    // Actions
+    'new_value' => 'New Value',
+    'old_value' => 'Old Value',
+    'deleted_value' => 'Deleted Data',
+    'current_value' => 'Added Data',
+
     'actions' => [
         'created' => 'Created',
         'updated' => 'Updated',
         'deleted' => 'Deleted',
-        'restored' => 'Restored',
     ],
 
-    // Model Names (Subject)
     'models' => [
-        'cashbox' => 'Cash Box',
-        'currencyconfig' => 'Currency Setting',
-        'branch' => 'Branch Office',
-        'user' => 'User Account',
+        'user' => 'User',
+        'branch' => 'Branch',
+        'role' => 'Role',
+        // ... others
     ],
 
-    // Database Attributes (The field names)
     'attributes' => [
         'name' => 'Name',
-        'balance' => 'Balance',
-        'currency_type' => 'Currency Type',
-        'symbol' => 'Symbol',
-        'digit_number' => 'Decimal Digits',
-        'price_total' => 'Total Price',
-        'price_single' => 'Single Price',
-        'is_active' => 'Status',
-        'branch' => 'Branch Name',
-        'description' => 'Description',
-        
-    'currency_type' => 'Currency Type',
-    'updated_at'    => 'Updated At',
-    'price_total'   => 'Total Price',
-    'New Value'=> 'New Value'
-    
+        'email' => 'Email',
+        'password' => 'Password',
+        'branch_id' => 'Branch',
+        'role' => 'Role',
+        // ... others
     ],
-
-
-    
 ];

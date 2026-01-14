@@ -1,10 +1,13 @@
 <?php
 
 return [
-    'define'    => 'Define',
-    'currency'    => 'Currency Config',
-    'users'       => 'User Management',
-    'roles'       => 'Roles & Permissions',
-    'reports'     => 'Reports',
-    'activity_log' =>'activity log'
+
+    // ... existing translations
+    'system_admin' => 'System Admin',
+    'management' => 'Management',
+    'users' => 'Manage Users',
+    'activity_log' => 'Activity Log',
+    'define' => 'Define Settings',
+    'currency' => 'Currency Config',
+
 ];

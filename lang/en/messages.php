@@ -40,4 +40,5 @@ return [
 'active_currencies' => 'Active Currencies',
 'no_data'=>'No data available',
 
+
 ];

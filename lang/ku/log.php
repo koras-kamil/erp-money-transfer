@@ -1,62 +1,52 @@
 <?php
 
 return [
-    // Header & Titles
-    'title' => 'لۆگی وردبینی',
-    'system_audit' => 'لۆگی وردبینی سیستم',
-    'tracking_subtitle' => 'بەدواداچوونی وردی چالاکییەکانی بەکارهێنەر و گۆڕانکارییەکان.',
-    'total_entries' => 'کۆی گشتی',
-
-    // Table Headers
+    'title' => 'تۆماری چالاکییەکان',
     'user' => 'بەکارهێنەر',
-    'action' => 'چالاکی',
-    'subject' => 'بەش',
+    'action' => 'کردار',
+    'subject' => 'بابەت',
     'details' => 'وردەکاری',
-    'timestamp' => 'ڕێکەوت و کات',
-
-    // Modal / Pop-up
-    'view' => 'بینینی وردەکاری',
-    'detail_view' => 'وردەکاری چالاکی',
+    'timestamp' => 'کات',
+    'system' => 'سیستەم',
+    'view' => 'بینین',
     'close' => 'داخستن',
+    'empty' => 'هیچ چالاکییەک تۆمار نەکراوە',
+    'detail_view' => 'وردەکاری گۆڕانکارییەکان',
     'no_changes' => 'هیچ گۆڕانکارییەک تۆمار نەکراوە',
-    'empty' => 'هیچ چالاکییەک نەدۆزرایەوە.',
-    'old_value' => 'نرخی پێشوو',
-    'new_value' => 'نرخی نوێ',
-    'deleted_value' => 'داتای سڕاوە',
+    
+    'new_value' => 'نوێ',
+    'old_value' => 'کۆن',
+    'deleted_value' => 'زانیاری سڕاوە',
+    'current_value' => 'زانیاری زیادکراو',
 
-    // Actions
+    // Action Types
     'actions' => [
-        'created' => 'دروستکردن',
-        'updated' => 'نوێکردنەوە',
+        'created' => 'زیادکردن',
+        'updated' => 'گۆڕانکاری',
         'deleted' => 'سڕینەوە',
-        'restored' => 'گێڕانەوە',
     ],
 
-    // Model Names (Subject)
+    // Model Names (Subject Types)
     'models' => [
-        'cashbox' => 'سندوقی پارە',
-        'currencyconfig' => 'ڕێکخستنی دراو',
+        'user' => 'بەکارهێنەر',
         'branch' => 'لق',
-        'user' => 'هەژماری بەکارهێنەر',
+        'role' => 'دەسەڵات',
+        'permission' => 'مۆڵەت',
+        'currency' => 'دراو',
+        'cashbox' => 'سندوق',
     ],
 
-    // Database Attributes (The field names)
+    // Database Column Translations (The most important part)
     'attributes' => [
         'name' => 'ناو',
-        'balance' => 'باڵانس',
-        'currency_type' => 'جۆری دراو',
+        'email' => 'ئیمەیڵ',
+        'password' => 'وشەی نهێنی',
+        'branch_id' => 'لق',
+        'role' => 'دەسەڵات',
+        'amount' => 'بڕ',
         'symbol' => 'هێما',
-        'digit_number' => 'ژمارەی دوای پۆینت',
-        'price_total' => 'کۆی نرخ',
-        'price_single' => 'نرخی تاک',
-        'is_active' => 'دۆخ',
-        'branch' => 'ناوی لق',
-        'description' => 'تێبینی/وەسف',
-        'currency_type' => 'جۆری دراو',
-    'updated_at'    => 'کاتی نوێکردنەوە',
-    'price_total'   => 'کۆی گشتی نرخ',
-    'old_value' => 'نرخی پێشوو',
-'new_value' => 'نرخی نوێ',
-'updated_at' => 'کاتی نوێکردنەوە', // If you decide to keep it
+        'active' => 'چالاک',
+        'address' => 'ناونیشان',
+        'phone' => 'ژمارە تەلەفۆن',
     ],
 ];

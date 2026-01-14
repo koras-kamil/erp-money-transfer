@@ -16,3 +16,53 @@
         font-family: 'NRT-Font', sans-serif !important;
     }
 }
+
+:root {
+    --erp-primary: #6366f1; /* Indigo */
+    --erp-bg-soft: #f8fafc; /* Slate 50 */
+    --erp-border: #e2e8f0; /* Slate 200 */
+    --erp-radius-lg: 1rem;
+    --erp-header-bg: rgba(219, 234, 254, 0.5); /* blue-100/50 from your image */
+}
+
+/* Global Table Style */
+.erp-table-container {
+    overflow-x: auto;
+    border-radius: var(--erp-radius-lg);
+    border: 1px solid var(--erp-border);
+    background: white;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.erp-table {
+    width: 100%;
+    font-size: 0.875rem;
+    text-align: left; /* Change to right for RTL */
+}
+
+.erp-table thead {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    background-color: var(--erp-header-bg);
+    border-bottom: 1px solid #bfdbfe; /* blue-200 */
+}
+
+.erp-table th {
+    padding: 0.75rem 0.5rem;
+    font-weight: 700;
+    color: #334155;
+}
+
+/* Sheet Input Style (The "Global" look) */
+.sheet-input { 
+    width: 100%; 
+    background: transparent; 
+    border: 1px solid transparent; 
+    padding: 6px; 
+    border-radius: 4px; 
+    outline: none; 
+    transition: all 0.2s; 
+    font-size: 0.9rem;
+}
+.sheet-input:focus { background-color: white; border-color: var(--erp-primary); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
+.sheet-input:hover { background-color: var(--erp-bg-soft); border-color: var(--erp-border); }
