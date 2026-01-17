@@ -4,44 +4,62 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Branch;
-use App\Models\CurrencyConfig;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-// Activity Log Imports
+// Models
+use App\Models\Branch;
+use App\Models\CurrencyConfig;
+use App\Models\User;
+
+// Activity Log
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
+// Custom Traits
+use App\Traits\BelongsToBranch;
+
+
 class CashBox extends Model
 {
-    use LogsActivity, HasFactory, SoftDeletes;
+    // 2. Add the Trait here
+    use HasFactory, SoftDeletes, LogsActivity, BelongsToBranch;
 
     protected $fillable = [
-        'name', 'type', 'currency_id', 'branch_id', 'user_id', 
-        'balance', 'description', 'date_opened', 'is_active'
+        'name', 
+        'type', 
+        'currency_id', 
+        'branch_id', // <--- Critical for the Branch Switcher to work
+        'user_id', 
+        'balance', 
+        'description', 
+        'date_opened', 
+        'is_active'
     ];
 
     /**
-     * This is the missing method that caused your error.
-     * It tells Laravel HOW to log the CashBox changes.
+     * Activity Log Options
      */
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'balance', 'is_active']) // Log changes to these fields
-            ->logOnlyDirty()                            // Only log when data actually changes
+            ->logOnly(['name', 'balance', 'is_active', 'branch_id'])
+            ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+
+    // --- Relationships ---
 
     public function currency() {
         return $this->belongsTo(CurrencyConfig::class, 'currency_id');
     }
 
-    public function branch() {
-        return $this->belongsTo(Branch::class);
-    }
-
     public function user() {
         return $this->belongsTo(User::class);
+    }
+
+    // Note: The 'branch' relationship might also be inside FilterByBranch trait,
+    // but keeping it here is safe (Class methods override Trait methods).
+    public function branch() {
+        return $this->belongsTo(Branch::class);
     }
 }

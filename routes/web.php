@@ -34,8 +34,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Profile
     Route::view('profile', 'profile')->name('profile');
 
-    // Branches
+    // --- BRANCHES & SWITCHING ---
     Route::resource('branches', BranchController::class);
+    // This is the new route for the navbar dropdown
+    Route::post('/switch-branch', [BranchController::class, 'switch'])->name('branch.switch');
 
     // Activity Logs
     Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');

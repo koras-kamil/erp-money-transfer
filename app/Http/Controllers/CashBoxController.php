@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Barryvdh\DomPDF\Facade\Pdf; // Ensure you have this for PDF
 
+
 class CashBoxController extends Controller
 {
     public function index()
