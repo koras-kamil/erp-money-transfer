@@ -8,7 +8,8 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;   
 use Illuminate\Support\Facades\Schema; 
-use App\Models\Branch;                 
+use App\Models\Branch;          
+use Illuminate\Support\Facades\URL; // Add this at the top       
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -70,5 +71,11 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(function ($user, $ability) {
             return $user->hasRole('super-admin') ? true : null;
         });
+
+
+      if (str_contains(request()->getHost(), 'loca.lt') || str_contains(request()->getHost(), 'serveo.net')) {
+        URL::forceScheme('https');
+    
+    }
     }
 }

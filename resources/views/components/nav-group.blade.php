@@ -31,20 +31,21 @@
     
     {{-- Main Button --}}
     <button @click="toggle()" type="button"
-        class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 text-xs font-bold
+        class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 text-xs font-medium
                {{ $active 
-                  ? 'text-white bg-indigo-600/10 ring-1 ring-indigo-500/30' 
-                  : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-100' }}">
+                  ? 'bg-white text-indigo-700 font-bold shadow-lg shadow-white/10' 
+                  : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-100' }}">
         
         <div class="flex items-center gap-3">
-            <div class="transition-colors duration-200 {{ $active ? 'text-indigo-400' : 'text-slate-500 group-hover:text-indigo-400' }}">
+            {{-- Icon Color: Indigo if active (to contrast with white), Slate if inactive --}}
+            <div class="transition-colors duration-200 {{ $active ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-400' }}">
                 {{ $icon }}
             </div>
             <span>{{ $label }}</span>
         </div>
 
-        {{-- Fixed SVG Icon (Chevron Right) --}}
-        <svg class="w-3.5 h-3.5 text-slate-600 transition-transform duration-300 {{ $active ? 'text-indigo-400' : '' }}" 
+        {{-- Chevron Icon --}}
+        <svg class="w-3.5 h-3.5 transition-transform duration-300 {{ $active ? 'text-indigo-600' : 'text-slate-600' }}" 
              :class="(open || '{{ $active }}') && !isMobile ? 'rotate-90' : (isMobile && open ? 'rotate-90' : 'rtl:rotate-180')"
              fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>

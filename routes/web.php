@@ -9,6 +9,8 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\GroupSpendingController;
+use App\Http\Controllers\TypeSpendingController;
 
 // 1. PUBLIC ROUTES
 Route::view('/', 'welcome');
@@ -19,7 +21,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Dashboard
     Route::get('dashboard', function () {
-        // Safe check: return 0 if table doesn't exist yet to prevent crash
         try {
             $totalCurrencies = CurrencyConfig::count();
             $activeCurrencies = CurrencyConfig::where('is_active', true)->count();
@@ -39,23 +40,47 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Activity Logs
     Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
 
-    // Currency Configuration
-    Route::get('/currency-config', [CurrencyConfigController::class, 'index'])->name('currency.index');
-    Route::post('/currency-config', [CurrencyConfigController::class, 'store'])->name('currency.store');
-    Route::delete('/currency-config/{currency}', [CurrencyConfigController::class, 'destroy'])->name('currency.destroy');
+    // --- CURRENCY CONFIGURATION ROUTES ---
+    Route::prefix('currency-config')->name('currency.')->group(function () {
+        // Trash & Restore
+        Route::get('/trash', [CurrencyConfigController::class, 'trash'])->name('trash');
+        Route::post('/{id}/restore', [CurrencyConfigController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [CurrencyConfigController::class, 'forceDelete'])->name('force-delete');
+        
+        // Standard Actions
+        Route::get('/', [CurrencyConfigController::class, 'index'])->name('index');
+        Route::post('/', [CurrencyConfigController::class, 'store'])->name('store');
+        Route::delete('/{currency}', [CurrencyConfigController::class, 'destroy'])->name('destroy');
+    });
 
-    // Cash Box Specialized Routes
-    Route::get('cash-boxes/trash', [CashBoxController::class, 'trash'])->name('cash-boxes.trash');
-    Route::post('cash-boxes/{id}/restore', [CashBoxController::class, 'restore'])->name('cash-boxes.restore');
-    Route::delete('cash-boxes/{id}/force-delete', [CashBoxController::class, 'forceDelete'])->name('cash-boxes.force-delete');
-    Route::get('cash-boxes/export', [CashBoxController::class, 'export'])->name('cash-boxes.export');
-    
-    // Cash Box Resource
+    // --- CASH BOX ROUTES ---
+    Route::prefix('cash-boxes')->name('cash-boxes.')->group(function () {
+        Route::get('/trash', [CashBoxController::class, 'trash'])->name('trash');
+        Route::post('/{id}/restore', [CashBoxController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [CashBoxController::class, 'forceDelete'])->name('force-delete');
+        Route::get('/export', [CashBoxController::class, 'export'])->name('export');
+    });
     Route::resource('cash-boxes', CashBoxController::class);
+
+    // --- GROUP SPENDING ROUTES ---
+    Route::prefix('group-spending')->name('group-spending.')->group(function () {
+        Route::get('/trash', [GroupSpendingController::class, 'trash'])->name('trash');
+        Route::post('/{id}/restore', [GroupSpendingController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [GroupSpendingController::class, 'forceDelete'])->name('force-delete');
+    });
+    Route::resource('group-spending', GroupSpendingController::class);
+
+    // --- TYPE SPENDING ROUTES ---
+    Route::prefix('type-spending')->name('type-spending.')->group(function () {
+        Route::get('/trash', [TypeSpendingController::class, 'trash'])->name('trash');
+        Route::post('/{id}/restore', [TypeSpendingController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [TypeSpendingController::class, 'forceDelete'])->name('force-delete');
+    });
+    Route::resource('type-spending', TypeSpendingController::class);
+
 
     // 3. SUPER ADMIN ONLY ROUTES
     Route::middleware(['role:super-admin'])->group(function () {
-        
         // User Management
         Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.updateRole');
         Route::resource('users', UserController::class);

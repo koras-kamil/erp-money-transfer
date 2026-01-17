@@ -39,10 +39,10 @@
 <body class="bg-[#f8fafc] font-sans antialiased text-slate-900 h-full overflow-x-hidden" 
       x-data="{ isBlurred: false }">
 
-    {{-- 1. NOTIFICATION COMPONENT (Handles Success/Error Animations) --}}
+    {{-- 1. NOTIFICATION COMPONENT --}}
     <x-notification />
 
-    {{-- 2. PRIVACY TOGGLE BUTTON (Floating) --}}
+    {{-- 2. PRIVACY TOGGLE BUTTON (Floating Bottom Right/Left) --}}
     <div class="fixed bottom-8 ltr:right-8 rtl:left-8 z-[100] print:hidden">
         <button @click="isBlurred = !isBlurred" 
                 type="button" 
@@ -67,27 +67,54 @@
         {{-- TOP HEADER --}}
         <header class="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-30 px-2 md:px-6 py-3">
             <div class="flex flex-col md:flex-row items-center justify-between gap-y-3">
+                
                 {{-- Mobile Sidebar Toggle --}}
                 <button onclick="toggleSidebar()" class="md:hidden self-start p-2 rounded-xl bg-slate-100 text-slate-600">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
                 </button>
 
-                {{-- Header Content --}}
-                <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-4">
-                    {{-- Branch Selector --}}
-                    <div class="w-full sm:w-auto order-2 sm:order-1">
-                        <div class="relative group w-full sm:w-64">
-                            <select id="branch-select" class="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl px-4 py-3 ltr:pr-10 rtl:pl-10 focus:ring-4 focus:ring-indigo-500/10 transition-all cursor-pointer">
-                                <option value="" disabled selected>{{ __('messages.select_branch') }}</option>
-                                @foreach($branches ?? [] as $branch)
-                                    <option value="{{ $branch->id }}">{{ $branch->name }}</option>
-                                @endforeach
-                            </select>
+                {{-- MAIN HEADER CONTENT --}}
+                <div class="w-full">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between w-full gap-3 px-1 sm:px-4">
+                        
+                        {{-- LEFT SIDE: Branch Selector --}}
+                        {{-- Order 2 on Mobile (Bottom), Order 1 on Desktop (Left) --}}
+                        <div class="w-full sm:w-auto order-2 sm:order-1">
+                            <div class="relative group w-full sm:w-64">
+                                <select id="branch-select" class="w-full appearance-none bg-white border border-slate-200 text-slate-800 text-sm rounded-lg px-4 py-2.5 ltr:pr-10 rtl:pl-10 focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer shadow-sm">
+                                    <option value="" disabled selected>{{ __('messages.select_branch') }}</option>
+                                    @foreach($branches ?? [] as $branch)
+                                        <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="absolute inset-y-0 ltr:right-3 rtl:left-3 flex items-center pointer-events-none text-slate-400 group-hover:text-indigo-500">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    {{-- Empty Spacer (Finance button was here) --}}
-                    <div class="flex flex-row items-center justify-end gap-3 w-full sm:w-auto order-1 sm:order-2">
+                        {{-- RIGHT SIDE: Smart Search --}}
+                        {{-- Order 1 on Mobile (Top), Order 2 on Desktop (Right) --}}
+                        <div class="w-full sm:w-auto order-1 sm:order-2 flex-1 flex justify-end">
+                            <div class="relative w-full sm:w-80" x-data="{ query: '' }">
+                                <div class="absolute inset-y-0 ltr:left-0 rtl:right-0 flex items-center px-3 pointer-events-none text-slate-400">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </div>
+                                
+                                {{-- Writable Search Input --}}
+                                <input type="text" 
+                                       x-model="query"
+                                       @keydown.enter="window.location.href = '/global-search?q=' + query"
+                                       placeholder="{{ __('messages.search') }}..." 
+                                       class="w-full h-10 rounded-lg border-slate-200 bg-white text-sm text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all ltr:pl-10 ltr:pr-12 rtl:pr-10 rtl:pl-12 shadow-sm">
+                                
+                                {{-- Keyboard Shortcut Badge --}}
+                                <div class="absolute inset-y-0 ltr:right-0 rtl:left-0 flex items-center px-2 pointer-events-none">
+                                    <span class="hidden md:inline-flex items-center px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 text-[10px] font-medium text-slate-400">⌘K</span>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>

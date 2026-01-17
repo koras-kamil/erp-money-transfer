@@ -38,5 +38,8 @@ return [
 'total_currencies' => 'کۆی گشتی دراوەکان',
 'active_currencies' => 'دراوە چالاکەکان',
 'no_data'=>'هیچ داتایەک بەردەست نییە',
+
+
+'search' => 'گەڕان',
     
 ];
