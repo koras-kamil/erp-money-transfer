@@ -8,18 +8,66 @@ use App\Models\CurrencyConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
-use Barryvdh\DomPDF\Facade\Pdf; // Ensure you have this for PDF
-
+use PDF; // Correct Facade Import
 
 class CashBoxController extends Controller
 {
     public function index()
     {
-        $cashBoxes = CashBox::with(['currency', 'branch', 'user'])->latest()->paginate(10);
-        $branches = Branch::all();
+        // Increased pagination to 50 for better "Spreadsheet" feel
+        $cashBoxes = CashBox::with(['currency', 'branch', 'user'])->latest()->paginate(50);
+        $branches = Branch::where('is_active', true)->get();
         $currencies = CurrencyConfig::where('is_active', true)->get();
 
         return view('cash_boxes.index', compact('cashBoxes', 'branches', 'currencies'));
+    }
+
+    /**
+     * Handle Bulk Save (New Rows + Updates) from the Grid View
+     */
+    public function storeBulk(Request $request)
+    {
+        $request->validate([
+            'boxes' => 'required|array',
+            'boxes.*.name' => 'required|string|max:255',
+            'boxes.*.currency_id' => 'required|exists:currency_configs,id',
+            'boxes.*.branch_id' => 'required|exists:branches,id',
+            'boxes.*.balance' => 'required|numeric',
+        ]);
+
+        foreach ($request->boxes as $data) {
+            // 1. Determine if Active (Checkboxes are not sent if unchecked)
+            $isActive = isset($data['is_active']);
+
+            if (isset($data['id']) && $data['id']) {
+                // UPDATE EXISTING
+                $box = CashBox::find($data['id']);
+                if ($box) {
+                    $box->update([
+                        'name' => $data['name'],
+                        'type' => $data['type'] ?? null,
+                        'currency_id' => $data['currency_id'],
+                        'branch_id' => $data['branch_id'],
+                        'balance' => $data['balance'],
+                        'is_active' => $isActive,
+                    ]);
+                }
+            } else {
+                // CREATE NEW
+                CashBox::create([
+                    'name' => $data['name'],
+                    'type' => $data['type'] ?? null,
+                    'currency_id' => $data['currency_id'],
+                    'branch_id' => $data['branch_id'],
+                    'balance' => $data['balance'],
+                    'date_opened' => now(),
+                    'user_id' => Auth::id(),
+                    'is_active' => $isActive,
+                ]);
+            }
+        }
+
+        return back()->with('success', __('cash_box.saved_successfully'));
     }
 
     public function store(Request $request)
@@ -31,7 +79,6 @@ class CashBoxController extends Controller
             'balance' => 'required|numeric',
         ]);
 
-        // ✅ Logged: create() triggers the 'created' event
         CashBox::create([
             'name' => $request->name,
             'type' => $request->type,
@@ -48,7 +95,6 @@ class CashBoxController extends Controller
 
     public function destroy(CashBox $cashBox)
     {
-        // ✅ Logged: delete() on instance triggers 'deleted' event
         $cashBox->delete();
         return back()->with('success', __('cash_box.deleted'));
     }
@@ -57,7 +103,6 @@ class CashBoxController extends Controller
     {
         $branches = Branch::all();
         $currencies = CurrencyConfig::where('is_active', true)->get();
-        
         return view('cash_boxes.edit', compact('cashBox', 'branches', 'currencies'));
     }
 
@@ -70,7 +115,6 @@ class CashBoxController extends Controller
             'balance' => 'required|numeric',
         ]);
 
-        // ✅ Logged: update() on instance triggers 'updated' event
         $cashBox->update([
             'name' => $request->name,
             'type' => $request->type,
@@ -86,25 +130,21 @@ class CashBoxController extends Controller
 
     public function trash()
     {
-        $cashBoxes = CashBox::onlyTrashed()->with(['currency', 'branch', 'user'])->latest()->paginate(10);
+        $cashBoxes = CashBox::onlyTrashed()->with(['currency', 'branch', 'user'])->latest()->paginate(20);
         return view('cash_boxes.trash', compact('cashBoxes'));
     }
 
     public function restore($id)
     {
-        // ✅ FIX: Find the model instance first to trigger the log
         $cashBox = CashBox::onlyTrashed()->findOrFail($id);
         $cashBox->restore();
-        
         return back()->with('success', __('cash_box.restored'));
     }
 
     public function forceDelete($id)
     {
-        // ✅ FIX: Find the model instance first to trigger the log
         $cashBox = CashBox::onlyTrashed()->findOrFail($id);
         $cashBox->forceDelete();
-        
         return back()->with('success', __('cash_box.permanently_deleted'));
     }
 
@@ -120,13 +160,13 @@ class CashBoxController extends Controller
             $file = fopen('php://output', 'w');
             fputcsv($file, ['ID', 'Name', 'Type', 'Currency', 'Balance', 'Branch', 'Status']);
 
-            $items = CashBox::all();
+            $items = CashBox::with(['currency', 'branch'])->get();
             foreach ($items as $item) {
                 fputcsv($file, [
                     $item->id,
                     $item->name,
                     $item->type,
-                    $item->currency->code ?? 'N/A',
+                    $item->currency->currency_type ?? 'N/A',
                     $item->balance,
                     $item->branch->name ?? 'N/A',
                     $item->is_active ? 'Active' : 'Inactive'
@@ -138,11 +178,33 @@ class CashBoxController extends Controller
         return Response::stream($callback, 200, $headers);
     }
 
+    /**
+     * Download PDF Report
+     */
     public function downloadPdf()
     {
+        // 1. Fetch Data
         $cashBoxes = CashBox::with(['currency', 'branch', 'user'])->get();
-        $pdf = Pdf::loadView('cash_boxes.pdf', compact('cashBoxes'));
-        $pdf->setPaper('a4', 'portrait');
-        return $pdf->download('cash_box_report.pdf');
+
+        // 2. Prepare Data Array
+        $data = [
+            'title' => 'راپۆرتی سندوقەکان', // "Cash Box Report" in Kurdish
+            'date' => date('Y-m-d H:i'),
+            'user' => Auth::user()->name,
+            'cashBoxes' => $cashBoxes
+        ];
+
+        // 3. Load PDF View
+        $pdf = PDF::loadView('cash_boxes.pdf', $data, [], [
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'default_font' => 'nrt', // MUST match the key in config/pdf.php
+            'margin_header' => 10,
+            'margin_footer' => 10,
+            'orientation' => 'P', // Portrait
+        ]);
+
+        // 4. Stream the file (Open in browser)
+        return $pdf->stream('cash_box_report.pdf');
     }
 }

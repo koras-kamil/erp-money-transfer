@@ -2,19 +2,19 @@
 
 return [
     'title' => 'سندوقەکانی پارە',
-    'new_box' => 'تۆمارکردنی سندوقی نوێ',
+    'new_box' => 'زیادکردنی سندوقی نوێ', // Updated for clarity (New Box)
     'edit_box' => 'دەستکاریکردنی سندوق',
     
     // Table & Form Columns
-     'id' => ' ڕیز',
+    'id' => 'ڕیز',
     'name' => 'ناوی سندوق',
     'type' => 'جۆر',
-    'currency' => 'جۆری پارە',
-    'balance' => 'بڕی پارەی سەرەتا',
-    'user' => 'تۆمارکراوە لەلایەن',
+    'currency' => 'دراو',
+    'balance' => 'باڵانس', // Changed from "Initial Balance" to just "Balance" for the table
+    'user' => 'بەکارهێنەر',
     'branch' => 'لق',
     'date' => 'بەرواری کردنەوە',
-    'desc' => 'تێبینی / ڕونکردنەوە',
+    'desc' => 'تێبینی',
     'active' => 'چالاک',
     'actions' => 'کردارەکان',
 
@@ -25,6 +25,7 @@ return [
 
     // Buttons
     'save' => 'تۆمارکردن',
+    'save_changes' => 'تۆمارکردنی گۆڕانکارییەکان', // New
     'update' => 'نوێکردنەوە',
     'cancel' => 'پاشگەزبوونەوە',
     'back' => 'گەڕانەوە',
@@ -35,21 +36,24 @@ return [
     'hide_all' => 'هیچ',
 
     // Trash & Restore
-    'trash' => 'سندوقە سڕاوەکان',
+    'trash' => 'سەلەی خۆڵ',
     'restore' => 'گەڕاندنەوە',
     'perm_delete' => 'سڕینەوەی یەکجاری',
 
-    // Alerts
+    // Alerts & Messages
     'created' => 'سندوقەکە بەسەرکەوتویی زیادکرا.',
     'updated' => 'زانیاری سندوقەکە بەسەرکەوتویی نوێکرایەوە.',
     'deleted' => 'سندوقەکە بەسەرکەوتویی سڕایەوە.',
     'restored' => 'سندوقەکە بەسەرکەوتویی گەڕێندرایەوە.',
     'permanently_deleted' => 'سندوقەکە بەیەکجاری سڕایەوە.',
+    'saved_successfully' => 'گۆڕانکارییەکان بەسەرکەوتویی تۆمارکران.', // Critical for Bulk Save
+    'no_changes' => 'هیچ گۆڕانکارییەک نەکراوە بۆ تۆمارکردن.', // For JS Alert
 
+    // Delete Modal
     'delete_title' => 'دڵنیایت لە سڕینەوە؟',
-'delete_text' => 'ئەم سندوقە دەچێتە ناو سەلەی خۆڵ.',
-'yes_delete' => 'بەڵێ، بیسڕەوە',
-'deleted_at' => 'بەرواری سڕینەوە',
+    'delete_text' => 'ئەم سندوقە دەچێتە ناو سەلەی خۆڵ.',
+    'yes_delete' => 'بەڵێ، بیسڕەوە',
+    'deleted_at' => 'بەرواری سڕینەوە',
     'no_deleted_data' => 'هیچ سندوقێکی سڕاوە نەدۆزرایەوە',
     'warning_perm_delete' => 'ئاگاداربە: ئەمە بە یەکجاری سندوقەکە دەسڕێتەوە. دڵنیایت؟',
 ];

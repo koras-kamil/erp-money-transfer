@@ -1,10 +1,7 @@
 <div class="w-full">
     {{-- 1. PREPARE DATA --}}
     @php
-        // Fetch active branches directly so the dropdown always works
         $globalBranches = \App\Models\Branch::where('is_active', true)->get();
-        
-        // Get current selection
         $currentBranchId = session('current_branch_id', 'all');
     @endphp
 
@@ -33,23 +30,25 @@
         </div>
 
         {{-- 3. BRANCH SELECTOR --}}
-        <div class="w-full sm:w-auto order-2 sm:order-1">
-            <form action="{{ route('branch.switch') }}" method="POST" class="relative group w-full sm:w-64">
+        <div class="w-full sm:w-auto order-2 sm:order-1 relative group sm:w-64">
+            <form action="{{ route('branch.switch') }}" method="POST">
                 @csrf
                 
+                {{-- SELECT INPUT --}}
                 <select name="branch_id" 
                         onchange="this.form.submit()" 
                         id="branch-select" 
-                        class="w-full appearance-none bg-white border border-slate-200 text-slate-800 text-sm font-bold rounded-lg px-4 py-2.5 ltr:pr-10 rtl:pl-10 focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer shadow-sm">
+                        class="w-full appearance-none bg-white border border-slate-200 text-slate-800 text-sm font-bold rounded-lg px-4 py-2.5 
+                               focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer shadow-sm
+                               ltr:pl-10 ltr:pr-10 ltr:text-left 
+                               rtl:pr-10 rtl:pl-10 rtl:text-right">
                     
-                    {{-- Option: All Branches --}}
                     <option value="all" {{ $currentBranchId === 'all' ? 'selected' : '' }}>
                         {{ __('messages.all_branches') }}
                     </option>
                     
                     <option disabled>──────────</option>
 
-                    {{-- Loop through Fetched Branches --}}
                     @foreach($globalBranches as $branch)
                         <option value="{{ $branch->id }}" {{ $currentBranchId == $branch->id ? 'selected' : '' }}>
                             {{ $branch->name }}
@@ -57,8 +56,17 @@
                     @endforeach
                 </select>
 
-                {{-- Dropdown Icon --}}
-                <div class="absolute inset-y-0 ltr:right-3 rtl:left-3 flex items-center pointer-events-none text-slate-400 group-hover:text-indigo-500">
+                {{-- BUILDING ICON (Start Side) --}}
+                {{-- Left for LTR, Right for RTL --}}
+                <div class="absolute inset-y-0 flex items-center pointer-events-none text-slate-400 px-3
+                            ltr:left-0 rtl:right-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                </div>
+
+                {{-- ARROW ICON (End Side) --}}
+                {{-- Right for LTR, Left for RTL --}}
+                <div class="absolute inset-y-0 flex items-center pointer-events-none text-slate-400 px-3 group-hover:text-indigo-500
+                            ltr:right-0 rtl:left-0">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
             </form>

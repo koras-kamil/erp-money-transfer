@@ -37,4 +37,17 @@ return [
       'name'=>'name ',
       'code'=>'code',
       'auto' => 'AUTO',
+
+
+      'type_header' => 'Type Spending Report',
+    'group_title' => 'Spending Groups',
+    'code'        => 'Code',
+    'name'        => 'Name',
+    'group'       => 'Group',
+    'branch'      => 'Branch',
+    'accountant'  => 'Accountant Code',
+    'note'        => 'Note',
+    'print'       => 'Print',
+    'date'        => 'Date',
+    'user'        => 'User',
 ];

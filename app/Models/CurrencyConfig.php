@@ -4,15 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
-// 1. Add these imports
+use Illuminate\Database\Eloquent\SoftDeletes; // 1. Import SoftDeletes
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 class CurrencyConfig extends Model
 {
-    // 2. Add the LogsActivity trait here
-    use HasFactory, LogsActivity;
+    // 2. Add SoftDeletes to the use statement
+    use HasFactory, LogsActivity, SoftDeletes; 
 
     protected $table = 'currency_configs';
 
@@ -27,13 +26,13 @@ class CurrencyConfig extends Model
         'is_active',
     ];
 
-    // 3. Add this method to define how to log
-public function getActivitylogOptions(): LogOptions
-{
-    return LogOptions::defaults()
-        ->logAll()              // Tracks all fields in $fillable
-        ->logOnlyDirty()        // Only logs if data actually changed
-        ->dontSubmitEmptyLogs() // Prevents empty logs
-        ->logFillable();        // Important: ensures fillable fields are captured
-}
+    // 3. Activity Log Configuration
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()              // Tracks all fields in $fillable
+            ->logOnlyDirty()        // Only logs if data actually changed
+            ->dontSubmitEmptyLogs() // Prevents empty logs
+            ->logFillable();        // Important: ensures fillable fields are captured
+    }
 }
