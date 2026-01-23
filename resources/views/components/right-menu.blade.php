@@ -91,7 +91,7 @@
             {{-- Profit --}}
             <a href="{{ route('profit.groups.index') }}"
                class="block px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('profit.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-               {{ __('profit.groups_title') }}
+               {{ __('profit.menu_tab') }}
             </a>
         </x-nav-group>
 

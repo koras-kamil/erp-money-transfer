@@ -7,6 +7,8 @@ return [
     'groups_title' => 'Profit Groups Management',
     'types_title'  => 'Profit Types Management',
     'configuration'=> 'Configuration',
+     'all' => ' all',
+    'none' => 'none',
 
     // Table Headers
     'id'           => '#',

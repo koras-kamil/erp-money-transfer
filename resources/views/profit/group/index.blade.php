@@ -4,8 +4,8 @@
         /* Make inputs look like real inputs so user knows to fill them */
         .sheet-input { 
             width: 100%; 
-            background-color: #ffffff; /* White background */
-            border: 1px solid #e2e8f0; /* Light border */
+            background-color: #ffffff; 
+            border: 1px solid #e2e8f0; 
             padding: 4px 8px; 
             border-radius: 6px; 
             outline: none; 
@@ -18,7 +18,6 @@
             box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); 
         }
         
-        /* Readonly inputs should look flat */
         .sheet-input[readonly] { 
             background-color: transparent; 
             border-color: transparent; 
@@ -27,7 +26,6 @@
             font-weight: 500;
         }
         
-        /* Select inputs */
         .sheet-select { 
             width: 100%; 
             background-color: #ffffff; 
@@ -53,23 +51,30 @@
 
         {{-- TOOLBAR --}}
         <div class="mx-6 mb-4 bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 no-print">
+            {{-- Tabs --}}
             <div class="bg-slate-100 p-1 rounded-lg flex items-center">
                 <a href="{{ route('profit.groups.index') }}" class="px-5 py-2 text-sm font-bold rounded-md bg-white text-indigo-600 shadow-sm transition">{{ __('profit.menu_groups') }}</a>
                 <a href="{{ route('profit.types.index') }}" class="px-5 py-2 text-sm font-bold rounded-md text-slate-500 hover:text-slate-700 transition">{{ __('profit.menu_types') }}</a>
             </div>
 
+            {{-- Actions --}}
             <div class="flex items-center gap-2">
                 <a href="{{ route('profit.groups.trash') }}" class="w-10 h-10 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 border border-red-100 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 </a>
                 
-                {{-- Column Filter --}}
+                {{-- Column Filter (ADJUSTMENTS / SLIDERS ICON) --}}
                 <div x-data="{ openDropdown: false }" class="relative">
-                    <button @click="openDropdown = !openDropdown" @click.away="openDropdown = false" class="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-50 text-slate-600 border border-slate-200 hover:bg-white hover:text-indigo-600 transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
+                    <button @click="openDropdown = !openDropdown" @click.away="openDropdown = false" class="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-50 text-slate-600 border border-slate-200 hover:bg-white hover:text-indigo-600 transition" title="Show/Hide Columns">
+                        {{-- ICON: Adjustments / Sliders --}}
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                        </svg>
+                    </button>
                     <div x-show="openDropdown" class="absolute top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 p-2 ltr:right-0 rtl:left-0" x-cloak style="display:none;">
                         <div class="flex gap-2 mb-2 pb-2 border-b border-slate-100">
-                            <button @click="toggleAll(true)" class="flex-1 text-[10px] bg-indigo-50 text-indigo-600 py-1 rounded hover:bg-indigo-100 font-bold">ALL</button>
-                            <button @click="toggleAll(false)" class="flex-1 text-[10px] bg-slate-50 text-slate-600 py-1 rounded hover:bg-slate-100 font-bold">NONE</button>
+                            <button @click="toggleAll(true)" class="flex-1 text-[10px] bg-indigo-50 text-indigo-600 py-1 rounded hover:bg-indigo-100 font-bold">{{ __('profit.all') }}</button>
+                            <button @click="toggleAll(false)" class="flex-1 text-[10px] bg-slate-50 text-slate-600 py-1 rounded hover:bg-slate-100 font-bold">{{ __('profit.all') }}</button>
                         </div>
                         <div class="space-y-1 max-h-60 overflow-y-auto">
                             @foreach(['id'=>'#', 'code'=>__('profit.code'), 'name'=>__('profit.name'), 'branch'=>__('profit.branch'), 'creator'=>__('profit.created_by'), 'desc'=>__('profit.description'), 'active'=>__('profit.active')] as $key => $label)
@@ -115,7 +120,6 @@
                                     {{ $loop->iteration }} <input type="hidden" name="groups[{{ $index }}][id]" value="{{ $group->id }}">
                                 </td>
                                 
-                                {{-- CODE COLUMN - SYSTEM STYLE --}}
                                 <td x-show="cols.code" class="px-4 py-2">
                                     <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
                                         {{ $group->code }}

@@ -75,7 +75,7 @@
     <div x-data="{ 
         hasChanges: false,
         editingId: null,
-        cols: { id: true, code: true, name: true, group: true, acc_code: true, note: true, branch: true, user: true, actions: true },
+        cols: { id: true, code: true, name: true, group: true, note: true, branch: true, user: true, actions: true },
         toggleAll(value) { for (let key in this.cols) { this.cols[key] = value; } },
         startEdit(id) { 
             this.editingId = id; 
@@ -111,15 +111,16 @@
                 {{-- Manage Columns (ICON CHANGED TO COG) --}}
                 <div x-data="{ openDropdown: false }" class="relative">
                     <button @click="openDropdown = !openDropdown" @click.away="openDropdown = false" class="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-50 text-slate-600 border border-slate-200 hover:bg-white hover:text-indigo-600 transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.572 1.065c-1.543.94-3 .888-8 .888s-.888-.888-.888-.888z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                     </button>
                     <div x-show="openDropdown" class="absolute top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 p-2 ltr:right-0 rtl:left-0" x-cloak>
                         <div class="flex gap-2 mb-2 pb-2 border-b border-slate-100">
-                            <button @click="toggleAll(true)" class="flex-1 text-[10px] bg-indigo-50 text-indigo-600 py-1 rounded hover:bg-indigo-100 font-bold">ALL</button>
-                            <button @click="toggleAll(false)" class="flex-1 text-[10px] bg-slate-50 text-slate-600 py-1 rounded hover:bg-slate-100 font-bold">NONE</button>
+                            <button @click="toggleAll(true)" class="flex-1 text-[10px] bg-indigo-50 text-indigo-600 py-1 rounded hover:bg-indigo-100 font-bold">{{ __('spending.all') }}</button>
+                            <button @click="toggleAll(false)" class="flex-1 text-[10px] bg-slate-50 text-slate-600 py-1 rounded hover:bg-slate-100 font-bold">{{ __('spending.none') }}</button>
                         </div>
                         <div class="space-y-1 max-h-60 overflow-y-auto">
-                            @foreach(['id'=>'#', 'code'=>'Code', 'name'=>'Name', 'group'=>'Group', 'acc_code'=>'Accountant', 'note'=>'Note', 'branch'=>'Branch', 'user'=>'User'] as $key => $label)
+                            {{-- REMOVED ACC_CODE FROM LIST --}}
+                            @foreach(['id'=>'#', 'code'=>__('spending.code'), 'name'=>__('spending.name'), 'group'=>__('spending.group_title'), 'note'=>__('spending.note'), 'branch'=>__('spending.branch'), 'user'=>__('spending.created_by')] as $key => $label)
                                 <label class="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-50 rounded cursor-pointer"><input type="checkbox" x-model="cols.{{ $key }}" class="rounded text-indigo-600 w-4 h-4 border-slate-300"><span class="text-xs text-slate-700 font-medium">{{ $label }}</span></label>
                             @endforeach
                         </div>
@@ -147,10 +148,10 @@
                         <tr>
                             <th x-show="cols.id" class="px-4 py-3 w-[5%] text-center">#</th>
                             <th x-show="cols.code" class="px-4 py-3 w-[10%]">{{ __('spending.code') }}</th>
-                            <th x-show="cols.name" class="px-4 py-3 w-[15%]">{{ __('spending.name') }}</th>
+                            <th x-show="cols.name" class="px-4 py-3 w-[20%]">{{ __('spending.name') }}</th>
                             <th x-show="cols.group" class="px-4 py-3 w-[15%]">{{ __('spending.group_title') }}</th>
-                            <th x-show="cols.acc_code" class="px-4 py-3 w-[10%] text-center">{{ __('spending.accountant_code') }}</th>
-                            <th x-show="cols.note" class="px-4 py-3 w-[15%]">{{ __('spending.note') }}</th>
+                            {{-- REMOVED ACC_CODE TH --}}
+                            <th x-show="cols.note" class="px-4 py-3 w-[20%]">{{ __('spending.note') }}</th>
                             <th x-show="cols.branch" class="px-4 py-3 w-[15%]">{{ __('spending.branch') }}</th>
                             <th x-show="cols.user" class="px-4 py-3 w-[10%] text-center print:hidden">{{ __('spending.created_by') }}</th>
                             <th x-show="cols.actions" class="px-4 py-3 w-[5%] text-center print:hidden">{{ __('spending.actions') }}</th>
@@ -189,11 +190,7 @@
                                 </select>
                             </td>
 
-                            {{-- Accountant Code --}}
-                            <td x-show="cols.acc_code" class="p-1">
-                                <span x-show="editingId !== {{ $type->id }}" class="block text-center text-slate-600">{{ $type->accountant_code }}</span>
-                                <input x-show="editingId === {{ $type->id }}" type="text" name="types[{{ $index }}][accountant_code]" value="{{ $type->accountant_code }}" class="sheet-input text-center">
-                            </td>
+                            {{-- REMOVED ACC_CODE TD --}}
 
                             {{-- Note --}}
                             <td x-show="cols.note" class="p-1">
@@ -280,17 +277,19 @@
             const rowHtml = `
             <tr class="bg-blue-50/40 border-b border-blue-100 transition-all duration-300">
                 
-                {{-- ID COLUMN --}}
+                {{-- ID COLUMN (Shows Number) --}}
                 <td x-show="cols.id" class="px-4 py-2 text-center font-bold text-blue-600">
                     ${nextId}
                 </td>
 
-                {{-- CODE COLUMN --}}
+                {{-- CODE COLUMN (Shows same Number, not AUTO) --}}
                 <td x-show="cols.code" class="p-1"><input type="text" value="${nextId}" class="sheet-input font-bold uppercase text-slate-400 cursor-not-allowed" readonly></td>
                 
                 <td x-show="cols.name" class="p-1"><input type="text" name="types[${index}][name]" class="sheet-input font-bold" placeholder="{{ __('spending.name') }}" autofocus></td>
                 <td x-show="cols.group" class="p-1"><select name="types[${index}][group_spending_id]" class="sheet-select w-full">${groupOptions}</select></td>
-                <td x-show="cols.acc_code" class="p-1"><input type="text" name="types[${index}][accountant_code]" class="sheet-input text-center"></td>
+                
+                {{-- REMOVED ACC_CODE TD --}}
+
                 <td x-show="cols.note" class="p-1"><input type="text" name="types[${index}][note]" class="sheet-input text-xs"></td>
                 <td x-show="cols.branch" class="p-1"><select name="types[${index}][branch_id]" class="sheet-select w-full">${branchOptions}</select></td>
                 <td x-show="cols.user" class="px-4 py-2 text-center text-[10px] text-slate-400 italic">{{ Auth::user()->name }}</td>

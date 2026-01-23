@@ -5,7 +5,9 @@ return [
     'type_title' => 'Spending Types',
     'create_group' => 'Create Group',
     'edit_group' => 'Edit Group',
-    
+
+    'all' => ' all',
+    'none' => 'none',
     // Columns & Fields
     'code' => 'Code',
     'name' => 'Group Name',

@@ -4,7 +4,8 @@ return [
     'title' => 'Cash Boxes',
     'new_box' => 'Register New Cash Box',
     'edit_box' => 'Edit Cash Box',
-    
+     'all' => ' all',
+    'none' => 'none',
     // Table & Form Columns
     'name' => 'Name',
     'type' => 'Type',

@@ -34,6 +34,8 @@ return [
     'manage_view' => 'ڕێکخستنی ستوون',
     'show_all' => 'هەمووی',
     'hide_all' => 'هیچ',
+     'all' => ' هەمووی',
+    'none' => 'هیچیان',
 
     // Trash & Restore
     'trash' => 'سەلەی خۆڵ',

@@ -7,7 +7,8 @@ return [
     'monthly_spending' => 'Monthly Spending',
     'total_records' => 'Total Transactions',
     'this_month' => 'This Month',
-    
+     'all' => ' all',
+    'none' => 'none',
     // Search & Filter
     'filter' => 'Filter Results',
     'search_placeholder' => 'Search by reference, category, or note...',

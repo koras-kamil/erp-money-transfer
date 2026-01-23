@@ -6,7 +6,7 @@
     {{-- STYLES --}}
     <style>
         .sheet-input { width: 100%; border: 1px solid transparent; padding: 6px; border-radius: 4px; outline: none; transition: all 0.2s; font-size: 0.9rem; }
-        .sheet-input[readonly] { background-color: #f8fafc; color: #64748b; cursor: not-allowed; } /* Locked style */
+        .sheet-input[readonly] { background-color: #f8fafc; color: #64748b; cursor: not-allowed; } 
         .sheet-input:not([readonly]):focus { background-color: white; border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
         .sheet-input:not([readonly]) { background-color: white; border-color: #e2e8f0; color: #1e293b; cursor: text; }
         
@@ -29,10 +29,7 @@
             this.editingId = id; 
             setTimeout(() => { document.getElementById('input-type-'+id)?.focus(); }, 100);
         },
-        // We hijack the save function to clean commas before submit
-        saveRow() {
-            cleanAndSubmit();
-        }
+        saveRow() { cleanAndSubmit(); }
     }" class="py-6 w-full min-w-0" dir="{{ app()->getLocale() == 'ku' ? 'rtl' : 'ltr' }}">
 
         {{-- ACTIONS TOOLBAR --}}
@@ -45,15 +42,18 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 </a>
 
-                {{-- Manage Columns --}}
+                {{-- Manage Columns (UPDATED ICON: Adjustments) --}}
                 <div x-data="{ openDropdown: false }" class="relative">
                     <button @click="openDropdown = !openDropdown" @click.away="openDropdown = false" class="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-50 text-slate-600 border border-slate-200 hover:bg-white hover:text-indigo-600 transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.572 1.065c-1.543.94-3 .888-8 .888s-.888-.888-.888-.888z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        {{-- ICON CHANGED TO SLIDERS/ADJUSTMENTS --}}
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                        </svg>
                     </button>
-                    <div x-show="openDropdown" class="absolute top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 p-2 ltr:right-0 rtl:left-0" x-cloak>
+                    <div x-show="openDropdown" class="absolute top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 p-2 ltr:right-0 rtl:left-0" x-cloak style="display:none;">
                         <div class="flex gap-2 mb-2 pb-2 border-b border-slate-100">
-                            <button @click="toggleAll(true)" class="flex-1 text-[10px] bg-indigo-50 text-indigo-600 py-1 rounded hover:bg-indigo-100 font-bold">هەمووی</button>
-                            <button @click="toggleAll(false)" class="flex-1 text-[10px] bg-slate-50 text-slate-600 py-1 rounded hover:bg-slate-100 font-bold">هیچ</button>
+                            <button @click="toggleAll(true)" class="flex-1 text-[10px] bg-indigo-50 text-indigo-600 py-1 rounded hover:bg-indigo-100 font-bold">{{ __('currency.all') }}</button>
+                            <button @click="toggleAll(false)" class="flex-1 text-[10px] bg-slate-50 text-slate-600 py-1 rounded hover:bg-slate-100 font-bold">{{ __('currency.none') }}</button>
                         </div>
                         <div class="space-y-1 max-h-60 overflow-y-auto">
                             @foreach([
@@ -130,7 +130,6 @@
                                 <input x-show="editingId === {{ $currency->id }}" type="number" name="currencies[{{ $index }}][digit_number]" value="{{ $currency->digit_number }}" class="sheet-input text-center font-normal">
                             </td>
 
-                            {{-- TOTAL PRICE: Editable, Auto-formats, Triggers Calculation --}}
                             <td x-show="cols.total" class="p-1">
                                 <div x-show="editingId !== {{ $currency->id }}" class="text-center font-medium text-emerald-600">{{ number_format($currency->price_total, 0) }}</div>
                                 <input x-show="editingId === {{ $currency->id }}" 
@@ -141,7 +140,6 @@
                                        class="sheet-input text-center font-normal text-emerald-600 price-input">
                             </td>
 
-                            {{-- SINGLE PRICE: Readonly, Auto-calculated --}}
                             <td x-show="cols.single" class="p-1">
                                 <div x-show="editingId !== {{ $currency->id }}" class="text-center font-medium text-blue-600">{{ number_format($currency->price_single, 0) }}</div>
                                 <input x-show="editingId === {{ $currency->id }}" 
@@ -194,36 +192,23 @@
     <script>
         @php $userBranchId = auth()->user()->branch_id ?? ''; @endphp
 
-        // 1. Format numbers with commas (Visual)
         function formatNumber(num) {
             if (!num) return '';
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
-        // 2. Remove commas to get raw number (Calculation)
         function parseNumber(str) {
             if (!str) return 0;
             return parseFloat(str.replace(/,/g, '')) || 0;
         }
 
-        // 3. Main Handler: Updates Total format & Calculates Single
         function handlePriceInput(input) {
-            // A. Get raw value
             let rawValue = parseNumber(input.value);
-            
-            // B. Calculate Single Price (Divide by 100)
             let singleValue = rawValue / 100;
-
-            // C. Find the 'Single Price' input in the same row
             let row = input.closest('tr');
             let singleInput = row.querySelector('.price-single');
 
-            // D. Update UI with formatted values
-            // Only format if user typed something valid
             if (!isNaN(rawValue)) {
-                // Update Total (Visual only, keep cursor position logic if needed, simplified here)
-                // Note: Updating input.value while typing moves cursor to end. 
-                // For simple use case:
                 input.value = formatNumber(rawValue); 
                 singleInput.value = formatNumber(singleValue);
             } else {
@@ -231,9 +216,7 @@
             }
         }
 
-        // 4. Clean data before submit
         function cleanAndSubmit() {
-            // Strip commas from all inputs before submitting form
             document.querySelectorAll('.price-input, .price-single').forEach(el => {
                 el.value = parseNumber(el.value);
             });
@@ -265,7 +248,6 @@
                 <td x-show="cols.symbol" class="p-1"><input type="text" name="currencies[${index}][symbol]" class="sheet-input text-center font-normal" placeholder="${placeholderSymbol}"></td>
                 <td x-show="cols.digit" class="p-1"><input type="number" name="currencies[${index}][digit_number]" value="0" class="sheet-input text-center font-normal"></td>
                 
-                {{-- TOTAL PRICE (Type=Text for Commas) --}}
                 <td x-show="cols.total" class="p-1">
                     <input type="text" 
                            name="currencies[${index}][price_total]" 
@@ -274,7 +256,6 @@
                            class="sheet-input text-center font-normal text-emerald-600 price-input">
                 </td>
                 
-                {{-- SINGLE PRICE (Readonly, Auto-Calc) --}}
                 <td x-show="cols.single" class="p-1">
                     <input type="text" 
                            name="currencies[${index}][price_single]" 
@@ -289,7 +270,6 @@
                 
                 <td x-show="cols.actions" class="px-4 py-2 text-center print:hidden">
                     <div class="flex items-center justify-center gap-1">
-                        {{-- Use cleanAndSubmit() for Save --}}
                         <button type="button" onclick="cleanAndSubmit()" class="w-7 h-7 flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg shadow-sm transition transform active:scale-95"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg></button>
                         <button type="button" onclick="this.closest('tr').remove()" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
                     </div>
@@ -303,7 +283,15 @@
         function deleteDatabaseRow(id) {
             const form = document.getElementById('delete-form');
             form.action = "{{ route('currency.destroy', ':id') }}".replace(':id', id);
-            window.confirmAction('delete-form', "{{ __('currency.delete_confirm') }}");
+            
+            // Fixed global confirmation check
+            if (window.confirmAction) {
+                window.confirmAction('delete-form', "{{ __('currency.delete_confirm') }}");
+            } else {
+                if(confirm("{{ __('currency.delete_confirm') }}")) {
+                    form.submit();
+                }
+            }
         }
     </script>
 </x-app-layout>

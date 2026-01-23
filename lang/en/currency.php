@@ -46,4 +46,7 @@ return [
     'yes_delete'     => 'Yes, delete it!',
     'cancel'         => 'Cancel',
     'ok'             => 'OK',
+
+     'all' => ' all',
+    'none' => 'none',
 ];

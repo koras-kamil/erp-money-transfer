@@ -8,6 +8,8 @@ return [
     'total_records' => 'کۆی گشتی تۆمارەکان',
     'this_month' => 'ئەم مانگە',
     
+    'all' => ' هەمووی',
+    'none' => 'هیچیان',
     // Search & Filter
     'filter' => 'پاڵاوتن',
     'search_placeholder' => 'گەڕان بۆ خەرجی، جۆر، یان تێبینی...',
