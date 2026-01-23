@@ -14,7 +14,7 @@ class TypeSpending extends Model
 
     protected $fillable = [
         'name', 'code', 'accountant_code', 
-        'group_id', 'branch_id', 'created_by', 'note'
+        'group_id', 'branch_id', 'created_by', 'note','deleted_by',
     ];
 
     // Auto-generate Code starting from 1
@@ -42,4 +42,9 @@ class TypeSpending extends Model
     public function group() { return $this->belongsTo(GroupSpending::class); }
     public function branch() { return $this->belongsTo(Branch::class); }
     public function creator() { return $this->belongsTo(User::class, 'created_by'); }
+
+    public function deleter()
+{
+    return $this->belongsTo(User::class, 'deleted_by');
+}
 }

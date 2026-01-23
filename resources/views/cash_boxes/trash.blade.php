@@ -5,87 +5,115 @@
 
     {{-- STYLES --}}
     <style>
-        @media print {
-            .no-print, button, .print\:hidden { display: none !important; }
-        }
+        @media print { .no-print, button, a { display: none !important; } }
     </style>
 
-    <div class="py-6" dir="{{ app()->getLocale() == 'ku' ? 'rtl' : 'ltr' }}">
+    <div class="py-6 w-full min-w-0" dir="{{ app()->getLocale() == 'ku' ? 'rtl' : 'ltr' }}">
 
         {{-- TOOLBAR --}}
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 px-4 no-print">
             
             {{-- Title --}}
-            <div class="flex items-center gap-4">
-                <h3 class="text-xl font-black text-red-600 tracking-tight">{{ __('cash_box.trash') }}</h3>
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-red-100 rounded-lg text-red-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </div>
+                <h3 class="text-xl font-black text-slate-800 tracking-tight">{{ __('cash_box.trash') }}</h3>
             </div>
             
             {{-- Back Button --}}
-            <a href="{{ route('cash-boxes.index') }}" class="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-xl hover:bg-slate-800 transition shadow-sm shadow-slate-300">
+            <a href="{{ route('cash-boxes.index') }}" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 hover:text-indigo-600 transition shadow-sm font-medium">
                 <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                <span class="text-sm font-bold">{{ __('cash_box.back') }}</span>
+                <span>{{ __('cash_box.back') }}</span>
             </a>
         </div>
 
         {{-- TABLE CONTAINER --}}
-        <div class="relative overflow-x-auto bg-white shadow-sm rounded-lg border border-red-100 mx-4">
-            <table class="w-full min-w-[800px] text-sm text-left rtl:text-right text-gray-500">
-                <thead class="text-xs text-red-700 uppercase bg-red-50 border-b border-red-100">
+        <div class="relative overflow-x-auto bg-white shadow-sm rounded-xl border border-slate-200 mx-4">
+            <table class="w-full text-sm text-left rtl:text-right text-slate-500">
+                <thead class="text-xs text-slate-700 uppercase bg-red-50/50 border-b border-red-100">
                     <tr>
-                        <th class="px-6 py-3 font-medium w-16">#</th>
-                        <th class="px-6 py-3 font-medium min-w-[150px]">{{ __('cash_box.name') }}</th>
-                        <th class="px-6 py-3 font-medium min-w-[120px]">{{ __('cash_box.branch') }}</th>
-                        <th class="px-6 py-3 font-medium text-center min-w-[120px]">{{ __('cash_box.balance') }}</th>
-                        <th class="px-6 py-3 font-medium text-center min-w-[150px]">{{ __('cash_box.deleted_at') ?? 'Deleted Date' }}</th>
-                        <th class="px-6 py-3 font-medium text-center w-32">{{ __('cash_box.actions') }}</th>
+                        <th class="px-6 py-3 font-bold text-center w-16">#</th>
+                        <th class="px-6 py-3 font-bold">{{ __('cash_box.name') }}</th>
+                        <th class="px-6 py-3 font-bold">{{ __('cash_box.branch') }}</th>
+                        <th class="px-6 py-3 font-bold text-center">{{ __('cash_box.balance') }}</th>
+                        
+                        {{-- DELETED BY --}}
+                        <th class="px-6 py-3 font-bold text-center">{{ __('cash_box.deleted_by') }}</th>
+                        
+                        {{-- DELETED DATE --}}
+                        <th class="px-6 py-3 font-bold text-center">{{ __('cash_box.deleted_at') }}</th>
+                        
+                        <th class="px-6 py-3 font-bold text-center w-32">{{ __('cash_box.actions') }}</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-slate-100">
                     @forelse($cashBoxes as $box)
-                    <tr class="bg-white border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                    <tr class="bg-white hover:bg-red-50/30 transition-colors group">
+                        
                         {{-- ID --}}
-                        <td class="px-6 py-4 font-medium whitespace-nowrap text-gray-900">{{ $loop->iteration }}</td>
+                        <td class="px-6 py-4 text-center font-medium text-slate-400">{{ $loop->iteration }}</td>
                         
                         {{-- Name --}}
-                        <td class="px-6 py-4 font-bold text-gray-800">{{ $box->name }}</td>
+                        <td class="px-6 py-4">
+                            <span class="font-bold text-slate-800 text-sm">{{ $box->name }}</span>
+                        </td>
                         
                         {{-- Branch --}}
-                        <td class="px-6 py-4 text-gray-600">{{ $box->branch->name ?? '-' }}</td>
+                        <td class="px-6 py-4 text-slate-600 font-medium">
+                            {{ $box->branch->name ?? '-' }}
+                        </td>
                         
                         {{-- Balance --}}
-                        <td class="px-6 py-4 text-center text-emerald-600 font-bold">{{ number_format($box->balance, 2) }}</td>
+                        <td class="px-6 py-4 text-center text-emerald-600 font-bold bg-emerald-50/30 rounded-lg mx-2">{{ number_format($box->balance, 2) }}</td>
                         
-                        {{-- Deleted At --}}
-                        <td class="px-6 py-4 text-center text-xs text-red-400 font-medium">
-                            <span dir="ltr">{{ $box->deleted_at->format('Y-m-d H:i') }}</span>
-                            <br>
-                            <span class="text-[10px] opacity-75">({{ $box->deleted_at->diffForHumans() }})</span>
+                        {{-- DELETED BY USER --}}
+                        <td class="px-6 py-4 text-center">
+                            @if($box->deleter)
+                                <div class="flex items-center justify-center gap-2">
+                                    <div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-600 uppercase border border-slate-300">
+                                        {{ substr($box->deleter->name, 0, 1) }}
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-700">{{ $box->deleter->name }}</span>
+                                </div>
+                            @else
+                                <span class="text-xs text-slate-400 italic">{{ __('cash_box.system') }}</span>
+                            @endif
+                        </td>
+
+                        {{-- Deleted Date --}}
+                        <td class="px-6 py-4 text-center text-xs text-red-500 font-medium">
+                            <div class="bg-red-50 px-2 py-1 rounded border border-red-100 inline-block">
+                                {{ $box->deleted_at->format('Y-m-d H:i') }}
+                            </div>
                         </td>
                         
                         {{-- Actions --}}
                         <td class="px-6 py-4 text-center">
-                            <div class="flex items-center justify-center gap-3">
+                            <div class="flex items-center justify-center gap-2">
                                 {{-- Restore Button --}}
                                 <form action="{{ route('cash-boxes.restore', $box->id) }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="p-2 text-emerald-500 hover:bg-emerald-50 rounded-lg transition-colors" title="{{ __('cash_box.restore') }}">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                    <button type="submit" class="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors shadow-sm" title="{{ __('cash_box.restore') }}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                                     </button>
                                 </form>
 
                                 {{-- Force Delete Button --}}
-                                <button type="button" onclick="confirmForceDelete({{ $box->id }})" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="{{ __('cash_box.perm_delete') }}">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                <button type="button" onclick="confirmForceDelete({{ $box->id }})" class="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors shadow-sm" title="{{ __('cash_box.perm_delete') }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                 </button>
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-gray-400 bg-gray-50">
-                            <div class="flex flex-col items-center justify-center">
-                                <svg class="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                <p>{{ __('cash_box.no_deleted_data') }}</p>
+                        <td colspan="7" class="px-6 py-12 text-center text-slate-400">
+                            <div class="flex flex-col items-center justify-center gap-3">
+                                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </div>
+                                <p class="text-sm font-medium">{{ __('cash_box.trash_empty') }}</p>
                             </div>
                         </td>
                     </tr>
@@ -110,14 +138,21 @@
             form.action = "{{ route('cash-boxes.force-delete', ':id') }}".replace(':id', id);
             
             Swal.fire({
-                title: '{{ __('cash_box.delete_title') }}',
-                text: "{{ __('cash_box.warning_perm_delete') }}",
+                title: '{{ __('cash_box.warning_perm_delete') }}',
+                text: "{{ __('cash_box.cant_undone') }}",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
                 confirmButtonText: '{{ __('cash_box.yes_delete') }}',
-                cancelButtonText: '{{ __('cash_box.cancel') }}'
+                cancelButtonText: '{{ __('cash_box.cancel') }}',
+                background: '#fff',
+                borderRadius: '1rem',
+                customClass: {
+                    popup: 'rounded-xl shadow-xl border border-slate-100',
+                    confirmButton: 'rounded-lg px-4 py-2 font-bold',
+                    cancelButton: 'rounded-lg px-4 py-2 font-bold'
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
                     form.submit();

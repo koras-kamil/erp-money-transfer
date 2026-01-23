@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CurrencyConfig;
+use App\Models\Branch; // <--- ADDED THIS
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
-use PDF; // Ensure 'PDF' alias is set in config/app.php or use the full class path
+use Mccarlosen\LaravelMpdf\Facades\LaravelMpdf as PDF;
 
 class CurrencyConfigController extends Controller
 {
@@ -17,7 +18,10 @@ class CurrencyConfigController extends Controller
     public function index()
     {
         $currencies = CurrencyConfig::orderBy('id')->get();
-        return view('currency.index', compact('currencies'));
+        // Fetch branches for the dropdown
+        $branches = Branch::all(); 
+
+        return view('currency.index', compact('currencies', 'branches'));
     }
 
     /**
@@ -36,8 +40,9 @@ class CurrencyConfigController extends Controller
                     'digit_number'  => $data['digit_number'],
                     'price_total'   => $data['price_total'],
                     'price_single'  => $data['price_single'],
-                    'price_sell'    => $data['price_sell'] ?? 0, // Added based on your Model update
-                    'branch'        => $data['branch'],
+                    'price_sell'    => $data['price_sell'] ?? 0,
+                    // Save branch_id from the dropdown
+                    'branch_id' => $data['branch_id'] ?? null,
                     'is_active'     => isset($data['is_active']) ? 1 : 0,
                 ];
 
@@ -50,6 +55,8 @@ class CurrencyConfigController extends Controller
                 } else {
                     // Create new (only if type is provided)
                     if (!empty($data['currency_type'])) {
+                        // Add creator ID for new records
+                        $saveData['created_by'] = Auth::id();
                         CurrencyConfig::create($saveData);
                     }
                 }
@@ -62,16 +69,22 @@ class CurrencyConfigController extends Controller
     /**
      * Soft Delete (Move to Trash)
      */
-    public function destroy($id)
+public function destroy($id)
     {
         $currency = CurrencyConfig::find($id);
         
-        if (!$currency) {
-            return back()->with('error', __('currency.not_found'));
+        if ($currency) {
+            // 1. Save the ID of the logged-in user who is deleting this
+            $currency->deleted_by = Auth::id();
+            $currency->save(); // Save the change to the database
+            
+            // 2. Now perform the Soft Delete
+            $currency->delete();
+            
+            return back()->with('success', 'Moved to trash successfully');
         }
 
-        $currency->delete();
-        return back()->with('success', __('currency.deleted'));
+        return back()->with('error', 'Item not found');
     }
 
     /**
@@ -121,21 +134,22 @@ class CurrencyConfigController extends Controller
     /**
      * Generate PDF Report (mPDF)
      */
-    public function downloadPdf()
+  public function downloadPdf()
     {
+        // Fetch all currencies
         $currencies = CurrencyConfig::all();
 
         $data = [
-            'title' => 'لیستی دراوەکان', // Currency List
-            'date' => date('Y-m-d H:i'),
-            'user' => Auth::user()->name ?? 'System',
-            'currencies' => $currencies
+            'title'      => 'لیستی دراوەکان',
+            'date'       => date('Y-m-d H:i'),
+            'user'       => Auth::user()->name ?? 'System',
+            'currencies' => $currencies // <--- FIXED: Key matches '$currencies' in your view
         ];
 
         $pdf = PDF::loadView('currency.pdf', $data, [], [
             'mode' => 'utf-8',
             'format' => 'A4',
-            'default_font' => 'nrt', // Ensure this matches your config/pdf.php
+            'default_font' => 'nrt', 
             'margin_header' => 10,
             'margin_footer' => 10,
             'orientation' => 'P',

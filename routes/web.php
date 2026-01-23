@@ -1,27 +1,39 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Models\CurrencyConfig;
-use App\Http\Controllers\CurrencyConfigController;
+
+// --- CONTROLLERS ---
 use App\Http\Controllers\LanguageController;
-use App\Http\Controllers\CashBoxController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BranchController;
-// Controllers
+use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\CurrencyConfigController;
+use App\Http\Controllers\CashBoxController;
 use App\Http\Controllers\GroupSpendingController;
 use App\Http\Controllers\TypeSpendingController;
-use App\Http\Controllers\ProfitConfigController; // <--- Make sure this is imported
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
+use App\Models\CurrencyConfig;
+use App\Http\Controllers\ProfitGroupController;
+use App\Http\Controllers\ProfitTypeController;
 
-// 1. PUBLIC ROUTES
+/*
+|--------------------------------------------------------------------------
+| 1. PUBLIC ROUTES
+|--------------------------------------------------------------------------
+*/
 Route::view('/', 'welcome');
 Route::get('lang/{lang}', [LanguageController::class, 'switch'])->name('lang.switch');
 
-// 2. AUTHENTICATED ROUTES
+/*
+|--------------------------------------------------------------------------
+| 2. AUTHENTICATED ROUTES (Middleware: auth, verified)
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'verified'])->group(function () {
-    
-    // Dashboard
+
+    // --- DASHBOARD ---
     Route::get('dashboard', function () {
         try {
             $totalCurrencies = CurrencyConfig::count();
@@ -33,27 +45,58 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('dashboard', compact('totalCurrencies', 'activeCurrencies'));
     })->name('dashboard');
 
-    // --- PROFIT MANAGEMENT ROUTES (Required to fix your error) ---
-    Route::prefix('profit-config')->name('profit.')->group(function () {
-        Route::get('/', [ProfitConfigController::class, 'index'])->name('index');
-        Route::post('/groups', [ProfitConfigController::class, 'storeGroups'])->name('groups.store');
-        Route::delete('/groups/{id}', [ProfitConfigController::class, 'destroyGroup'])->name('groups.destroy');
-        Route::post('/types', [ProfitConfigController::class, 'storeTypes'])->name('types.store');
-        Route::delete('/types/{id}', [ProfitConfigController::class, 'destroyType'])->name('types.destroy');
-    });
-
-    // Profile
+    // --- PROFILE ---
     Route::view('profile', 'profile')->name('profile');
 
     // --- BRANCHES & SWITCHING ---
     Route::resource('branches', BranchController::class);
     Route::post('/switch-branch', [BranchController::class, 'switch'])->name('branch.switch');
 
-    // Activity Logs
+    // --- ACTIVITY LOGS ---
     Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
 
-    // --- CURRENCY CONFIGURATION ROUTES ---
+    /*
+    |--------------------------------------------------------------------------
+    | PROFIT CONFIGURATION (Groups & Types)
+    |--------------------------------------------------------------------------
+    */
+ Route::prefix('profit-groups')->name('profit.groups.')->group(function () {
+    Route::get('/', [ProfitGroupController::class, 'index'])->name('index');
+    Route::post('/store', [ProfitGroupController::class, 'store'])->name('store');
+    Route::delete('/{id}', [ProfitGroupController::class, 'destroy'])->name('destroy');
+    Route::get('/pdf', [ProfitGroupController::class, 'downloadPdf'])->name('pdf');
+    
+    // TRASH ROUTES
+    Route::get('/trash', [ProfitGroupController::class, 'trash'])->name('trash');
+    Route::post('/restore/{id}', [ProfitGroupController::class, 'restore'])->name('restore');
+    
+    // FIX: Changed 'force_delete' to 'force-delete' to match your Blade file
+    Route::delete('/force-delete/{id}', [ProfitGroupController::class, 'forceDelete'])->name('force-delete');
+});
+
+// Profit Types Routes
+Route::prefix('profit-types')->name('profit.types.')->group(function () {
+    Route::get('/', [ProfitTypeController::class, 'index'])->name('index');
+    Route::post('/store', [ProfitTypeController::class, 'store'])->name('store');
+    Route::delete('/{id}', [ProfitTypeController::class, 'destroy'])->name('destroy');
+    Route::get('/pdf', [ProfitTypeController::class, 'downloadPdf'])->name('pdf');
+
+    // Trash
+    Route::get('/trash', [ProfitTypeController::class, 'trash'])->name('trash');
+    Route::post('/restore/{id}', [ProfitTypeController::class, 'restore'])->name('restore');
+    Route::delete('/force-delete/{id}', [ProfitTypeController::class, 'forceDelete'])->name('force_delete');
+});
+
+    /*
+    |--------------------------------------------------------------------------
+    | CURRENCY CONFIGURATION
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('currency-config')->name('currency.')->group(function () {
+        // 1. New PDF Print Route (Add this line)
+        Route::get('/print', [CurrencyConfigController::class, 'downloadPdf'])->name('print');
+
+        // Existing Routes...
         Route::get('/trash', [CurrencyConfigController::class, 'trash'])->name('trash');
         Route::post('/{id}/restore', [CurrencyConfigController::class, 'restore'])->name('restore');
         Route::delete('/{id}/force-delete', [CurrencyConfigController::class, 'forceDelete'])->name('force-delete');
@@ -63,55 +106,71 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{currency}', [CurrencyConfigController::class, 'destroy'])->name('destroy');
     });
 
-    // --- CASH BOX ROUTES ---
-  Route::prefix('cash-boxes')->name('cash-boxes.')->group(function () {
-    Route::get('/print', [CashBoxController::class, 'downloadPdf'])->name('print');
-    Route::post('/store-bulk', [CashBoxController::class, 'storeBulk'])->name('store-bulk');
-    Route::get('/trash', [CashBoxController::class, 'trash'])->name('trash');
-    Route::post('/{id}/restore', [CashBoxController::class, 'restore'])->name('restore');
-    Route::delete('/{id}/force-delete', [CashBoxController::class, 'forceDelete'])->name('force-delete');
-    Route::get('/export', [CashBoxController::class, 'export'])->name('export');
-});
-Route::resource('cash-boxes', CashBoxController::class);
+    /*
+    |--------------------------------------------------------------------------
+    | CASH BOX CONFIGURATION
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('cash-boxes')->name('cash-boxes.')->group(function () {
+        Route::get('/print', [CashBoxController::class, 'downloadPdf'])->name('print');
+        Route::post('/store-bulk', [CashBoxController::class, 'storeBulk'])->name('store-bulk');
+        Route::get('/export', [CashBoxController::class, 'export'])->name('export');
+        
+        // Trash & Restore
+        Route::get('/trash', [CashBoxController::class, 'trash'])->name('trash');
+        Route::post('/{id}/restore', [CashBoxController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [CashBoxController::class, 'forceDelete'])->name('force-delete');
+    });
+    Route::resource('cash-boxes', CashBoxController::class);
 
+    /*
+    |--------------------------------------------------------------------------
+    | SPENDING: GROUP SPENDING
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('group-spending')->name('group-spending.')->group(function () {
+        Route::get('/print', [GroupSpendingController::class, 'downloadPdf'])->name('print');
+        
+        // Trash & Restore
+        Route::get('/trash', [GroupSpendingController::class, 'trash'])->name('trash');
+        Route::post('/{id}/restore', [GroupSpendingController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [GroupSpendingController::class, 'forceDelete'])->name('force-delete');
+    });
+    Route::resource('group-spending', GroupSpendingController::class);
 
-    // --- GROUP SPENDING ROUTES (Separate) ---
- Route::prefix('group-spending')->name('group-spending.')->group(function () {
-    // Print Route (First)
-    Route::get('/print', [GroupSpendingController::class, 'downloadPdf'])->name('print');
-    
-    // Trash Routes
-    Route::get('/trash', [GroupSpendingController::class, 'trash'])->name('trash');
-    Route::post('/{id}/restore', [GroupSpendingController::class, 'restore'])->name('restore');
-    Route::delete('/{id}/force-delete', [GroupSpendingController::class, 'forceDelete'])->name('force-delete');
-});
-Route::resource('group-spending', GroupSpendingController::class);
+    /*
+    |--------------------------------------------------------------------------
+    | SPENDING: TYPE SPENDING
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('type-spending')->name('type-spending.')->group(function () {
+        Route::get('/print', [TypeSpendingController::class, 'downloadPdf'])->name('print');
 
+        // Trash & Restore
+        Route::get('/trash', [TypeSpendingController::class, 'trash'])->name('trash');
+        Route::post('/{id}/restore', [TypeSpendingController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [TypeSpendingController::class, 'forceDelete'])->name('force-delete');
+    });
+    Route::resource('type-spending', TypeSpendingController::class);
 
-
-    // --- TYPE SPENDING ROUTES (Separate) ---
-  Route::prefix('type-spending')->name('type-spending.')->group(function () {
-    // 1. PDF Print Route (Must be at the top)
-    Route::get('/print', [TypeSpendingController::class, 'downloadPdf'])->name('print');
-
-    // 2. Trash & Restore Routes
-    Route::get('/trash', [TypeSpendingController::class, 'trash'])->name('trash');
-    Route::post('/{id}/restore', [TypeSpendingController::class, 'restore'])->name('restore');
-    Route::delete('/{id}/force-delete', [TypeSpendingController::class, 'forceDelete'])->name('force-delete');
-});
-
-// 3. Resource Route (Must be outside or after specific routes)
-Route::resource('type-spending', TypeSpendingController::class);
-
-    // 3. SUPER ADMIN ONLY ROUTES
+    /*
+    |--------------------------------------------------------------------------
+    | 3. SUPER ADMIN ONLY ROUTES (User Management)
+    |--------------------------------------------------------------------------
+    */
     Route::middleware(['role:super-admin'])->group(function () {
         Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.updateRole');
         Route::resource('users', UserController::class);
         Route::resource('roles', RoleController::class);
     });
+
 });
 
-// 4. LOGOUT
+/*
+|--------------------------------------------------------------------------
+| 4. LOGOUT ROUTE
+|--------------------------------------------------------------------------
+*/
 Route::post('/logout', function () {
     auth()->logout();                   
     request()->session()->invalidate();  

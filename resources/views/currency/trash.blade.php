@@ -1,91 +1,111 @@
 <x-app-layout>
     <x-slot name="header">
-        {{ __('currency.trash') ?? 'Trash' }}
+        {{ __('currency.trash') }}
     </x-slot>
 
-    {{-- STYLES --}}
     <style>
-        @media print {
-            .no-print, button, .print\:hidden { display: none !important; }
-        }
+        @media print { .no-print, button, a { display: none !important; } }
     </style>
 
-    <div class="py-6" dir="{{ app()->getLocale() == 'ku' ? 'rtl' : 'ltr' }}">
+    <div class="py-6 w-full min-w-0" dir="{{ app()->getLocale() == 'ku' ? 'rtl' : 'ltr' }}">
 
         {{-- TOOLBAR --}}
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 px-4 no-print">
             
             {{-- Title --}}
-            <div class="flex items-center gap-4">
-                <h3 class="text-xl font-black text-red-600 tracking-tight">{{ __('currency.trash') ?? 'Trash' }}</h3>
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-red-100 rounded-lg text-red-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </div>
+                <h3 class="text-xl font-black text-slate-800 tracking-tight">{{ __('currency.trash') }}</h3>
             </div>
             
             {{-- Back Button --}}
-            <a href="{{ route('currency.index') }}" class="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-xl hover:bg-slate-800 transition shadow-sm shadow-slate-300">
+            <a href="{{ route('currency.index') }}" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 hover:text-indigo-600 transition shadow-sm font-medium">
                 <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                <span class="text-sm font-bold">{{ __('currency.back') ?? 'Back' }}</span>
+                <span>{{ __('currency.back') }}</span>
             </a>
         </div>
 
         {{-- TABLE CONTAINER --}}
-        <div class="relative overflow-x-auto bg-white shadow-sm rounded-lg border border-red-100 mx-4">
-            <table class="w-full min-w-[800px] text-sm text-left rtl:text-right text-gray-500">
-                <thead class="text-xs text-red-700 uppercase bg-red-50 border-b border-red-100">
+        <div class="relative overflow-x-auto bg-white shadow-sm rounded-xl border border-slate-200 mx-4">
+            <table class="w-full text-sm text-left rtl:text-right text-slate-500">
+                <thead class="text-xs text-slate-700 uppercase bg-red-50/50 border-b border-red-100">
                     <tr>
-                        <th class="px-6 py-3 font-medium w-16">#</th>
-                        <th class="px-6 py-3 font-medium min-w-[140px]">{{ __('currency.type') }}</th>
-                        <th class="px-6 py-3 font-medium text-center min-w-[80px]">{{ __('currency.symbol') }}</th>
-                        <th class="px-6 py-3 font-medium text-center min-w-[130px]">{{ __('currency.price_total') }}</th>
-                        <th class="px-6 py-3 font-medium text-center min-w-[150px]">{{ __('currency.deleted_at') ?? 'Deleted Date' }}</th>
-                        <th class="px-6 py-3 font-medium text-center w-32">{{ __('currency.actions') }}</th>
+                        <th class="px-6 py-3 font-bold text-center w-16">#</th>
+                        <th class="px-6 py-3 font-bold">{{ __('currency.type') }}</th>
+                        <th class="px-6 py-3 font-bold text-center">{{ __('currency.symbol') }}</th>
+                        <th class="px-6 py-3 font-bold text-center">{{ __('currency.price_total') }}</th>
+                        <th class="px-6 py-3 font-bold text-center">{{ __('currency.deleted_by') }}</th>
+                        <th class="px-6 py-3 font-bold text-center">{{ __('currency.deleted_at') }}</th>
+                        <th class="px-6 py-3 font-bold text-center w-32">{{ __('currency.actions') }}</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-slate-100">
                     @forelse($currencies as $currency)
-                    <tr class="bg-white border-b border-gray-100 hover:bg-red-50/50 transition-colors">
+                    <tr class="bg-white hover:bg-red-50/30 transition-colors group">
+                        
                         {{-- ID --}}
-                        <td class="px-6 py-4 font-medium whitespace-nowrap text-gray-900">{{ $loop->iteration }}</td>
+                        <td class="px-6 py-4 text-center font-medium text-slate-400">{{ $loop->iteration }}</td>
                         
                         {{-- Type --}}
-                        <td class="px-6 py-4 font-bold text-gray-800 uppercase">{{ $currency->currency_type }}</td>
-                        
-                        {{-- Symbol --}}
-                        <td class="px-6 py-4 text-center text-gray-600">{{ $currency->symbol }}</td>
-                        
-                        {{-- Price --}}
-                        <td class="px-6 py-4 text-center text-emerald-600 font-bold">{{ number_format($currency->price_total, 3) }}</td>
-                        
-                        {{-- Deleted At --}}
-                        <td class="px-6 py-4 text-center text-xs text-red-400 font-medium">
-                            <span dir="ltr">{{ $currency->deleted_at->format('Y-m-d H:i') }}</span>
-                            <br>
-                            <span class="text-[10px] opacity-75">({{ $currency->deleted_at->diffForHumans() }})</span>
+                        <td class="px-6 py-4">
+                            <span class="font-bold text-slate-800 uppercase bg-slate-100 px-2 py-1 rounded text-xs">{{ $currency->currency_type }}</span>
                         </td>
                         
-                        {{-- Actions --}}
+                        {{-- Symbol --}}
+                        <td class="px-6 py-4 text-center font-medium text-slate-600">{{ $currency->symbol }}</td>
+                        
+                        {{-- Price --}}
+                        <td class="px-6 py-4 text-center text-emerald-600 font-bold bg-emerald-50/30 rounded-lg mx-2">{{ number_format($currency->price_total, 0) }}</td>
+                        
+                        {{-- DELETED BY USER --}}
                         <td class="px-6 py-4 text-center">
-                            <div class="flex items-center justify-center gap-3">
-                                {{-- Restore Button --}}
+                            @if($currency->deleter)
+                                <div class="flex items-center justify-center gap-2">
+                                    <div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-600 uppercase border border-slate-300">
+                                        {{ substr($currency->deleter->name, 0, 1) }}
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-700">{{ $currency->deleter->name }}</span>
+                                </div>
+                            @else
+                                <span class="text-xs text-slate-400 italic">{{ __('currency.system') }}</span>
+                            @endif
+                        </td>
+
+                        {{-- Deleted Date --}}
+                        <td class="px-6 py-4 text-center text-xs text-red-500 font-medium">
+                            <div class="bg-red-50 px-2 py-1 rounded border border-red-100 inline-block">
+                                {{ $currency->deleted_at->format('Y-m-d H:i') }}
+                            </div>
+                        </td>
+                        
+                        {{-- Actions (ALWAYS VISIBLE NOW) --}}
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                {{-- Restore --}}
                                 <form action="{{ route('currency.restore', $currency->id) }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="p-2 text-emerald-500 hover:bg-emerald-50 rounded-lg transition-colors" title="{{ __('currency.restore') }}">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                    <button type="submit" class="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors shadow-sm" title="{{ __('currency.restore') }}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                                     </button>
                                 </form>
 
-                                {{-- Force Delete Button --}}
-                                <button type="button" onclick="confirmForceDelete({{ $currency->id }})" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="{{ __('currency.perm_delete') }}">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                {{-- Force Delete --}}
+                                <button type="button" onclick="confirmForceDelete({{ $currency->id }})" class="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors shadow-sm" title="{{ __('currency.perm_delete') }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                 </button>
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-gray-400 bg-gray-50">
-                            <div class="flex flex-col items-center justify-center">
-                                <svg class="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                <p>{{ __('currency.trash_empty') ?? 'Trash is empty' }}</p>
+                        <td colspan="7" class="px-6 py-12 text-center text-slate-400">
+                            <div class="flex flex-col items-center justify-center gap-3">
+                                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </div>
+                                <p class="text-sm font-medium">{{ __('currency.trash_empty') }}</p>
                             </div>
                         </td>
                     </tr>
@@ -95,10 +115,7 @@
         </div>
     </div>
 
-    {{-- Hidden Delete Form --}}
-    <form id="force-delete-form" action="" method="POST" class="hidden">
-        @csrf @method('DELETE')
-    </form>
+    <form id="force-delete-form" action="" method="POST" class="hidden">@csrf @method('DELETE')</form>
 
     <script>
         function confirmForceDelete(id) {
@@ -106,14 +123,21 @@
             form.action = "{{ route('currency.force-delete', ':id') }}".replace(':id', id);
             
             Swal.fire({
-                title: '{{ __('currency.warning_perm_delete') ?? "Are you sure?" }}',
-                text: "{{ __('currency.cant_undone') ?? "This action cannot be undone!" }}",
+                title: '{{ __('currency.warning_perm_delete') }}',
+                text: "{{ __('currency.cant_undone') }}",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: '{{ __('currency.yes_delete') ?? "Yes, delete it!" }}',
-                cancelButtonText: '{{ __('currency.cancel') ?? "Cancel" }}'
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '{{ __('currency.yes_delete') }}',
+                cancelButtonText: '{{ __('currency.cancel') }}',
+                background: '#fff',
+                borderRadius: '1rem',
+                customClass: {
+                    popup: 'rounded-xl shadow-xl border border-slate-100',
+                    confirmButton: 'rounded-lg px-4 py-2 font-bold',
+                    cancelButton: 'rounded-lg px-4 py-2 font-bold'
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
                     form.submit();

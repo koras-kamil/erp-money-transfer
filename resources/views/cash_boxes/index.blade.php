@@ -14,8 +14,8 @@
             background: transparent;
             border: 1px solid transparent;
             padding: 0 12px;
-            font-size: 0.875rem; /* 14px */
-            color: #1f2937; /* gray-800 */
+            font-size: 0.875rem;
+            color: #1f2937;
             font-weight: 500;
             border-radius: 6px;
             transition: all 0.15s ease-in-out;
@@ -37,18 +37,17 @@
             background-position: right 0.5rem center;
             background-repeat: no-repeat;
             background-size: 1.2em 1.2em;
-            /* Extra padding to prevent text overlap with arrow */
             padding-right: 2.5rem; 
             padding-left: 0.75rem;
             cursor: pointer;
-            white-space: nowrap; /* Prevent line break */
+            white-space: nowrap; 
         }
         
         /* RTL Support */
         [dir="rtl"] select.sheet-input {
             background-position: left 0.5rem center;
             padding-right: 0.75rem;
-            padding-left: 2.5rem; /* Extra padding on left for arrow */
+            padding-left: 2.5rem; 
         }
 
         @media print {
@@ -67,6 +66,9 @@
             this.editingId = id; 
             this.hasChanges = true;
             setTimeout(() => { document.getElementById('input-name-'+id)?.focus(); }, 100);
+        },
+        saveForm() {
+            document.getElementById('sheet-form').submit();
         }
     }" class="py-6" dir="{{ app()->getLocale() == 'ku' ? 'rtl' : 'ltr' }}">
 
@@ -77,13 +79,17 @@
             </div>
             
             <div class="flex flex-wrap items-center gap-3">
+                
+                {{-- Trash Button --}}
                 <a href="{{ route('cash-boxes.trash') }}" title="{{ __('cash_box.trash') }}" class="w-10 h-10 flex items-center justify-center rounded-xl bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 hover:text-red-600 transition shadow-sm">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 </a>
 
+                {{-- Manage Columns (Icon changed to Settings/Cog) --}}
                 <div x-data="{ openDropdown: false }" class="relative">
                     <button @click="openDropdown = !openDropdown" @click.away="openDropdown = false" title="{{ __('cash_box.manage_view') }}" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition shadow-sm">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        {{-- Settings Cog Icon --}}
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.572 1.065c-1.543.94-3 .888-8 .888s-.888-.888-.888-.888z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     </button>
                     <div x-show="openDropdown" class="absolute ltr:right-0 rtl:left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 p-2" x-cloak>
                         <div class="flex gap-2 mb-2 pb-2 border-b border-slate-100">
@@ -101,16 +107,14 @@
                     </div>
                 </div>
 
+                {{-- Print Button --}}
                 <a href="{{ route('cash-boxes.print') }}" target="_blank" title="{{ __('cash_box.print') }}" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-700 text-white hover:bg-slate-800 transition shadow-sm shadow-slate-300">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 </a>
 
+                {{-- Add New Button --}}
                 <button type="button" @click="addNewRow(); hasChanges = true" title="{{ __('cash_box.new_box') }}" class="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition shadow-lg shadow-blue-500/30">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                </button>
-
-                <button type="button" title="{{ __('cash_box.save') }}" @click="hasChanges ? document.getElementById('sheet-form').submit() : Swal.fire({icon: 'info', title: '{{ __('messages.no_changes') ?? 'No changes' }}'})" class="w-10 h-10 flex items-center justify-center rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-lg shadow-emerald-500/30">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 </button>
             </div>
         </div>
@@ -165,7 +169,6 @@
                                 <input x-show="editingId === {{ $box->id }}" type="number" step="0.01" name="boxes[{{ $index }}][balance]" value="{{ $box->balance }}" class="sheet-input text-center text-emerald-600 font-medium">
                             </td>
 
-                            {{-- FIXED: Removed truncation and centered alignment so text fits --}}
                             <td x-show="cols.branch" class="p-1">
                                 <span x-show="editingId !== {{ $box->id }}" class="px-3 block text-xs uppercase text-gray-500">{{ $box->branch->name ?? '-' }}</span>
                                 <select x-show="editingId === {{ $box->id }}" name="boxes[{{ $index }}][branch_id]" class="sheet-input text-xs text-gray-700">
@@ -185,9 +188,21 @@
                             
                             <td x-show="cols.actions" class="px-6 py-4 text-center print:hidden">
                                 <div class="flex items-center justify-center gap-2">
-                                    <button type="button" @click="startEdit({{ $box->id }})" x-show="editingId !== {{ $box->id }}" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="{{ __('Edit') }}"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
-                                    <span x-show="editingId === {{ $box->id }}" class="text-emerald-500 animate-pulse"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></span>
-                                    <button type="button" onclick="deleteDatabaseRow({{ $box->id }})" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="{{ __('Delete') }}"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+                                    
+                                    {{-- SAVE BUTTON (VISIBLE WHEN EDITING) --}}
+                                    <button type="button" @click="saveForm()" x-show="editingId === {{ $box->id }}" class="w-7 h-7 flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg shadow-sm transition transform active:scale-95">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                    </button>
+
+                                    {{-- EDIT BUTTON --}}
+                                    <button type="button" @click="startEdit({{ $box->id }})" x-show="editingId !== {{ $box->id }}" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="{{ __('Edit') }}">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                    </button>
+
+                                    {{-- DELETE BUTTON --}}
+                                    <button type="button" onclick="deleteDatabaseRow({{ $box->id }})" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="{{ __('Delete') }}">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -239,12 +254,24 @@
                         </div>
                     </td>
                     <td x-show="cols.actions" class="px-6 py-3 text-center print:hidden">
-                         <button type="button" onclick="this.closest('tr').remove()" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                         </button>
+                        <div class="flex items-center justify-center gap-2">
+                             {{-- NEW ROW SAVE BUTTON --}}
+                             <button type="button" onclick="document.getElementById('sheet-form').submit()" class="w-7 h-7 flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg shadow-sm transition transform active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                             </button>
+                             {{-- NEW ROW CANCEL BUTTON --}}
+                             <button type="button" onclick="this.closest('tr').remove()" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                             </button>
+                        </div>
                     </td>
                 </tr>`;
             tableBody.insertAdjacentHTML('beforeend', rowHtml);
+            
+            setTimeout(() => {
+                const newRows = tableBody.querySelectorAll('tr');
+                newRows[newRows.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
         }
 
         function deleteDatabaseRow(id) {

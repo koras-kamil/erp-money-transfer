@@ -33,7 +33,8 @@ class CashBox extends Model
         'balance', 
         'description', 
         'date_opened', 
-        'is_active'
+        'is_active',
+        'deleted_by',
     ];
 
     /**
@@ -61,5 +62,10 @@ class CashBox extends Model
     // but keeping it here is safe (Class methods override Trait methods).
     public function branch() {
         return $this->belongsTo(Branch::class);
+    }
+
+ public function deleter()
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
     }
 }

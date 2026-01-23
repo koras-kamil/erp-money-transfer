@@ -17,7 +17,8 @@ class GroupSpending extends Model
         'code',
         'accountant_code',
         'branch_id',
-        'created_by'
+        'created_by',
+        'deleted_by',
     ];
 
     /**
@@ -55,4 +56,8 @@ class GroupSpending extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function deleter() {
+    return $this->belongsTo(User::class, 'deleted_by');
+}
 }

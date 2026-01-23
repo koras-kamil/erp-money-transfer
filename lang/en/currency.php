@@ -1,8 +1,15 @@
 <?php
 
 return [
+    // Page & PDF Titles
+    'config_title' => 'Currency Configuration',
+    'title'        => 'Currency List',
+
     // Table Headers
-    'id'           => 'ID',
+    'id'           => 'id',
+    'code'         => 'Code',        // Used in PDF
+    'name'         => 'Name',        // Used in PDF
+    'rate'         => 'Rate',        // Used in PDF
     'type'         => 'Currency Type',
     'symbol'       => 'Symbol',
     'digit'        => 'Digits',
@@ -13,31 +20,30 @@ return [
     'active'       => 'Active',
     'actions'      => 'Actions',
 
-    // Placeholders & Buttons
-    'add_new'      => '+ Add New Row',
+    // Buttons & Labels
+    'add_new'      => '+ Add Currency',
     'save_changes' => 'Save Changes',
+    'trash'        => 'Trash',
+    'print'        => 'Print',
     'type_here'    => 'Type here...',
-    'new'          => 'New',
-    'config_title' => 'Currency Configuration',
-
-    // Messages
-    'saved'        => 'Changes saved successfully.',
-    'error'        => 'An error occurred, please try again.',
-
-//alertts
-'are_you_sure'   => 'Are you sure?',
-'delete_warning' => 'You won\'t be able to revert this!',
-'yes_delete'     => 'Yes, delete it!',
-'cancel'         => 'Cancel',
-'deleted'        => 'Deleted successfully',
-'saved'         => 'Data saved successfully.',
-    'error'         => 'Something went wrong, please try again.',
-    'check_inputs'  => 'Please check the input fields.',
-    'delete_confirm'=> 'Deleted successfully.',
-    'saved' => 'Sheet saved successfully!',  // <--- Updated this line
-
-    'no_changes_title' => 'No Changes Detected',
-    'no_changes_text' => 'There are no changes to save.',
-    'print' => 'Print',
-       'ok' => 'ok',
+    'new'          => 'NEW',
+    
+    // Alerts & Messages
+    'saved'            => 'Currency saved successfully!',
+    'deleted'          => 'Currency deleted successfully.',
+    'error'            => 'An error occurred, please try again.',
+    'no_changes'       => 'No changes detected to save.',
+    'check_inputs'     => 'Please check the input fields.',
+    'delete_confirm'   => 'Are you sure you want to delete this currency?',
+    
+    // PDF Specific
+    'print_date' => 'Print Date',
+    'printed_by' => 'Printed By',
+    
+    // SweetAlert Generic Keys
+    'are_you_sure'   => 'Are you sure?',
+    'delete_warning' => 'You won\'t be able to revert this!',
+    'yes_delete'     => 'Yes, delete it!',
+    'cancel'         => 'Cancel',
+    'ok'             => 'OK',
 ];

@@ -79,9 +79,14 @@
                 <td style="font-weight: bold;">{{ $currency->currency_type }}</td>
                 <td class="text-center">{{ $currency->symbol }}</td>
                 <td class="text-center">{{ $currency->digit_number }}</td>
-                <td class="text-center text-emerald">{{ number_format($currency->price_total, 3) }}</td>
-                <td class="text-center text-blue">{{ number_format($currency->price_single, 3) }}</td>
-                <td>{{ $currency->branch }}</td>
+                
+                {{-- Updated: number_format(..., 0) removes decimal points --}}
+                <td class="text-center text-emerald">{{ number_format($currency->price_total, 0) }}</td>
+                <td class="text-center text-blue">{{ number_format($currency->price_single, 0) }}</td>
+                
+                {{-- Updated: Uses optional() to get name safely --}}
+                <td>{{ optional($currency->branch)->name ?? '-' }}</td>
+                
                 <td class="text-center {{ $currency->is_active ? 'active' : 'inactive' }}">
                     {{ $currency->is_active ? 'چالاک' : 'ناچالاک' }}
                 </td>

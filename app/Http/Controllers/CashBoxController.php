@@ -93,10 +93,21 @@ class CashBoxController extends Controller
         return back()->with('success', __('cash_box.created'));
     }
 
-    public function destroy(CashBox $cashBox)
+ public function destroy($id)
     {
-        $cashBox->delete();
-        return back()->with('success', __('cash_box.deleted'));
+        $cashBox = CashBox::find($id);
+
+        if ($cashBox) {
+            // 1. Save WHO is deleting the record
+            $cashBox->update(['deleted_by' => Auth::id()]);
+
+            // 2. Perform the Soft Delete
+            $cashBox->delete();
+
+            return back()->with('success', __('cash_box.deleted'));
+        }
+
+        return back()->with('error', __('cash_box.not_found'));
     }
 
     public function edit(CashBox $cashBox)

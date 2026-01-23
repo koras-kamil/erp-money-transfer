@@ -8,27 +8,33 @@ use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-// FIX: Use the full namespace for mPDF to avoid "Class not found" errors
-use PDF; 
+use Mccarlosen\LaravelMpdf\Facades\LaravelMpdf as PDF; 
 
 class TypeSpendingController extends Controller
 {
     public function index()
     {
+        // 1. Fetch Main Data
         $types = TypeSpending::with(['group', 'branch', 'creator'])->orderBy('id')->get();
-        // Use all() to avoid errors if 'is_active' column is missing in DB
-        $activeGroups = GroupSpending::all(); 
+        
+        // 2. Fetch Dropdown Data (Renamed to $groups to fix your error)
+        $groups = GroupSpending::all(); 
         $branches = Branch::all(); 
         
-        return view('spending.types.index', compact('types', 'activeGroups', 'branches'));
+        // 3. Pass variables to View
+        return view('spending.types.index', compact('types', 'groups', 'branches'));
     }
 
     public function trash()
     {
-        $types = TypeSpending::onlyTrashed()->with(['group', 'branch', 'creator'])->latest()->get();
+        // FIX: Change get() to paginate(10)
+        $types = TypeSpending::onlyTrashed()
+            ->with(['group', 'branch', 'deleter']) // Eager load relationships
+            ->orderBy('deleted_at', 'desc')
+            ->paginate(10); // <--- THIS FIXES THE ERROR
+
         return view('spending.types.trash', compact('types'));
     }
-
     public function store(Request $request)
     {
         $request->validate(['types' => 'array']);
@@ -64,12 +70,18 @@ class TypeSpendingController extends Controller
         return back()->with('success', __('spending.saved'));
     }
 
-    public function destroy($id)
-    {
-        $type = TypeSpending::findOrFail($id);
-        $type->delete();
+   public function destroy($id)
+{
+    $type = TypeSpending::find($id);
+
+    if ($type) {
+        $type->update(['deleted_by' => Auth::id()]); // Save User ID
+        $type->delete(); // Soft Delete
         return back()->with('success', __('spending.deleted'));
     }
+
+    return back()->with('error', __('spending.not_found'));
+}
 
     public function restore($id)
     {
@@ -83,34 +95,26 @@ class TypeSpendingController extends Controller
         return back()->with('success', __('spending.permanently_deleted'));
     }
 
-    /**
-     * GENERATE PDF
-     */
-   public function downloadPdf()
+    public function downloadPdf()
     {
-        // 1. Fetch Data (with relationships)
-        $types = TypeSpending::with(['group', 'branch', 'creator'])->get();
+        $types = TypeSpending::with(['group', 'branch'])->get();
 
-        // 2. Prepare Data Array
         $data = [
-            'title' => __('spending.type_header'), // Uses your translation file
+            'title' => __('spending.type_header'),
             'date' => date('Y-m-d H:i'),
             'user' => Auth::user()->name ?? 'System',
             'types' => $types
         ];
-
-        // 3. Load PDF View
-        // Make sure this path matches your folder: resources/views/spending/types/pdf.blade.php
+        
         $pdf = PDF::loadView('spending.types.pdf', $data, [], [
             'mode' => 'utf-8',
             'format' => 'A4',
-            'default_font' => 'nrt', // MUST match the key in config/pdf.php
+            'default_font' => 'nrt', 
+            'orientation' => 'P',
             'margin_header' => 10,
             'margin_footer' => 10,
-            'orientation' => 'P', // Portrait
         ]);
-
-        // 4. Stream the file (Open in browser)
-        return $pdf->stream('type_spending_report.pdf');
+        
+        return $pdf->stream('spending_types.pdf');
     }
 }

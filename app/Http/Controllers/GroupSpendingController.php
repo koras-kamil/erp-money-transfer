@@ -11,20 +11,36 @@ use Mccarlosen\LaravelMpdf\Facades\LaravelMpdf as PDF;
 
 class GroupSpendingController extends Controller
 {
+    /**
+     * Display the main editing list.
+     */
     public function index()
     {
+        // Using get() here assuming you want a full list for the edit sheet.
         $groups = GroupSpending::with(['branch', 'creator'])->orderBy('id')->get();
         $branches = Branch::all();
         
         return view('spending.groups.index', compact('groups', 'branches'));
     }
 
+    /**
+     * Display the Trash page.
+     */
     public function trash()
     {
-        $groups = GroupSpending::onlyTrashed()->with(['branch', 'creator'])->latest()->get();
+        // Fixed: Uses paginate(10) instead of get() so ->links() works in the view.
+        $groups = GroupSpending::onlyTrashed()
+            ->with(['branch', 'deleter']) // Eager load relationships
+            ->orderBy('deleted_at', 'desc')
+            ->paginate(10); 
+
+        // Ensure your blade file is at resources/views/spending/groups/trash.blade.php
         return view('spending.groups.trash', compact('groups'));
     }
 
+    /**
+     * Store or Update Spendings (Bulk Action).
+     */
     public function store(Request $request)
     {
         $request->validate(['spendings' => 'array']);
@@ -41,13 +57,16 @@ class GroupSpendingController extends Controller
                 ];
 
                 if (isset($data['id']) && $data['id']) {
-                    // Update
+                    // Update Existing
                     $group = GroupSpending::find($data['id']);
-                    if ($group) $group->update($saveData);
+                    if ($group) {
+                        $group->update($saveData);
+                    }
                 } else {
                     // Create New
                     if (!empty($data['name'])) {
                         $lastId++;
+                        // Auto-generate Code: GS-0001
                         $saveData['code'] = 'GS-' . str_pad($lastId, 4, '0', STR_PAD_LEFT);
                         $saveData['created_by'] = Auth::id();
                         GroupSpending::create($saveData);
@@ -59,26 +78,58 @@ class GroupSpendingController extends Controller
         return back()->with('success', __('spending.saved'));
     }
 
+    /**
+     * Soft Delete a Group Spending.
+     */
     public function destroy($id)
     {
-        GroupSpending::findOrFail($id)->delete();
-        return back()->with('success', __('spending.deleted'));
-    }
-
-    public function restore($id)
-    {
-        GroupSpending::withTrashed()->findOrFail($id)->restore();
-        return back()->with('success', __('spending.restored'));
-    }
-
-    public function forceDelete($id)
-    {
-        GroupSpending::withTrashed()->findOrFail($id)->forceDelete();
-        return back()->with('success', __('spending.permanently_deleted'));
+        $group = GroupSpending::find($id);
+        
+        if ($group) {
+            // 1. Save who deleted it
+            $group->update(['deleted_by' => Auth::id()]); 
+            
+            // 2. Soft Delete
+            $group->delete(); 
+            
+            return back()->with('success', __('spending.deleted'));
+        }
+        
+        return back()->with('error', __('spending.not_found'));
     }
 
     /**
-     * GENERATE PDF
+     * Restore from Trash.
+     */
+    public function restore($id)
+    {
+        $group = GroupSpending::withTrashed()->find($id);
+        
+        if ($group) {
+            $group->restore();
+            return back()->with('success', __('spending.restored'));
+        }
+
+        return back()->with('error', __('spending.not_found'));
+    }
+
+    /**
+     * Permanently Delete.
+     */
+    public function forceDelete($id)
+    {
+        $group = GroupSpending::withTrashed()->find($id);
+
+        if ($group) {
+            $group->forceDelete();
+            return back()->with('success', __('spending.permanently_deleted'));
+        }
+
+        return back()->with('error', __('spending.not_found'));
+    }
+
+    /**
+     * Generate PDF Report.
      */
     public function downloadPdf()
     {
@@ -91,7 +142,6 @@ class GroupSpendingController extends Controller
             'groups' => $groups
         ];
         
-        // IMPORTANT: Path must be resources/views/spending/groups/pdf.blade.php
         $pdf = PDF::loadView('spending.groups.pdf', $data, [], [
             'mode' => 'utf-8',
             'format' => 'A4',

@@ -1,56 +1,62 @@
-
 <?php
 
 return [
+    // Page & PDF Titles
+    'config_title' => 'ڕێکخستنی دراو',
+    'title'        => 'لیستی دراوەکان',
+    'trash'        => 'سەلەی سڕاوەکان',
+
     // Table Headers
-    'id'           => '#',
+    'id'           => 'ڕیز',
+    'code'         => 'کۆد',
+    'name'         => 'ناو',
+    'rate'         => 'نرخ',
     'type'         => 'جۆری دراو',
     'symbol'       => 'هێما',
     'digit'        => 'ژمارەی پۆینت',
-    'price_total'  => 'نرخی کۆ',
-    'price_single' => 'نرخی تاک',
-    'price_sell'   => 'نرخ بۆ فرۆش',
-    'branch'       => 'لق',
+    'price_total'  => 'نرخی (100 دۆلار)',
+    'price_single' => 'نرخی (1 دۆلار)',
+    'price_sell'   => 'نرخی فرۆشتن',
+    'branch'       => 'لقی سەرەکی',
     'active'       => 'چالاک',
     'actions'      => 'کردارەکان',
-    'deleted_at'   => 'بەرواری سڕینەوە', // New
+    
+    // Trash Specific Headers
+    'deleted_by'   => 'سڕایەوە لەلایەن',
+    'deleted_at'   => 'کاتی سڕینەوە',
+    'system'       => 'سیستەم',
 
-    // Titles & Global Labels
-    'config_title' => 'ڕێکخستنی دراوەکان',
-    'trash'        => 'سەلەی خۆڵ', // New (Trash)
+    // Buttons & Labels
+    'add_new'      => '+ زیادکردنی دراو',
+    'save_changes' => 'خەزنکردن',
+    'print'        => 'پرینت',
+    'type_here'    => 'لێرە بنووسە...',
     'new'          => 'نوێ',
-    'type_here'    => 'لێرە بنوسە...',
-    'print'        => 'چاپکردن',
+    'back'         => 'گەڕانەوە',
+    'restore'      => 'گەڕاندنەوە',
+    'perm_delete'  => 'سڕینەوەی یەکجاری',
 
-    // Buttons
-    'add_new'      => 'زیادکردنی دراو +',
-    'save_changes' => 'پاشەکەوتکردن',
-    'cancel'       => 'پاشگەزبوونەوە',
-    'back'         => 'گەڕانەوە', // New
-    'restore'      => 'گەڕاندنەوە', // New
-    'perm_delete'  => 'سڕینەوەی یەکجاری', // New
-    'yes_delete'   => 'بەڵێ، بیسڕەوە!',
-    'ok'           => 'باشە',
+    // Alerts & Messages
+    'saved'            => 'بە سەرکەوتوویی خەزنکرا!',
+    'deleted'          => 'بە سەرکەوتوویی سڕایەوە.',
+    'restored'         => 'بە سەرکەوتوویی گەڕێندرایەوە.',
+    'permanently_deleted' => 'بە یەکجاری سڕایەوە.',
+    'error'            => 'هەڵەیەک ڕوویدا، تکایە دووبارە هەوڵ بدەرەوە.',
+    'no_changes'       => 'هیچ گۆڕانکارییەک نییە بۆ خەزنکردن.',
+    'check_inputs'     => 'تکایە دڵنیابەرەوە لە زانیارییەکان.',
+    'delete_confirm'   => 'دڵنیایت لە سڕینەوەی ئەم دراوە؟',
+    'trash_empty'      => 'سەلەی سڕاوەکان بەتاڵە',
 
-    // Alerts & Confirmations
-    'are_you_sure'        => 'دڵنیایت لە سڕینەوە؟',
-    'warning_perm_delete' => 'دڵنیایت لە سڕینەوەی یەکجاری؟', // New
-    'cant_undone'         => 'ئەم کردارە پاشگەزبوونەوەی نییە!', // New
-    'delete_warning'      => 'ئەم کارە ناگەڕێتەوە و داتاکە دەسڕێتەوە!',
-    'no_changes_title'    => 'هیچ گۆڕانکارییەک نییە',
-    'no_changes_text'     => 'تکایە سەرەتا گۆڕانکاری بکە پاشان پاشەکەوتی بکە.', // New (No Changes JS)
-    'trash_empty'         => 'هیچ دراوێکی سڕاوە بوونی نییە.', // New
+    // PDF Specific
+    'print_date' => 'بەرواری پرینت',
+    'printed_by' => 'پرینت کراوە لەلایەن',
 
-    // Feedback Messages (Toast & Notifications)
-    'saved'               => 'زانیارییەکان بە سەرکەوتوویی پاشەکەوت کران',
-    'deleted'             => 'دراوەکە بە سەرکەوتوویی سڕایەوە',
-    'restored'            => 'دراوەکە بەسەرکەوتویی گەڕێندرایەوە', // New
-    'permanently_deleted' => 'دراوەکە بە یەکجاری سڕایەوە', // New
-    'not_found'           => 'دراوەکە نەدۆزرایەوە',
-    'error'               => 'هەڵەیەک ڕوویدا، تکایە دووبارە هەوڵبدەرەوە',
-    'check_inputs'        => 'تکایە دڵنیابەرەوە لە ڕاستی زانیارییەکان',
-
-    // Database & System Errors
-    'cannot_delete_linked_data' => 'ناتوانیت ئەم دراوە بسڕیتەوە چونکە بەکارهاتووە لە سندوقەکاندا (Cash Boxes)!',
+    // SweetAlert / Confirmations
+    'are_you_sure'        => 'دڵنیایت؟',
+    'delete_warning'      => 'ئەم کردەوeye پاشگەزبوونەوەی نییە!',
+    'warning_perm_delete' => 'دڵنیایت لە سڕینەوەی یەکجاری؟',
+    'cant_undone'         => 'ئەم کردارە پاشگەزبوونەوەی نییە!',
+    'yes_delete'          => 'بەڵێ، بیسڕەوە!',
+    'cancel'              => 'پاشگەزبوونەوە',
+    'ok'                  => 'باشە',
 ];
-
