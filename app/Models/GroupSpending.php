@@ -19,6 +19,7 @@ class GroupSpending extends Model
         'branch_id',
         'created_by',
         'deleted_by',
+        'is_active', // <--- ADD THIS LINE
     ];
 
     /**

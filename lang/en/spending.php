@@ -5,6 +5,7 @@ return [
     'type_title' => 'Spending Types',
     'create_group' => 'Create Group',
     'edit_group' => 'Edit Group',
+    'created_at' => 'Date Created',
 
     'all' => ' all',
     'none' => 'none',

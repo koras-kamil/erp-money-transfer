@@ -12,6 +12,7 @@ return [
     'currency' => 'Currency',
     'balance' => 'Initial Balance',
     'user' => 'Created By',
+    'created_at'=>'date',
     'branch' => 'Branch',
     'date' => 'Date Opened',
     'desc' => 'Description',

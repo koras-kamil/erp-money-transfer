@@ -1,13 +1,11 @@
 <div class="fixed top-6 right-6 z-[200] flex flex-col gap-4 max-w-[360px] w-full px-4 pointer-events-none">
     
-    {{-- SUCCESS MESSAGE --}}
+    {{-- SUCCESS MESSAGE (Speeds up to 2.5s) --}}
     @if(session('success'))
     <div x-data="{ show: true, width: '100%' }" 
          x-init="
-            // Start the progress bar animation
             setTimeout(() => width = '0%', 100); 
-            // Hide the popup after 4 seconds
-            setTimeout(() => show = false, 4000);
+            setTimeout(() => show = false, 2500); // Changed from 4000 to 2500
          "
          x-show="show" 
          x-cloak
@@ -20,7 +18,6 @@
          x-transition:leave-end="opacity-0 translate-x-full scale-90">
         
         <div class="p-4 flex items-start gap-4">
-            {{-- Animated Icon --}}
             <div class="shrink-0 rounded-full bg-emerald-50 p-2 text-emerald-500 animate-[bounce_1s_infinite]">
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -41,16 +38,19 @@
             </button>
         </div>
 
-        {{-- Progress Bar --}}
-        <div class="absolute bottom-0 left-0 h-1 bg-emerald-500 transition-all duration-[4000ms] ease-linear"
+        {{-- Progress Bar Duration Updated --}}
+        <div class="absolute bottom-0 left-0 h-1 bg-emerald-500 transition-all duration-[1500ms] ease-linear"
              :style="'width: ' + width"></div>
     </div>
     @endif
 
-    {{-- ERROR MESSAGE --}}
+    {{-- ERROR MESSAGE (Speeds up to 4s) --}}
     @if(session('error'))
     <div x-data="{ show: true, width: '100%' }" 
-         x-init="setTimeout(() => width = '0%', 100); setTimeout(() => show = false, 6000);"
+         x-init="
+            setTimeout(() => width = '0%', 100); 
+            setTimeout(() => show = false, 4000); // Changed from 6000 to 4000
+         "
          x-show="show" 
          x-cloak
          class="pointer-events-auto relative bg-white overflow-hidden rounded-2xl shadow-[0_10px_40px_-10px_rgba(220,38,38,0.2)] border border-red-100 ring-1 ring-red-900/5"
@@ -82,8 +82,8 @@
             </button>
         </div>
 
-        {{-- Progress Bar --}}
-        <div class="absolute bottom-0 left-0 h-1 bg-red-500 transition-all duration-[6000ms] ease-linear"
+        {{-- Progress Bar Duration Updated --}}
+        <div class="absolute bottom-0 left-0 h-1 bg-red-500 transition-all duration-[4000ms] ease-linear"
              :style="'width: ' + width"></div>
     </div>
     @endif

@@ -7,7 +7,7 @@ return [
     
     // Table & Form Columns
     'id' => 'ڕیز',
-    'name' => 'ناوی سندوق',
+    'name' => 'ناو',
     'type' => 'جۆر',
     'currency' => 'دراو',
     'balance' => 'باڵانس', // Changed from "Initial Balance" to just "Balance" for the table
@@ -36,7 +36,7 @@ return [
     'hide_all' => 'هیچ',
      'all' => ' هەمووی',
     'none' => 'هیچیان',
-
+'created_at'=>'بەروار',
     // Trash & Restore
     'trash' => 'سەلەی خۆڵ',
     'restore' => 'گەڕاندنەوە',
