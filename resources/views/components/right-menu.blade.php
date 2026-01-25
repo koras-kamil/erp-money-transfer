@@ -1,6 +1,6 @@
 <aside id="sidebar" 
        x-cloak
-       class="flex flex-col border-r border-slate-800 bg-[#0f172a] shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] z-50 h-full flex-shrink-0
+       class="flex flex-col border-r border-slate-800 bg-[#0f172a] shadow-2xl transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] z-[60] h-full flex-shrink-0
               fixed md:relative ltr:left-0 rtl:right-0"
        :class="{
            'translate-x-0': mobileMenuOpen,
@@ -14,6 +14,11 @@
 
     {{-- 1. HEADER --}}
     <div class="h-16 flex items-center justify-center relative border-b border-slate-800 bg-[#1e293b]/50 whitespace-nowrap overflow-hidden px-3 shrink-0">
+        {{-- CLOSE BUTTON (Visible on Mobile) --}}
+        <button @click="mobileMenuOpen = false" class="md:hidden absolute ltr:right-3 rtl:left-3 text-slate-400 hover:text-white transition-colors p-1">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+
         <div class="flex items-center gap-3 transition-all duration-300"
              :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center w-full' : ''">
             
@@ -31,7 +36,7 @@
 
     {{-- 2. TOGGLE BUTTON (Desktop Only) --}}
     <button @click="isCollapsed = !isCollapsed"
-            class="absolute top-1/2 -translate-y-1/2 z-[60] flex items-center justify-center w-6 h-6 bg-white text-indigo-600 rounded-full border border-slate-200 shadow-md hover:bg-indigo-50 hover:scale-110 transition-all duration-200 group
+            class="absolute top-1/2 -translate-y-1/2 z-[70] flex items-center justify-center w-6 h-6 bg-white text-indigo-600 rounded-full border border-slate-200 shadow-md hover:bg-indigo-50 hover:scale-110 transition-all duration-200 group
                    ltr:-right-3 rtl:-left-3 hidden md:flex"
             :class="isCollapsed ? 'rotate-180' : ''"
             title="Toggle Sidebar">
@@ -70,29 +75,10 @@
                 </div>
             </x-slot:icon>
             
-            {{-- Currency --}}
-            <a href="{{ route('currency.index') }}" 
-               class="block px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('currency.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-               {{ __('menu.currency') }}
-            </a>
-
-            {{-- Cash Box --}}
-            <a href="{{ route('cash-boxes.index') }}" 
-               class="block px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('cash-boxes.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-               {{ __('cash_box.title') }}
-            </a>
-
-            {{-- SPENDING (Combined Link) --}}
-            <a href="{{ route('group-spending.index') }}" 
-               class="block px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ (request()->routeIs('group-spending.*') || request()->routeIs('type-spending.*')) ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-               {{ __('spending.group_title') }} {{-- Or use a generic name like 'Spending' --}}
-            </a>
-
-            {{-- Profit --}}
-            <a href="{{ route('profit.groups.index') }}"
-               class="block px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('profit.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-               {{ __('profit.menu_tab') }}
-            </a>
+            <a href="{{ route('currency.index') }}" class="block px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('currency.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">{{ __('menu.currency') }}</a>
+            <a href="{{ route('cash-boxes.index') }}" class="block px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('cash-boxes.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">{{ __('cash_box.title') }}</a>
+            <a href="{{ route('group-spending.index') }}" class="block px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ (request()->routeIs('group-spending.*') || request()->routeIs('type-spending.*')) ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">{{ __('spending.group_title') }}</a>
+            <a href="{{ route('profit.groups.index') }}" class="block px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('profit.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">{{ __('profit.menu_tab') }}</a>
         </x-nav-group>
 
         {{-- ADMIN SECTION --}}
@@ -102,8 +88,7 @@
                 <p x-show="!isCollapsed || window.innerWidth < 768" class="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em] px-2 whitespace-nowrap">{{ app()->getLocale() == 'ku' ? 'بەڕێوەبردن' : 'ADMIN' }}</p>
                 <div x-show="isCollapsed && window.innerWidth >= 768" class="h-1 w-1 bg-slate-600 mx-auto rounded-full"></div>
             </div>
-            <x-nav-group label="{{ app()->getLocale() == 'ku' ? 'ڕێکخستنی سیستەم' : 'System Admin' }}" 
-                         :active="request()->routeIs('users.*') || request()->routeIs('roles.*') || request()->routeIs('activity-log.*')">
+            <x-nav-group label="{{ app()->getLocale() == 'ku' ? 'ڕێکخستنی سیستەم' : 'System Admin' }}" :active="request()->routeIs('users.*') || request()->routeIs('roles.*') || request()->routeIs('activity-log.*')">
                 <x-slot:icon>
                     <div class="w-5 h-5 flex-shrink-0 flex items-center justify-center">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
@@ -119,31 +104,14 @@
 
     {{-- 4. FOOTER --}}
     <div class="p-3 border-t border-slate-800 bg-[#0a0f1c] space-y-2.5 shrink-0 z-20">
-        
         {{-- LANGUAGE DROPDOWN --}}
         <div class="relative w-full" x-data="{ langOpen: false }">
-            <button @click="langOpen = !langOpen" 
-                    @click.outside="langOpen = false"
-                    class="inline-flex items-center w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-500/30 shadow-lg font-medium rounded-xl text-xs px-4 py-2.5 focus:outline-none transition-all duration-200" 
-                    :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center px-0 w-10 h-10' : 'justify-between'"
-                    type="button">
+            <button @click="langOpen = !langOpen" @click.outside="langOpen = false" class="inline-flex items-center w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-500/30 shadow-lg font-medium rounded-xl text-xs px-4 py-2.5 focus:outline-none transition-all duration-200" :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center px-0 w-10 h-10' : 'justify-between'" type="button">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span x-show="!isCollapsed || window.innerWidth < 768" class="mx-2 truncate">{{ app()->getLocale() == 'ku' ? 'کوردی' : 'English' }}</span>
                 <svg x-show="!isCollapsed || window.innerWidth < 768" :class="langOpen ? 'rotate-180' : ''" class="w-2.5 h-2.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </button>
-
-            {{-- Dropdown Menu --}}
-            <div x-show="langOpen" 
-                 class="absolute bottom-full mb-2 bg-[#1e293b] border border-slate-700 rounded-xl shadow-2xl z-[60] overflow-hidden min-w-[120px] max-h-[200px] overflow-y-auto"
-                 :class="(isCollapsed && window.innerWidth >= 768) ? 'ltr:left-12 rtl:right-12' : 'w-full ltr:left-0 rtl:right-0'"
-                 x-transition:enter="transition ease-out duration-100"
-                 x-transition:enter-start="transform opacity-0 scale-95"
-                 x-transition:enter-end="transform opacity-100 scale-100"
-                 x-transition:leave="transition ease-in duration-75"
-                 x-transition:leave-start="transform opacity-100 scale-100"
-                 x-transition:leave-end="transform opacity-0 scale-95"
-                 style="display: none;" 
-                 x-cloak>
+            <div x-show="langOpen" class="absolute bottom-full mb-2 bg-[#1e293b] border border-slate-700 rounded-xl shadow-2xl z-[60] overflow-hidden min-w-[120px] max-h-[200px] overflow-y-auto" :class="(isCollapsed && window.innerWidth >= 768) ? 'ltr:left-12 rtl:right-12' : 'w-full ltr:left-0 rtl:right-0'" x-transition style="display: none;" x-cloak>
                 <ul class="py-1 text-xs text-slate-300">
                     <li><a href="{{ route('lang.switch', 'en') }}" class="flex items-center w-full px-4 py-3 hover:bg-slate-700/50 hover:text-white gap-2"><span class="font-bold text-indigo-400">EN</span><span>English</span></a></li>
                     <li><a href="{{ route('lang.switch', 'ku') }}" class="flex items-center w-full px-4 py-3 hover:bg-slate-700/50 hover:text-white gap-2"><span class="font-bold text-emerald-400">KU</span><span>کوردی</span></a></li>
@@ -152,12 +120,9 @@
         </div>
 
         {{-- USER PROFILE --}}
-        <div class="relative group/user flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-800/50 transition-all duration-300 cursor-pointer border border-transparent hover:border-slate-700/50"
-             :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center' : ''">
+        <div class="relative group/user flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-800/50 transition-all duration-300 cursor-pointer border border-transparent hover:border-slate-700/50" :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center' : ''">
             <div class="relative w-9 h-9 flex-shrink-0">
-                <div class="w-full h-full rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold shadow-lg ring-2 ring-[#0f172a] group-hover/user:ring-slate-700 transition-all">
-                    {{ substr(Auth::user()->name, 0, 1) }}
-                </div>
+                <div class="w-full h-full rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold shadow-lg ring-2 ring-[#0f172a] group-hover/user:ring-slate-700 transition-all">{{ substr(Auth::user()->name, 0, 1) }}</div>
                 <span class="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border-2 border-[#0f172a]"></span></span>
             </div>
             <div x-show="!isCollapsed || window.innerWidth < 768" class="flex-1 min-w-0 overflow-hidden transition-opacity duration-200">
@@ -165,7 +130,6 @@
                 <p class="text-[9px] text-slate-500 uppercase tracking-wider truncate">{{ Auth::user()->hasRole('super-admin') ? 'Super Admin' : 'Staff' }}</p>
             </div>
             
-            {{-- Collapsed Tooltip --}}
             <div x-show="isCollapsed && window.innerWidth >= 768" class="absolute ltr:left-14 rtl:right-14 bottom-0 z-[60] w-max min-w-[130px] bg-slate-800 border border-slate-700 rounded-xl shadow-2xl p-2.5 opacity-0 group-hover/user:opacity-100 pointer-events-none group-hover/user:pointer-events-auto transition-all duration-300">
                 <div class="flex flex-col gap-0.5 mb-2 border-b border-slate-700/50 pb-2">
                     <p class="text-[11px] font-bold text-white">{{ Auth::user()->name }}</p>
@@ -173,7 +137,6 @@
                 </div>
                 <form action="{{ route('logout') }}" method="POST" class="w-full">@csrf<button type="submit" class="flex items-center gap-2 w-full text-[10px] text-red-400 hover:text-red-300 hover:bg-red-500/10 px-2 py-1 rounded transition-colors"><span>{{ __('Logout') }}</span></button></form>
             </div>
-
             <form action="{{ route('logout') }}" method="POST" x-show="!isCollapsed || window.innerWidth < 768">@csrf<button type="submit" class="text-slate-500 hover:text-red-400 p-1.5 hover:bg-white/5 rounded-lg transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg></button></form>
         </div>
     </div>
