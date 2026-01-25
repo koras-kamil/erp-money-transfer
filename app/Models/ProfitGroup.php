@@ -11,30 +11,33 @@ class ProfitGroup extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'code',         // Needs to be here to save "1", "2"...
+        'code',
         'name',
+        'branch_id',
         'description',
-        'branch_id',    // Needs to be here to save the Branch
+        'is_active',
         'created_by',
-        'deleted_by',
-        'is_active'
+        'deleted_by'
     ];
 
     public function branch()
     {
-        return $this->belongsTo(Branch::class, 'branch_id');
+        return $this->belongsTo(Branch::class);
     }
 
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
-    
+
     public function deleter()
     {
         return $this->belongsTo(User::class, 'deleted_by');
     }
-    
-    // You don't need the getCodeLabelAttribute anymore 
-    // since the code is just a simple number now.
+
+    // --- ADD THIS RELATIONSHIP ---
+    public function types()
+    {
+        return $this->hasMany(ProfitType::class, 'profit_group_id');
+    }
 }

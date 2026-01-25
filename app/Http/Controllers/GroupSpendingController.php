@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Mccarlosen\LaravelMpdf\Facades\LaravelMpdf as PDF;
+use Illuminate\Database\QueryException; // <--- IMPORTANT: Add this at the top
 
 class GroupSpendingController extends Controller
 {
@@ -125,4 +126,71 @@ class GroupSpendingController extends Controller
         
         return $pdf->stream('group_spending_report.pdf');
     }
+
+   public function bulkDelete(Request $request)
+{
+    $ids = json_decode($request->input('ids', '[]'), true);
+
+    if (!empty($ids) && is_array($ids)) {
+        foreach($ids as $id) {
+            $group = GroupSpending::find($id);
+            
+            if($group) {
+                // FIX: Use $group, not $cashBox
+                $group->update(['deleted_by' => Auth::id()]); 
+                
+                $group->delete();
+            }
+        }
+        
+        return back()->with('success', __('spending.deleted_selected'));
+    }
+
+    return back()->with('error', __('spending.nothing_selected'));
+}
+
+    /**
+     * BULK RESTORE
+     */
+    public function bulkRestore(Request $request)
+    {
+        $ids = json_decode($request->input('ids', '[]'), true);
+
+        if (!empty($ids) && is_array($ids)) {
+            GroupSpending::onlyTrashed()->whereIn('id', $ids)->restore();
+            return back()->with('success', __('spending.restored_selected'));
+        }
+
+        return back()->with('error', __('spending.nothing_selected'));
+    }
+
+    /**
+     * BULK FORCE DELETE (Permanent)
+     */
+    public function bulkForceDelete(Request $request)
+    {
+        $ids = json_decode($request->input('ids', '[]'), true);
+
+        if (!empty($ids) && is_array($ids)) {
+            try {
+                $items = GroupSpending::onlyTrashed()->whereIn('id', $ids)->get();
+                foreach($items as $item) {
+                    $item->forceDelete();
+                }
+                return back()->with('success', __('spending.permanently_deleted_selected'));
+            } catch (QueryException $e) {
+                // Check for Foreign Key Constraint (Postgres/MySQL error 23503)
+                if ($e->getCode() == "23503") {
+                    return back()->with('error', __('spending.cannot_delete_used_bulk'));
+                }
+                return back()->with('error', __('spending.error'));
+            }
+        }
+
+        return back()->with('error', __('spending.nothing_selected'));
+    }
+
+
+    //bulk operation :
+    
 }

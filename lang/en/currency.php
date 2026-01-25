@@ -49,4 +49,16 @@ return [
 
      'all' => ' all',
     'none' => 'none',
+
+    'deleted_selected' => 'Selected currencies have been deleted successfully.',
+    'nothing_selected' => 'No items were selected.',
+    'bulk_delete_confirm' => 'Are you sure you want to delete the selected items?',
+    'delete_selected' => 'Delete Selected',
+    'selected' => 'Selected',
+
+
+     'restored_selected' => 'Selected currencies restored successfully.',
+    'permanently_deleted_selected' => 'Selected currencies permanently deleted.',
+    'restore_selected' => 'Restore Selected',
+    'cancel' => 'Cancel',
 ];

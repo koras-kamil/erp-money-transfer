@@ -2,77 +2,85 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProfitGroup;
 use App\Models\ProfitType;
+use App\Models\ProfitGroup;
+use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Branch; // <--- Import this
 use Mccarlosen\LaravelMpdf\Facades\LaravelMpdf as PDF;
+use Illuminate\Database\QueryException;
 
 class ProfitTypeController extends Controller
 {
     public function index()
     {
-        $activeGroups = ProfitGroup::where('is_active', true)->orderBy('name')->get();
-        
-        // 1. FETCH BRANCHES (Added this)
-        $branches = Branch::where('is_active', true)->orderBy('name')->get(); 
+        $types = ProfitType::with(['group', 'branch', 'creator'])
+                    ->orderBy('id', 'asc')
+                    ->get();
 
-        $types = ProfitType::with(['group', 'creator', 'branch'])->orderBy('id', 'asc')->get();
-        
-        // Pass 'branches' to the view
+        $activeGroups = ProfitGroup::where('is_active', true)->orderBy('name')->get();
+        $branches = Branch::where('is_active', true)->orderBy('name')->get();
+
+        // FIX: Changed 'profit.types.index' to 'profit.type.index' (Singular)
         return view('profit.type.index', compact('types', 'activeGroups', 'branches'));
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'types' => 'array', 
-            'types.*.name' => 'required', 
-            'types.*.profit_group_id' => 'required'
-        ]);
+public function store(Request $request)
+{
+    // 1. Validation
+    $request->validate([
+        'types' => 'array',
+        'types.*.name' => 'required|string|max:255',
+        // CHANGED: 'required' -> 'nullable'
+        'types.*.profit_group_id' => 'nullable|exists:profit_groups,id', 
+    ]);
 
-        DB::transaction(function () use ($request) {
+    DB::transaction(function () use ($request) {
+        if ($request->has('types')) {
             foreach ($request->types as $data) {
                 
+                // Map 'note' from view to 'description' in DB
+                $description = $data['description'] ?? $data['note'] ?? null;
+
                 $saveData = [
-                    'profit_group_id' => $data['profit_group_id'],
+                    // Use null coalescing operator (?? null) to handle empty values
+                    'profit_group_id' => $data['profit_group_id'] ?? null, 
                     'name'            => $data['name'],
-                    'description'     => $data['description'] ?? null,
+                    'description'     => $description,
                     'is_active'       => isset($data['is_active']) ? 1 : 0,
                 ];
 
-                // 2. BRANCH LOGIC
-                if (isset($data['branch_id'])) {
+                // Branch Logic
+                if (isset($data['branch_id']) && $data['branch_id']) {
                     $saveData['branch_id'] = $data['branch_id'];
                 } elseif (!isset($data['id'])) {
                     $saveData['branch_id'] = Auth::user()->branch_id; 
                 }
 
+                // Update or Create
                 if (isset($data['id']) && $data['id']) {
                     ProfitType::where('id', $data['id'])->update($saveData);
                 } else {
-                    // NEW ROW
                     $lastCode = ProfitType::withTrashed()
-                                ->selectRaw("MAX(CAST(NULLIF(REGEXP_REPLACE(code, '\D', '', 'g'), '') AS INTEGER)) as max_code")
-                                ->value('max_code');
-                    $nextCode = $lastCode ? ($lastCode + 1) : 1;
-                    $saveData['code'] = $nextCode;
-
+                        ->selectRaw("MAX(CAST(NULLIF(REGEXP_REPLACE(CAST(code AS TEXT), '\D', '', 'g'), '') AS INTEGER)) as max_code")
+                        ->value('max_code');
+                    
+                    $saveData['code'] = $lastCode ? ($lastCode + 1) : 1;
+                    $saveData['created_by'] = Auth::id();
+                    
                     if (empty($saveData['branch_id'])) {
                         $saveData['branch_id'] = Auth::user()->branch_id;
                     }
-                    $saveData['created_by'] = Auth::id();
 
                     ProfitType::create($saveData);
                 }
             }
-        });
+        }
+    });
 
-        return redirect()->route('profit.types.index')->with('success', __('profit.types_saved'));
-    }
-
+    return redirect()->route('profit.types.index')->with('success', __('profit.types_saved'));
+}
     public function destroy($id)
     {
         $type = ProfitType::find($id);
@@ -84,20 +92,83 @@ class ProfitTypeController extends Controller
         return back()->with('error', 'Not Found');
     }
 
-    public function downloadPdf()
+    // --- BULK ACTIONS ---
+
+    public function bulkDelete(Request $request)
     {
-        $types = ProfitType::with(['group', 'creator'])->get();
-        $data = ['title' => __('profit.types_title'), 'date' => date('Y-m-d H:i'), 'user' => Auth::user()->name ?? 'System', 'rows' => $types];
-        $pdf = PDF::loadView('profit.type.pdf', $data, [], ['mode' => 'utf-8', 'format' => 'A4', 'default_font' => 'nrt', 'orientation' => 'P']);
-        return $pdf->stream('profit_types.pdf');
+        $ids = json_decode($request->input('ids', '[]'), true);
+        if (!empty($ids)) {
+            foreach($ids as $id) {
+                $type = ProfitType::find($id);
+                if($type) {
+                    $type->update(['deleted_by' => Auth::id()]);
+                    $type->delete();
+                }
+            }
+            return back()->with('success', __('profit.deleted_selected'));
+        }
+        return back()->with('error', __('profit.nothing_selected'));
     }
+
+    public function bulkRestore(Request $request)
+    {
+        $ids = json_decode($request->input('ids', '[]'), true);
+        if (!empty($ids)) {
+            ProfitType::onlyTrashed()->whereIn('id', $ids)->restore();
+            return back()->with('success', __('profit.restored_selected'));
+        }
+        return back()->with('error', __('profit.nothing_selected'));
+    }
+
+    public function bulkForceDelete(Request $request)
+    {
+        $ids = json_decode($request->input('ids', '[]'), true);
+        if (!empty($ids)) {
+            try {
+                $items = ProfitType::onlyTrashed()->whereIn('id', $ids)->get();
+                foreach($items as $item) $item->forceDelete();
+                return back()->with('success', __('profit.permanently_deleted_selected'));
+            } catch (QueryException $e) {
+                return back()->with('error', __('profit.error'));
+            }
+        }
+        return back()->with('error', __('profit.nothing_selected'));
+    }
+
+    // --- TRASH & PDF ---
 
     public function trash()
     {
-        $types = ProfitType::onlyTrashed()->with(['group', 'deleter'])->orderBy('deleted_at', 'desc')->paginate(10);
+        $types = ProfitType::onlyTrashed()->with(['group', 'branch', 'deleter'])->orderBy('deleted_at', 'desc')->paginate(10);
+        
+        // FIX: Singular 'profit.type.trash'
         return view('profit.type.trash', compact('types'));
     }
 
-    public function restore($id) { ProfitType::withTrashed()->find($id)->restore(); return back()->with('success', __('profit.type_restored')); }
-    public function forceDelete($id) { ProfitType::withTrashed()->find($id)->forceDelete(); return back()->with('success', __('profit.type_permanently_deleted')); }
+    public function restore($id)
+    {
+        ProfitType::withTrashed()->find($id)->restore();
+        return back()->with('success', __('profit.restored'));
+    }
+
+    public function forceDelete($id)
+    {
+        try {
+            ProfitType::withTrashed()->find($id)->forceDelete();
+            return back()->with('success', __('profit.permanently_deleted'));
+        } catch (QueryException $e) {
+            return back()->with('error', __('profit.error'));
+        }
+    }
+
+    public function downloadPdf()
+    {
+        $types = ProfitType::with(['group', 'branch', 'creator'])->get();
+        $data = ['title' => __('profit.types_title'), 'date' => date('Y-m-d H:i'), 'user' => Auth::user()->name, 'rows' => $types];
+        
+        // FIX: Singular 'profit.type.pdf'
+        $pdf = PDF::loadView('profit.type.pdf', $data, [], ['mode' => 'utf-8', 'format' => 'A4', 'default_font' => 'nrt', 'orientation' => 'P']);
+        
+        return $pdf->stream('profit_types.pdf');
+    }
 }

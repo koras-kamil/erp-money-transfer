@@ -26,11 +26,14 @@
             pointer-events: none; user-select: none; 
             transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.7;
         }
+
+        /* FIX: Ensure SweetAlert is always on top */
+        div.swal2-container { z-index: 9999 !important; }
+        body.swal2-shown { padding-right: 0 !important; }
     </style>
 </head>
 
-{{-- FLEXBOX LAYOUT --}}
-<body class="font-sans antialiased text-slate-900 h-screen overflow-hidden flex bg-[#f8fafc]"
+<body class="font-sans antialiased text-slate-900 h-screen flex bg-[#f8fafc] overflow-hidden"
       x-data="{ 
           isLoading: false, 
           isBlurred: false,
@@ -60,8 +63,7 @@
     </div>
 
     {{-- 2. FLOATING PRIVACY BUTTON --}}
-    {{-- Position: Right in English (ltr:right-6) | Left in Kurdish (rtl:left-6) --}}
-    <div class="fixed bottom-6 z-[100] print:hidden ltr:right-6 rtl:left-6">
+    <div class="fixed bottom-6 z-[90] print:hidden ltr:right-6 rtl:left-6">
         <button @click="isBlurred = !isBlurred" 
                 type="button" 
                 :class="isBlurred ? 'bg-indigo-600 text-white ring-4 ring-indigo-200' : 'bg-white text-slate-500 hover:text-indigo-600 shadow-xl border border-slate-100'"
@@ -81,87 +83,94 @@
     {{-- 4. MAIN CONTENT --}}
     <div class="flex-1 flex flex-col h-full relative min-w-0 overflow-hidden bg-[#f8fafc] transition-all duration-300">
         
-        {{-- HEADER (Sticky) --}}
-        <header class="sticky top-0 z-30 px-3 md:px-6 py-3 bg-[#f8fafc]/90 backdrop-blur-sm">
-            <div class="bg-white border border-slate-200/60 shadow-sm rounded-2xl px-4 py-3">
-                <div class="flex flex-col md:flex-row items-center gap-y-4">
-                    
-                    {{-- Mobile Toggle --}}
-                    <div class="w-full md:w-auto flex justify-between md:hidden">
-                        <button @click="mobileMenuOpen = !mobileMenuOpen" class="p-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-                        </button>
-                    </div>
-
-                    {{-- Right Side Actions --}}
-                    <div class="w-full md:w-auto flex flex-col md:flex-row items-center justify-end gap-3 md:ml-auto">
-                        <div class="flex flex-row items-center gap-2">
-                             {{-- Finance --}}
-                             <button type="button" class="flex-1 md:flex-none inline-flex items-center justify-center h-10 px-4 rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all shadow-sm active:scale-95 group">
-                                <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <span class="hidden sm:inline ml-2 text-[10px] font-black uppercase tracking-widest">{{ __('messages.finance') }}</span>
-                            </button>
-                            {{-- Help --}}
-                            <button type="button" class="flex-1 md:flex-none inline-flex items-center justify-center h-10 px-4 rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-sky-600 hover:border-sky-200 hover:bg-sky-50 transition-all shadow-sm active:scale-95 group">
-                                <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <span class="hidden sm:inline ml-2 text-[10px] font-black uppercase tracking-widest">{{ __('Help') }}</span>
+        {{-- HEADER (Sticky & Centered on PC) --}}
+        <header class="sticky top-0 z-30 px-3 md:px-6 py-2 bg-[#f8fafc]/90 backdrop-blur-sm">
+            
+            {{-- CENTER CONTAINER: max-w-7xl mx-auto ensures it aligns with page content on PC --}}
+            <div class="max-w-7xl mx-auto w-full">
+                
+                <div class="bg-white border border-slate-200/60 shadow-sm rounded-2xl px-3 py-2">
+                    {{-- Flex Row to keep everything in one line --}}
+                    <div class="flex flex-row items-center justify-between gap-2">
+                        
+                        {{-- Left: Mobile Toggle --}}
+                        <div class="flex items-center md:hidden shrink-0">
+                            <button @click="mobileMenuOpen = !mobileMenuOpen" class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
                             </button>
                         </div>
 
-                        {{-- BRANCH SELECTOR (Fixed Overlap & Positioning) --}}
-                      <div class="relative z-50 group w-full md:w-64">
-    <form action="{{ route('branch.switch') }}" method="POST">
-        @csrf
-        
-        {{-- 1. SELECT INPUT --}}
-        {{-- 
-            PADDING LOGIC EXPLAINED:
-            English (LTR): pl-11 (Space for Building Icon on Left) | pr-10 (Space for Arrow on Right)
-            Kurdish (RTL): pr-11 (Space for Building Icon on Right) | pl-10 (Space for Arrow on Left)
-        --}}
-     <select name="branch_id" 
-        onchange="isLoading = true; this.form.submit()" 
-        class="block w-full h-10 appearance-none bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer outline-none truncate text-center
-               ltr:pl-11 ltr:pr-10 
-               rtl:pr-11 rtl:pl-10">
-    
-    <option value="all" {{ $currentBranchId === 'all' ? 'selected' : '' }}>{{ __('messages.all_branches') }}</option>
-    <option disabled>──────────</option>
-    @foreach($globalBranches as $branch)
-        <option value="{{ $branch->id }}" {{ $currentBranchId == $branch->id ? 'selected' : '' }}>{{ $branch->name }}</option>
-    @endforeach
-</select>
+                        {{-- Right: Actions & Branch (All in one row) --}}
+                        <div class="flex flex-1 flex-row items-center justify-end gap-2 overflow-hidden">
+                            
+                            {{-- Buttons Group (Finance & Help) --}}
+                            <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+                                 
+                                 {{-- Finance Button (Icon Only on Mobile) --}}
+                                 <button type="button" class="inline-flex items-center justify-center w-9 h-9 sm:w-auto sm:h-10 sm:px-4 rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all shadow-sm active:scale-95 group">
+                                    <svg class="w-4 h-4 sm:w-4 sm:h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span class="hidden sm:inline ml-2 text-[10px] font-black uppercase tracking-widest">{{ __('messages.finance') }}</span>
+                                </button>
 
-        {{-- 2. BRANCH ICON (Building) --}}
-        {{-- Position: START side (Left in EN, Right in KU) --}}
-        <div class="absolute inset-y-0 flex items-center pointer-events-none text-slate-400 group-hover:text-indigo-600 transition-colors px-3
-                    ltr:left-0 rtl:right-0">
-            <svg class="w-5 h-5 " fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-        </div>
+                                {{-- Help Button (Icon Only on Mobile) --}}
+                                <button type="button" class="inline-flex items-center justify-center w-9 h-9 sm:w-auto sm:h-10 sm:px-4 rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-sky-600 hover:border-sky-200 hover:bg-sky-50 transition-all shadow-sm active:scale-95 group">
+                                    <svg class="w-4 h-4 sm:w-4 sm:h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span class="hidden sm:inline ml-2 text-[10px] font-black uppercase tracking-widest">{{ __('Help') }}</span>
+                                </button>
+                            </div>
 
-        {{-- 3. ARROW ICON (Chevron) --}}
-        {{-- Position: END side (Right in EN, Left in KU) --}}
-        <div class="absolute inset-y-0 flex items-center pointer-events-none text-slate-400 group-hover:text-indigo-600 transition-colors px-3
-                    ltr:right-0 rtl:left-0">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-        </div>
-    </form>
-</div>
+                            {{-- Branch Selector --}}
+                            <div class="relative z-50 group flex-1 max-w-[180px] sm:max-w-[240px]">
+                                <form action="{{ route('branch.switch') }}" method="POST">
+                                    @csrf
+                                    {{-- 
+                                        UPDATES:
+                                        1. text-[11px]: Smaller text on mobile
+                                        2. md:text-xs: Normal text on desktop
+                                        3. text-center: Ensures text is centered in the button
+                                    --}}
+                                    <select name="branch_id" 
+                                        onchange="isLoading = true; this.form.submit()" 
+                                        class="block w-full h-9 sm:h-10 appearance-none bg-white border border-slate-200 text-slate-700 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer outline-none truncate text-center font-bold
+                                               text-[11px] md:text-xs
+                                               ltr:pl-9 ltr:pr-8 sm:ltr:pl-11 sm:ltr:pr-10 
+                                               rtl:pr-9 rtl:pl-8 sm:rtl:pr-11 sm:rtl:pl-10">
+                                    
+                                        <option value="all" {{ $currentBranchId === 'all' ? 'selected' : '' }}>{{ __('messages.all_branches') }}</option>
+                                        <option disabled>──────────</option>
+                                        @foreach($globalBranches as $branch)
+                                            <option value="{{ $branch->id }}" {{ $currentBranchId == $branch->id ? 'selected' : '' }}>{{ $branch->name }}</option>
+                                        @endforeach
+                                    </select>
+
+                                    {{-- Icon --}}
+                                    <div class="absolute inset-y-0 flex items-center pointer-events-none text-slate-400 group-hover:text-indigo-600 transition-colors px-2 sm:px-3 ltr:left-0 rtl:right-0">
+                                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                    </div>
+                                    {{-- Arrow --}}
+                                    <div class="absolute inset-y-0 flex items-center pointer-events-none text-slate-400 group-hover:text-indigo-600 transition-colors px-2 sm:px-3 ltr:right-0 rtl:left-0">
+                                        <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
+            
             </div>
         </header>
 
         {{-- PAGE CONTENT --}}
-        <main class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
-            <div class="max-w-7xl w-full mx-auto flex flex-col gap-8 pb-10">
+        <main class="flex-1 overflow-y-auto p-3 md:p-8 custom-scrollbar">
+            <div class="max-w-7xl w-full mx-auto flex flex-col gap-6 md:gap-8 pb-10">
                 @if (isset($header))
                 <div class="w-full flex justify-center items-center">
                     <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] text-center bg-white/50 px-6 py-2 rounded-full border border-slate-200/50">{{ $header }}</h2>
                 </div>
                 @endif
 
-                <div :class="isBlurred ? 'content-blur' : ''" class="transition-all duration-300 bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-200/60 shadow-sm p-4 md:p-10 min-h-[500px]">
+                <div :class="isBlurred ? 'content-blur' : ''" class="transition-all duration-300 bg-white rounded-[1.5rem] md:rounded-[2.5rem] border border-slate-200/60 shadow-sm p-4 md:p-10 min-h-[500px]">
                     {{ $slot }}
                 </div>
             </div>
@@ -189,6 +198,7 @@
                 cancelButtonColor: '#f1f5f9',
                 confirmButtonText: "{{ __('messages.yes_proceed') }}",
                 cancelButtonText: "{{ __('messages.cancel') }}",
+                heightAuto: false, 
                 customClass: {
                     popup: 'rounded-[1.5rem] border-none shadow-2xl',
                     confirmButton: 'rounded-xl font-black uppercase tracking-widest text-[10px] px-6 py-3',

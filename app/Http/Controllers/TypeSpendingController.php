@@ -9,19 +9,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Mccarlosen\LaravelMpdf\Facades\LaravelMpdf as PDF; 
+use Illuminate\Database\QueryException; // Make sure this is imported at the top
 
 class TypeSpendingController extends Controller
 {
-    public function index()
+public function index()
 {
-    $types = TypeSpending::with(['group', 'branch', 'creator'])->orderBy('id')->get();
+    $types = TypeSpending::orderBy('id', 'desc')->get();
+    $branches = Branch::all();
     
-    // Fetch ONLY active groups
-    $activeGroups = GroupSpending::where('is_active', 1)->get(); 
-    
-    $branches = Branch::all(); 
-    
-    return view('spending.types.index', compact('types', 'activeGroups', 'branches'));
+    // FETCH GROUPS
+    $groups = GroupSpending::all(); // <--- Add this line
+
+    // PASS GROUPS TO VIEW
+    return view('spending.types.index', compact('types', 'branches', 'groups'));
 }
 
    public function store(Request $request)
@@ -114,4 +115,60 @@ class TypeSpendingController extends Controller
         
         return $pdf->stream('spending_types.pdf');
     }
+
+
+public function bulkDelete(Request $request)
+{
+    $ids = json_decode($request->input('ids', '[]'), true);
+
+    if (!empty($ids) && is_array($ids)) {
+        foreach($ids as $id) {
+            $type = TypeSpending::find($id);
+            if($type) {
+                // Optional: Record who deleted it if column exists
+                $type->update(['deleted_by' => Auth::id()]);
+                $type->delete();
+            }
+        }
+        return back()->with('success', __('spending.deleted_selected'));
+    }
+
+    return back()->with('error', __('spending.nothing_selected'));
+}
+
+public function bulkRestore(Request $request)
+{
+    $ids = json_decode($request->input('ids', '[]'), true);
+
+    if (!empty($ids) && is_array($ids)) {
+        TypeSpending::onlyTrashed()->whereIn('id', $ids)->restore();
+        return back()->with('success', __('spending.restored_selected'));
+    }
+
+    return back()->with('error', __('spending.nothing_selected'));
+}
+
+public function bulkForceDelete(Request $request)
+{
+    $ids = json_decode($request->input('ids', '[]'), true);
+
+    if (!empty($ids) && is_array($ids)) {
+        try {
+            $items = TypeSpending::onlyTrashed()->whereIn('id', $ids)->get();
+            foreach($items as $item) {
+                $item->forceDelete();
+            }
+            return back()->with('success', __('spending.permanently_deleted_selected'));
+        } catch (QueryException $e) {
+            if ($e->getCode() == "23503") {
+                return back()->with('error', __('spending.cannot_delete_used_bulk'));
+            }
+            return back()->with('error', __('spending.error'));
+        }
+    }
+
+    return back()->with('error', __('spending.nothing_selected'));
+}
+
+
 }

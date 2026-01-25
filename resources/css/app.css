@@ -66,3 +66,8 @@
 }
 .sheet-input:focus { background-color: white; border-color: var(--erp-primary); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
 .sheet-input:hover { background-color: var(--erp-bg-soft); border-color: var(--erp-border); }
+
+
+div.swal2-container {
+    z-index: 40 !important; /* Adjust this number to be LOWER than your sidebar's z-index */
+}

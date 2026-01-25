@@ -53,4 +53,17 @@ return [
     'print'       => 'Print',
     'date'        => 'Date',
     'user'        => 'User',
+
+//bulk "
+
+'deleted_selected' => 'Selected groups moved to trash.',
+    'restored_selected' => 'Selected groups restored successfully.',
+    'permanently_deleted_selected' => 'Selected groups permanently deleted.',
+    'nothing_selected' => 'No items selected.',
+    'bulk_delete_confirm' => 'Are you sure you want to delete these items?',
+    'cannot_delete_used_bulk' => 'Some items could not be deleted because they are in use.',
+    'error' => 'An error occurred.',
+
+
+   
 ];

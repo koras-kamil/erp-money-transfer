@@ -16,7 +16,6 @@ class CurrencyConfig extends Model
 
     /**
      * The attributes that are mass assignable.
-     * Ensure 'branch_id' and 'created_by' are here so they save correctly.
      */
     protected $fillable = [
         'currency_type',
@@ -25,14 +24,14 @@ class CurrencyConfig extends Model
         'price_total',
         'price_single',
         'price_sell',
-        'branch_id',  // Stores the Branch ID (Dropdown Selection)
+        'branch_id',
         'is_active',
-        'created_by', // Stores the User ID
+        'created_by',
+        'deleted_by', // <--- IMPORTANT: Needed for "Deleted By" column
     ];
 
     /**
      * Type Casting
-     * Automatically converts database values to PHP types.
      */
     protected $casts = [
         'is_active' => 'boolean',
@@ -40,13 +39,10 @@ class CurrencyConfig extends Model
         'price_single' => 'float',
         'price_sell' => 'float',
         'digit_number' => 'integer',
-        'deleted_by', // <--- Add this
     ];
 
     /**
-     * Relationship: Get the Branch associated with this currency.
-     * NOTE: Ensure you have deleted the old 'branch' text column from your database 
-     * to avoid conflicts with this relationship name.
+     * Relationship: Branch
      */
     public function branch()
     {
@@ -54,11 +50,19 @@ class CurrencyConfig extends Model
     }
 
     /**
-     * Relationship: Get the User who created this record.
+     * Relationship: User who created this record
      */
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Relationship: User who deleted this record (for Trash view)
+     */
+    public function deleter()
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
     }
 
     /**
@@ -72,9 +76,4 @@ class CurrencyConfig extends Model
             ->dontSubmitEmptyLogs() 
             ->logFillable();        
     }
-
-    public function deleter()
-{
-    return $this->belongsTo(User::class, 'deleted_by');
-}
 }

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use PDF; 
+use Illuminate\Database\QueryException;
 
 class CashBoxController extends Controller
 {
@@ -210,4 +211,66 @@ class CashBoxController extends Controller
 
         return $pdf->stream('cash_box_report.pdf');
     }
+
+
+
+public function bulkDelete(Request $request)
+{
+    $ids = json_decode($request->input('ids', '[]'), true);
+
+    if (!empty($ids) && is_array($ids)) {
+        // Loop through IDs to save 'deleted_by' for each item
+        foreach($ids as $id) {
+            $cashBox = CashBox::find($id);
+            if($cashBox) {
+                // 1. Record who is deleting it
+                $cashBox->update(['deleted_by' => Auth::id()]);
+                
+                // 2. Perform the soft delete
+                $cashBox->delete();
+            }
+        }
+        
+        return back()->with('success', __('cash_box.deleted_selected'));
+    }
+
+    return back()->with('error', __('cash_box.nothing_selected'));
+}
+
+public function bulkRestore(Request $request)
+{
+    $ids = json_decode($request->input('ids', '[]'), true);
+
+    if (!empty($ids) && is_array($ids)) {
+        CashBox::onlyTrashed()->whereIn('id', $ids)->restore();
+        return back()->with('success', __('cash_box.restored_selected'));
+    }
+
+    return back()->with('error', __('cash_box.nothing_selected'));
+}
+
+public function bulkForceDelete(Request $request)
+{
+    $ids = json_decode($request->input('ids', '[]'), true);
+
+    if (!empty($ids) && is_array($ids)) {
+        try {
+            $items = CashBox::onlyTrashed()->whereIn('id', $ids)->get();
+            foreach($items as $item) {
+                $item->forceDelete();
+            }
+            return back()->with('success', __('cash_box.permanently_deleted_selected'));
+        } catch (QueryException $e) {
+             // Foreign Key Constraint Error (Postgres/MySQL)
+            if ($e->getCode() == "23503") {
+                return back()->with('error', __('cash_box.cannot_delete_used_bulk'));
+            }
+            return back()->with('error', __('cash_box.error'));
+        }
+    }
+
+    return back()->with('error', __('cash_box.nothing_selected'));
+}
+
+
 }

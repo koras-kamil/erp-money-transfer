@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CurrencyConfig;
-use App\Models\Branch; // <--- ADDED THIS
+use App\Models\Branch; 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +18,6 @@ class CurrencyConfigController extends Controller
     public function index()
     {
         $currencies = CurrencyConfig::orderBy('id')->get();
-        // Fetch branches for the dropdown
         $branches = Branch::all(); 
 
         return view('currency.index', compact('currencies', 'branches'));
@@ -41,8 +40,7 @@ class CurrencyConfigController extends Controller
                     'price_total'   => $data['price_total'],
                     'price_single'  => $data['price_single'],
                     'price_sell'    => $data['price_sell'] ?? 0,
-                    // Save branch_id from the dropdown
-                    'branch_id' => $data['branch_id'] ?? null,
+                    'branch_id'     => $data['branch_id'] ?? null,
                     'is_active'     => isset($data['is_active']) ? 1 : 0,
                 ];
 
@@ -55,7 +53,6 @@ class CurrencyConfigController extends Controller
                 } else {
                     // Create new (only if type is provided)
                     if (!empty($data['currency_type'])) {
-                        // Add creator ID for new records
                         $saveData['created_by'] = Auth::id();
                         CurrencyConfig::create($saveData);
                     }
@@ -67,24 +64,48 @@ class CurrencyConfigController extends Controller
     }
 
     /**
-     * Soft Delete (Move to Trash)
+     * Soft Delete (Move to Trash) - Single Item
      */
-public function destroy($id)
+    public function destroy($id)
     {
         $currency = CurrencyConfig::find($id);
         
         if ($currency) {
             // 1. Save the ID of the logged-in user who is deleting this
-            $currency->deleted_by = Auth::id();
-            $currency->save(); // Save the change to the database
+            $currency->update(['deleted_by' => Auth::id()]);
             
             // 2. Now perform the Soft Delete
             $currency->delete();
             
-            return back()->with('success', 'Moved to trash successfully');
+            return back()->with('success', __('currency.deleted') ?? 'Moved to trash successfully');
         }
 
-        return back()->with('error', 'Item not found');
+        return back()->with('error', __('currency.not_found') ?? 'Item not found');
+    }
+
+    /**
+     * Soft Delete (Move to Trash) - BULK ITEMS
+     */
+    public function bulkDelete(Request $request)
+    {
+        $ids = json_decode($request->input('ids', '[]'), true);
+
+        if (!empty($ids) && is_array($ids)) {
+            foreach($ids as $id) {
+                $currency = CurrencyConfig::find($id);
+                if($currency) {
+                    // 1. Save who is deleting the item
+                    $currency->update(['deleted_by' => Auth::id()]);
+                    
+                    // 2. Perform delete
+                    $currency->delete();
+                }
+            }
+            
+            return back()->with('success', __('currency.deleted_selected'));
+        }
+
+        return back()->with('error', __('currency.nothing_selected'));
     }
 
     /**
@@ -92,12 +113,17 @@ public function destroy($id)
      */
     public function trash()
     {
-        $currencies = CurrencyConfig::onlyTrashed()->orderBy('deleted_at', 'desc')->get();
+        // Load the 'deleter' relationship (User model) to show names in the trash view
+        $currencies = CurrencyConfig::onlyTrashed()
+            ->with('deleter') 
+            ->orderBy('deleted_at', 'desc')
+            ->get();
+            
         return view('currency.trash', compact('currencies'));
     }
 
     /**
-     * Restore from Trash
+     * Restore from Trash - Single Item
      */
     public function restore($id)
     {
@@ -107,7 +133,22 @@ public function destroy($id)
     }
 
     /**
-     * Permanently Delete (Force Delete)
+     * Restore from Trash - BULK ITEMS
+     */
+    public function bulkRestore(Request $request)
+    {
+        $ids = json_decode($request->input('ids', '[]'), true);
+
+        if (!empty($ids) && is_array($ids)) {
+            CurrencyConfig::onlyTrashed()->whereIn('id', $ids)->restore();
+            return back()->with('success', __('currency.restored_selected'));
+        }
+
+        return back()->with('error', __('currency.nothing_selected'));
+    }
+
+    /**
+     * Permanently Delete (Force Delete) - Single Item
      */
     public function forceDelete($id)
     {
@@ -118,32 +159,57 @@ public function destroy($id)
             return back()->with('success', __('currency.permanently_deleted'));
 
         } catch (QueryException $e) {
-            // Check for Postgres/MySQL Foreign Key Violation (23503)
+            // Check for Foreign Key Violation
             if ($e->getCode() == "23503") {
-                return back()->with('error', 
-                    app()->getLocale() == 'ku' 
-                    ? 'ناتوانی ئەم دراوە بسڕیتەوە چونکە بەکارهاتووە لە سندوقەکاندا!' 
-                    : 'Cannot delete this currency because it is linked to records in Cash Boxes!'
-                );
+                return back()->with('error', __('currency.cannot_delete_used') ?? 'Cannot delete: Item is in use.');
             }
-
             return back()->with('error', __('currency.error') ?? 'An unexpected error occurred');
         }
     }
 
     /**
+     * Permanently Delete (Force Delete) - BULK ITEMS
+     */
+    public function bulkForceDelete(Request $request)
+    {
+        $ids = json_decode($request->input('ids', '[]'), true);
+
+        if (!empty($ids) && is_array($ids)) {
+            try {
+                // We must use loop here to catch errors for individual items if needed, 
+                // or we can try delete all and catch generic error.
+                // Using whereIn->forceDelete is faster but fails if ONE item has constraint.
+                
+                $items = CurrencyConfig::onlyTrashed()->whereIn('id', $ids)->get();
+                foreach($items as $item) {
+                    $item->forceDelete();
+                }
+                
+                return back()->with('success', __('currency.permanently_deleted_selected'));
+
+            } catch (QueryException $e) {
+                if ($e->getCode() == "23503") {
+                    return back()->with('error', __('currency.cannot_delete_used_bulk') ?? 'Some items could not be deleted because they are in use.');
+                }
+                return back()->with('error', __('currency.error'));
+            }
+        }
+
+        return back()->with('error', __('currency.nothing_selected'));
+    }
+
+    /**
      * Generate PDF Report (mPDF)
      */
-  public function downloadPdf()
+    public function downloadPdf()
     {
-        // Fetch all currencies
         $currencies = CurrencyConfig::all();
 
         $data = [
-            'title'      => 'لیستی دراوەکان',
+            'title'      => __('currency.config_title'),
             'date'       => date('Y-m-d H:i'),
             'user'       => Auth::user()->name ?? 'System',
-            'currencies' => $currencies // <--- FIXED: Key matches '$currencies' in your view
+            'currencies' => $currencies
         ];
 
         $pdf = PDF::loadView('currency.pdf', $data, [], [
