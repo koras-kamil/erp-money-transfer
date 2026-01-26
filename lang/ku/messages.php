@@ -54,4 +54,18 @@ return [
 
     // --- Footer ---
     'all_rights_reserved' => 'هەموو مافەکان پارێزراون',
+
+    'update_currency_rates' => 'نوێکردنەوەی نرخی دراو',
+    'base_currency_note'    => 'بنچینەی هەژمارکردن: ١٠٠ دۆلار ($)',
+    'currency_name'         => 'جۆری دراو',
+    'symbol'                => 'هێما',
+    'price_for_100'         => 'نرخی (١٠٠) دۆلار',
+    'price_for_1'           => 'نرخی (١) دۆلار',
+    'cancel'                => 'داخستن',
+    'save_changes'          => 'تۆمارکردن',
+    'rates_updated_success' => 'نرخەکان بە سەرکەوتوویی نوێکرانەوە.',
+    'finance'               => 'دارایی',
+    'privacy_mode'          => 'دۆخی تایبەت',
+    'quick_actions'         => 'کردارە خێراکان',
+    'all_branches'          => 'هەموو لقەکان',
 ];

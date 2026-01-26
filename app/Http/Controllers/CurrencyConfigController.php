@@ -176,10 +176,6 @@ class CurrencyConfigController extends Controller
 
         if (!empty($ids) && is_array($ids)) {
             try {
-                // We must use loop here to catch errors for individual items if needed, 
-                // or we can try delete all and catch generic error.
-                // Using whereIn->forceDelete is faster but fails if ONE item has constraint.
-                
                 $items = CurrencyConfig::onlyTrashed()->whereIn('id', $ids)->get();
                 foreach($items as $item) {
                     $item->forceDelete();
@@ -222,5 +218,31 @@ class CurrencyConfigController extends Controller
         ]);
 
         return $pdf->stream('currency_report.pdf');
+    }
+
+    /**
+     * Update Rates (Bulk update from Modal)
+     */
+    public function updateRates(Request $request)
+    {
+        $request->validate([
+            'rates' => 'required|array',
+        ]);
+
+        foreach ($request->rates as $id => $priceTotalInput) {
+            // 1. Remove commas (e.g. "148,000" -> 148000)
+            $priceTotal = str_replace(',', '', $priceTotalInput);
+            
+            // 2. Calculate Price for 1$ (Total / 100)
+            $priceSingle = $priceTotal / 100;
+
+            // 3. Update existing record
+            CurrencyConfig::where('id', $id)->update([
+                'price_total' => $priceTotal,
+                'price_single' => $priceSingle,
+            ]);
+        }
+
+        return back()->with('success', __('messages.rates_updated_success') ?? 'Rates updated successfully');
     }
 }

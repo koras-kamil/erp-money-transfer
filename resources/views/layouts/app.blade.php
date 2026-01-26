@@ -6,19 +6,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ config('app.name', 'Smart System') }}</title>
-    
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
-    {{-- Alpine Plugins --}}
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
     <style>
         [v-cloak], [x-cloak] { display: none !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .content-blur { filter: blur(12px) grayscale(30%); pointer-events: none; opacity: 0.7; }
+        
+        /* FIX: Ensure SweetAlert is always on top */
         div.swal2-container { z-index: 9999 !important; }
         body.swal2-shown { padding-right: 0 !important; }
     </style>
@@ -39,7 +37,7 @@
         <svg class="animate-spin h-10 w-10 text-indigo-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
     </div>
 
-    {{-- Privacy Button --}}
+    {{-- Floating Privacy Button --}}
     <div class="fixed bottom-6 z-[90] print:hidden ltr:right-6 rtl:left-6">
         <button @click="isBlurred = !isBlurred" class="w-12 h-12 flex items-center justify-center rounded-full bg-white text-slate-500 hover:text-indigo-600 shadow-xl border border-slate-100 transition-all hover:scale-110">
             <svg x-show="!isBlurred" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
@@ -48,11 +46,11 @@
     </div>
 
     <x-notification />
-    <x-right-menu />
+    @include('components.right-menu')
 
     <div class="flex-1 flex flex-col h-full relative min-w-0 overflow-hidden bg-[#f8fafc] transition-all duration-300">
         
-        {{-- COMMAND BAR --}}
+        {{-- Command Bar Component --}}
         <x-command-bar />
 
         <main class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
@@ -70,10 +68,36 @@
         </main>
     </div>
 
-    {{-- Sidebar Mobile Overlay --}}
-    <div x-show="mobileMenuOpen" @click="mobileMenuOpen = false" x-transition.opacity class="fixed inset-0 bg-black/50 z-[55] md:hidden cursor-pointer" style="display: none;" x-cloak></div>
-
+    {{-- Exchange Modal --}}
     @include('partials.exchange-modal')
+
+    {{-- ==================================================== --}}
+    {{-- CONFIRMATION WARNING BOX (SWEETALERT2) --}}
+    {{-- ==================================================== --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        window.confirmAction = function(formId, message = null) {
+            Swal.fire({
+                title: "{{ __('messages.confirm_action') ?? 'Are you sure?' }}",
+                text: message || "{{ __('messages.cannot_undo') ?? 'This action cannot be undone.' }}",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#4f46e5',
+                cancelButtonColor: '#f1f5f9',
+                confirmButtonText: "{{ __('messages.yes_proceed') ?? 'Yes, delete it!' }}",
+                cancelButtonText: "{{ __('messages.cancel') ?? 'Cancel' }}",
+                heightAuto: false, 
+                customClass: {
+                    popup: 'rounded-[1.5rem] border-none shadow-2xl font-sans',
+                    confirmButton: 'rounded-xl font-bold uppercase tracking-widest text-[11px] px-6 py-3',
+                    cancelButton: 'rounded-xl font-bold uppercase tracking-widest text-[11px] px-6 py-3 text-slate-600 hover:bg-slate-100'
+                }
+            }).then((result) => { 
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit(); 
+                }
+            });
+        }
+    </script>
 </body>
 </html>

@@ -54,4 +54,22 @@ return [
 
     // --- Footer ---
     'all_rights_reserved' => 'All rights reserved',
+
+
+    //currencie :
+  
+
+    'update_currency_rates' => 'Update Currency Rates',
+    'base_currency_note'    => 'Base Calculation: 100 USD ($)',
+    'currency_name'         => 'Currency Name',
+    'symbol'                => 'Symbol',
+    'price_for_100'         => 'Price for 100 $',
+    'price_for_1'           => 'Price for 1 $',
+    'cancel'                => 'Cancel',
+    'save_changes'          => 'Save Changes',
+    'rates_updated_success' => 'Currency rates have been updated successfully.',
+    'finance'               => 'Finance',
+    'privacy_mode'          => 'Privacy Mode',
+    'quick_actions'         => 'Quick Actions',
+    'all_branches'          => 'All Branches',
 ];
