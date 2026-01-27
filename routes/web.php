@@ -8,7 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\ActivityLogController;
-use App\Http\Controllers\CurrencyConfigController; // Correct controller
+use App\Http\Controllers\CurrencyConfigController;
 use App\Http\Controllers\CashBoxController;
 use App\Http\Controllers\GroupSpendingController;
 use App\Http\Controllers\TypeSpendingController;
@@ -17,6 +17,8 @@ use App\Http\Controllers\RoleController;
 use App\Models\CurrencyConfig;
 use App\Http\Controllers\ProfitGroupController;
 use App\Http\Controllers\ProfitTypeController;
+use App\Http\Controllers\CapitalController;
+use App\Http\Controllers\SettingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -101,24 +103,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::prefix('currency-config')->name('currency.')->group(function () {
-        // 1. Bulk Rate Update (FIXED HERE)
-        // Note: Using 'CurrencyConfigController' which is correct based on your previous messages.
         Route::post('/update-rates', [CurrencyConfigController::class, 'updateRates'])->name('update-rates');
-
-        // 2. Specific Actions
         Route::get('/print', [CurrencyConfigController::class, 'downloadPdf'])->name('print');
 
-        // 3. Bulk Operations
         Route::delete('/bulk-delete', [CurrencyConfigController::class, 'bulkDelete'])->name('bulk-delete');
         Route::post('/bulk-restore', [CurrencyConfigController::class, 'bulkRestore'])->name('bulk-restore');
         Route::delete('/bulk-force-delete', [CurrencyConfigController::class, 'bulkForceDelete'])->name('bulk-force-delete');
 
-        // 4. Trash Operations
         Route::get('/trash', [CurrencyConfigController::class, 'trash'])->name('trash');
         Route::post('/{id}/restore', [CurrencyConfigController::class, 'restore'])->name('restore');
         Route::delete('/{id}/force-delete', [CurrencyConfigController::class, 'forceDelete'])->name('force-delete');
 
-        // 5. Standard CRUD (Wildcards LAST)
         Route::get('/', [CurrencyConfigController::class, 'index'])->name('index');
         Route::post('/', [CurrencyConfigController::class, 'store'])->name('store');
         Route::delete('/{currency}', [CurrencyConfigController::class, 'destroy'])->name('destroy');
@@ -161,6 +156,38 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{id}/force-delete', [GroupSpendingController::class, 'forceDelete'])->name('force-delete');
     });
     Route::resource('group-spending', GroupSpendingController::class);
+
+/*
+    |--------------------------------------------------------------------------
+    | CAPITALS (Corrected Route Order)
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('capitals')->name('capitals.')->group(function () {
+        // 1. Bulk Actions (MUST be defined before wildcards)
+        Route::delete('/bulk-delete', [CapitalController::class, 'bulkDelete'])->name('bulk-delete');
+        Route::post('/bulk-restore', [CapitalController::class, 'bulkRestore'])->name('bulk-restore');
+        Route::delete('/bulk-force-delete', [CapitalController::class, 'bulkForceDelete'])->name('bulk-force-delete');
+
+        // 2. Specific Page Actions
+        Route::get('/trash', [CapitalController::class, 'trash'])->name('trash');
+        Route::get('/pdf', [CapitalController::class, 'downloadPdf'])->name('pdf');
+
+        // 3. Single Item Actions (trash/restore)
+        Route::post('/{id}/restore', [CapitalController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [CapitalController::class, 'forceDelete'])->name('forceDelete');
+    });
+
+    // 4. Standard Resource Route (index, store, update, destroy)
+    Route::resource('capitals', CapitalController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | SETTINGS
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+
 
     /*
     |--------------------------------------------------------------------------

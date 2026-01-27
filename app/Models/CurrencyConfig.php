@@ -28,6 +28,7 @@ class CurrencyConfig extends Model
         'is_active',
         'created_by',
         'deleted_by', // <--- IMPORTANT: Needed for "Deleted By" column
+        'math_operator', // <--- ADD THIS LINE
     ];
 
     /**

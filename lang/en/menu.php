@@ -9,5 +9,7 @@ return [
     'activity_log' => 'Activity Log',
     'define' => 'Define Settings',
     'currency' => 'Currency Config',
+    'capital' => 'capital',
+
 
 ];

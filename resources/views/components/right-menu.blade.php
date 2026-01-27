@@ -14,27 +14,23 @@
 
     {{-- 1. HEADER --}}
     <div class="h-16 flex items-center justify-center relative border-b border-slate-800 bg-[#1e293b]/50 whitespace-nowrap overflow-hidden px-3 shrink-0">
-        {{-- CLOSE BUTTON (Visible on Mobile) --}}
         <button @click="mobileMenuOpen = false" class="md:hidden absolute ltr:right-3 rtl:left-3 text-slate-400 hover:text-white transition-colors p-1">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
 
         <div class="flex items-center gap-3 transition-all duration-300"
              :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center w-full' : ''">
-            
             <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center bg-indigo-600 rounded-lg shadow-lg shadow-indigo-500/40">
                 <span class="text-white font-black text-sm">S</span>
             </div>
-            
-            <div x-show="!isCollapsed || window.innerWidth < 768" 
-                 class="flex flex-col overflow-hidden transition-opacity duration-200">
+            <div x-show="!isCollapsed || window.innerWidth < 768" class="flex flex-col overflow-hidden transition-opacity duration-200">
                 <span class="block text-white font-bold text-xs uppercase tracking-wider">Smart</span>
                 <span class="block text-[9px] text-indigo-400 uppercase tracking-widest">System</span>
             </div>
         </div>
     </div>
 
-    {{-- 2. TOGGLE BUTTON (Desktop Only) --}}
+    {{-- 2. TOGGLE BUTTON --}}
     <button @click="isCollapsed = !isCollapsed"
             class="absolute top-1/2 -translate-y-1/2 z-[70] flex items-center justify-center w-6 h-6 bg-white text-indigo-600 rounded-full border border-slate-200 shadow-md hover:bg-indigo-50 hover:scale-110 transition-all duration-200 group
                    ltr:-right-3 rtl:-left-3 hidden md:flex"
@@ -46,8 +42,7 @@
     {{-- 3. MENU CONTENT --}}
     <div class="flex-1 overflow-y-auto overflow-x-hidden py-4 px-2 space-y-1.5 custom-scrollbar relative z-0">
         
-        <div class="px-2 mb-3 transition-all duration-300 whitespace-nowrap overflow-hidden" 
-             :class="(isCollapsed && window.innerWidth >= 768) ? 'text-center' : ''">
+        <div class="px-2 mb-3 transition-all duration-300 whitespace-nowrap overflow-hidden" :class="(isCollapsed && window.innerWidth >= 768) ? 'text-center' : ''">
             <p x-show="!isCollapsed || window.innerWidth < 768" class="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] px-1">{{ __('messages.main_menu') }}</p>
             <div x-show="isCollapsed && window.innerWidth >= 768" class="h-1 w-1 bg-slate-600 mx-auto rounded-full"></div>
         </div>
@@ -68,7 +63,7 @@
 
         {{-- DEFINITION GROUP --}}
         <x-nav-group label="{{ __('menu.define') }}" 
-                     :active="request()->routeIs('currency.*') || request()->routeIs('cash-boxes.*') || request()->routeIs('group-spending.*') || request()->routeIs('type-spending.*') || request()->routeIs('profit.*')">
+                     :active="request()->routeIs('currency.*') || request()->routeIs('cash-boxes.*') || request()->routeIs('group-spending.*') || request()->routeIs('type-spending.*') || request()->routeIs('profit.*') || request()->routeIs('capitals.*')">
             <x-slot:icon>
                 <div class="w-5 h-5 flex-shrink-0 flex items-center justify-center">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.572 1.065c-1.543.94-3 .888-8 .888s-.888-.888-.888-.888z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9,9l9,9"/></svg>
@@ -79,6 +74,7 @@
             <a href="{{ route('cash-boxes.index') }}" class="block px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('cash-boxes.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">{{ __('cash_box.title') }}</a>
             <a href="{{ route('group-spending.index') }}" class="block px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ (request()->routeIs('group-spending.*') || request()->routeIs('type-spending.*')) ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">{{ __('spending.group_title') }}</a>
             <a href="{{ route('profit.groups.index') }}" class="block px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('profit.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">{{ __('profit.menu_tab') }}</a>
+            <a href="{{ route('capitals.index') }}" class="block px-3 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('capitals.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">{{ __('menu.capital') }}</a>
         </x-nav-group>
 
         {{-- ADMIN SECTION --}}
@@ -102,20 +98,42 @@
         @endrole
     </div>
 
-    {{-- 4. FOOTER --}}
+
+   {{-- 4. FOOTER --}}
     <div class="p-3 border-t border-slate-800 bg-[#0a0f1c] space-y-2.5 shrink-0 z-20">
-        {{-- LANGUAGE DROPDOWN --}}
-        <div class="relative w-full" x-data="{ langOpen: false }">
-            <button @click="langOpen = !langOpen" @click.outside="langOpen = false" class="inline-flex items-center w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-500/30 shadow-lg font-medium rounded-xl text-xs px-4 py-2.5 focus:outline-none transition-all duration-200" :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center px-0 w-10 h-10' : 'justify-between'" type="button">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span x-show="!isCollapsed || window.innerWidth < 768" class="mx-2 truncate">{{ app()->getLocale() == 'ku' ? 'کوردی' : 'English' }}</span>
-                <svg x-show="!isCollapsed || window.innerWidth < 768" :class="langOpen ? 'rotate-180' : ''" class="w-2.5 h-2.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-            </button>
-            <div x-show="langOpen" class="absolute bottom-full mb-2 bg-[#1e293b] border border-slate-700 rounded-xl shadow-2xl z-[60] overflow-hidden min-w-[120px] max-h-[200px] overflow-y-auto" :class="(isCollapsed && window.innerWidth >= 768) ? 'ltr:left-12 rtl:right-12' : 'w-full ltr:left-0 rtl:right-0'" x-transition style="display: none;" x-cloak>
-                <ul class="py-1 text-xs text-slate-300">
-                    <li><a href="{{ route('lang.switch', 'en') }}" class="flex items-center w-full px-4 py-3 hover:bg-slate-700/50 hover:text-white gap-2"><span class="font-bold text-indigo-400">EN</span><span>English</span></a></li>
-                    <li><a href="{{ route('lang.switch', 'ku') }}" class="flex items-center w-full px-4 py-3 hover:bg-slate-700/50 hover:text-white gap-2"><span class="font-bold text-emerald-400">KU</span><span>کوردی</span></a></li>
-                </ul>
+        
+        {{-- SETTINGS & LANGUAGE ROW --}}
+        <div class="flex items-center gap-2" :class="(isCollapsed && window.innerWidth >= 768) ? 'flex-col' : 'flex-row'">
+            
+            {{-- SETTINGS BUTTON (Using specific key to fix array error) --}}
+            <a href="{{ route('settings.index') }}" 
+               class="flex items-center justify-center p-2.5 rounded-xl bg-slate-800 text-slate-400 hover:bg-indigo-600 hover:text-white transition-all shadow-lg border border-slate-700/50 group relative"
+               :class="(isCollapsed && window.innerWidth >= 768) ? 'w-full' : 'flex-1'"
+               title="{{ __('settings.menu_label') }}">
+                
+                {{-- Custom 6-Tooth Gear Icon --}}
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 transition-transform duration-500 ease-in-out group-hover:rotate-180">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                </svg>
+                
+                {{-- Tooltip (Visible on Hover) --}}
+                <div class="absolute bottom-full mb-2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-50 whitespace-nowrap border border-slate-700 font-medium">
+                    {{ __('settings.menu_label') }}
+                </div>
+            </a>
+
+            {{-- LANGUAGE DROPDOWN --}}
+            <div class="relative" :class="(isCollapsed && window.innerWidth >= 768) ? 'w-full' : 'flex-1'" x-data="{ langOpen: false }">
+                <button @click="langOpen = !langOpen" @click.outside="langOpen = false" class="flex items-center justify-center w-full p-2.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700/50 transition-all font-bold text-xs uppercase shadow-lg">
+                    {{ app()->getLocale() }}
+                </button>
+                <div x-show="langOpen" class="absolute bottom-full mb-2 bg-[#1e293b] border border-slate-700 rounded-xl shadow-2xl z-[60] overflow-hidden min-w-[120px] max-h-[200px]" :class="(isCollapsed && window.innerWidth >= 768) ? 'ltr:left-0 rtl:right-0' : 'ltr:right-0 rtl:left-0'" x-transition style="display: none;" x-cloak>
+                    <ul class="py-1 text-xs text-slate-300">
+                        <li><a href="{{ route('lang.switch', 'en') }}" class="flex items-center w-full px-4 py-3 hover:bg-slate-700/50 hover:text-white gap-2"><span class="font-bold text-indigo-400">EN</span><span>English</span></a></li>
+                        <li><a href="{{ route('lang.switch', 'ku') }}" class="flex items-center w-full px-4 py-3 hover:bg-slate-700/50 hover:text-white gap-2"><span class="font-bold text-emerald-400">KU</span><span>کوردی</span></a></li>
+                    </ul>
+                </div>
             </div>
         </div>
 
