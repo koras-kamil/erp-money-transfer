@@ -60,9 +60,25 @@
 
         {{-- TOOLBAR --}}
         <div class="mx-4 mb-6 flex flex-col md:flex-row justify-between items-center gap-4 no-print">
-            <div class="bg-slate-100 p-1 rounded-lg flex items-center shadow-inner">
-                <a href="{{ route('profit.groups.index') }}" class="px-5 py-2 text-sm font-bold rounded-md text-slate-500 hover:text-slate-700 transition">{{ __('profit.menu_groups') }}</a>
-                <a href="{{ route('profit.types.index') }}" class="px-5 py-2 text-sm font-bold rounded-md bg-white text-indigo-600 shadow-sm transition">{{ __('profit.menu_types') }}</a>
+            
+            {{-- UPDATED NAVIGATION TABS --}}
+            <div class="bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm flex items-center w-fit">
+                
+                {{-- 1. Profit Groups Tab (Inactive) --}}
+                <a href="{{ route('profit.groups.index') }}" 
+                   class="px-4 py-2 text-sm font-bold rounded-lg transition-all text-slate-500 hover:text-indigo-600 hover:bg-slate-50">
+                   {{ __('profit.menu_groups') }}
+                </a>
+            
+                {{-- Separator --}}
+                <div class="w-px h-4 bg-slate-200 mx-1"></div>
+            
+                {{-- 2. Profit Types Tab (Active) --}}
+                <a href="{{ route('profit.types.index') }}" 
+                   class="px-4 py-2 text-sm font-bold rounded-lg transition-all bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100">
+                   {{ __('profit.menu_types') }}
+                </a>
+            
             </div>
 
             <div class="flex items-center gap-2">
@@ -102,7 +118,7 @@
 
                 {{-- Print --}}
                 <a href="{{ route('profit.types.pdf') }}" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-700 text-white hover:bg-slate-800 transition shadow-sm">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 </a>
                 
                 {{-- Add New --}}

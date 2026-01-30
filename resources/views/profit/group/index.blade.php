@@ -39,14 +39,11 @@
             if (this.selectedIds.length === this.allIds.length) { this.selectedIds = []; } else { this.selectedIds = [...this.allIds]; }
         },
         
-        // --- FIXED BULK DELETE FUNCTION ---
+        // --- BULK DELETE FUNCTION ---
         bulkDelete() {
             if (this.selectedIds.length === 0) return;
-            
-            // 1. Populate the hidden input with IDs
             document.getElementById('bulk-delete-ids').value = JSON.stringify(this.selectedIds);
             
-            // 2. Submit the form safely
             if (window.confirmAction) {
                 window.confirmAction('bulk-delete-form', '{{ __('profit.bulk_delete_confirm') }}');
             } else {
@@ -67,13 +64,27 @@
         {{-- TOOLBAR --}}
         <div class="mx-4 mb-6 flex flex-col md:flex-row justify-between items-center gap-4 no-print">
             
-            {{-- Navigation Tabs --}}
-            <div class="bg-slate-100 p-1 rounded-lg flex items-center shadow-inner">
-                <a href="{{ route('profit.groups.index') }}" class="px-5 py-2 text-sm font-bold rounded-md bg-white text-indigo-600 shadow-sm transition">{{ __('profit.menu_groups') }}</a>
-                <a href="{{ route('profit.types.index') }}" class="px-5 py-2 text-sm font-bold rounded-md text-slate-500 hover:text-slate-700 transition">{{ __('profit.menu_types') }}</a>
+            {{-- UPDATED NAVIGATION TABS --}}
+            <div class="bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm flex items-center w-fit">
+                
+                {{-- 1. Profit Groups Tab (Active) --}}
+                <a href="{{ route('profit.groups.index') }}" 
+                   class="px-4 py-2 text-sm font-bold rounded-lg transition-all bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100">
+                   {{ __('profit.menu_groups') }}
+                </a>
+            
+                {{-- Separator --}}
+                <div class="w-px h-4 bg-slate-200 mx-1"></div>
+            
+                {{-- 2. Profit Types Tab (Inactive) --}}
+                <a href="{{ route('profit.types.index') }}" 
+                   class="px-4 py-2 text-sm font-bold rounded-lg transition-all text-slate-500 hover:text-indigo-600 hover:bg-slate-50">
+                   {{ __('profit.menu_types') }}
+                </a>
+            
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
                 
                 {{-- BULK ACTIONS (Red Button) --}}
                 <div x-show="selectedIds.length > 0" x-transition class="flex items-center gap-2 bg-red-50 px-2 py-1 rounded-lg border border-red-100 mr-2 ml-2">
@@ -98,8 +109,8 @@
                     </button>
                     <div x-show="openDropdown" class="absolute ltr:right-0 rtl:left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 p-2" x-cloak style="display:none;">
                         <div class="flex gap-2 mb-2 pb-2 border-b border-slate-100">
-                            <button @click="toggleAll(true)" class="flex-1 text-[10px] bg-indigo-50 text-indigo-600 py-1 rounded font-bold">ALL</button>
-                            <button @click="toggleAll(false)" class="flex-1 text-[10px] bg-slate-50 text-slate-600 py-1 rounded font-bold">NONE</button>
+                            <button @click="toggleAll(true)" class="flex-1 text-[10px] bg-indigo-50 text-indigo-600 py-1 rounded font-bold">{{ __('profit.all') }}</button>
+                            <button @click="toggleAll(false)" class="flex-1 text-[10px] bg-slate-50 text-slate-600 py-1 rounded font-bold">{{ __('profit.none') }}</button>
                         </div>
                         <div class="space-y-1 max-h-60 overflow-y-auto">
                             @foreach(['select'=>'Select', 'id'=>'#', 'code'=>__('profit.code'), 'name'=>__('profit.name'), 'branch'=>__('profit.branch'), 'creator'=>__('profit.created_by'), 'desc'=>__('profit.description'), 'created_at'=>__('profit.created_at'), 'active'=>__('profit.active')] as $key => $label)
@@ -126,7 +137,7 @@
             <form id="form-groups" action="{{ route('profit.groups.store') }}" method="POST">
                 @csrf
                 <table class="w-full text-sm text-left rtl:text-right text-slate-500 whitespace-nowrap">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                    <thead class="text-xs text-gray-700 uppercase bg-blue-50/50 border-b border-blue-100">
                         <tr>
                             <th x-show="cols.select" class="px-4 py-3 w-[40px] text-center">
                                 <input type="checkbox" @click="toggleAllSelection()" :checked="selectedIds.length > 0 && selectedIds.length === allIds.length" class="select-checkbox bg-white">

@@ -1,7 +1,7 @@
 @font-face {
     font-family: 'NRT-Font';
     /* Note the '../../' - this tells Vite to go out of resources/css and into public */
-    src: url('../../public/fonts/NRT-Bd.ttf') format('truetype');
+    src: url('../../public/fonts/NRT-Reg.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
     font-display: swap;

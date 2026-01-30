@@ -9,5 +9,6 @@ return [
     'currency' => 'ڕێکخستنی دراو',
      'currency' => 'ڕێکخستنی دراو', 
      'capital' => 'سەرمایە',
+     'account' => 'هەژمار',
 
 ];

@@ -68,13 +68,27 @@
         saveRow() { document.getElementById('sheet-form').submit(); }
     }" class="py-6 w-full min-w-0" dir="{{ app()->getLocale() == 'ku' ? 'rtl' : 'ltr' }}">
 
-        {{-- TOOLBAR (Clean: No background, no border) --}}
+        {{-- TOOLBAR --}}
         <div class="mx-4 mb-6 flex flex-col md:flex-row justify-between items-center gap-4 no-print">
             
-            {{-- Navigation Tabs --}}
-            <div class="bg-slate-100 p-1 rounded-lg flex items-center shadow-inner">
-                <a href="{{ route('group-spending.index') }}" class="px-5 py-2 text-sm font-bold rounded-md transition-all {{ request()->routeIs('group-spending.*') ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">{{ __('spending.group_tab') }}</a>
-                <a href="{{ route('type-spending.index') }}" class="px-5 py-2 text-sm font-bold rounded-md transition-all {{ request()->routeIs('type-spending.*') ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">{{ __('spending.type_header') }}</a>
+            {{-- UPDATED NAVIGATION TABS --}}
+            <div class="bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm flex items-center w-fit">
+                
+                {{-- 1. Group Spending Tab --}}
+                <a href="{{ route('group-spending.index') }}" 
+                   class="px-4 py-2 text-sm font-bold rounded-lg transition-all {{ request()->routeIs('group-spending.*') ? 'bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50' }}">
+                   {{ __('spending.group_tab') }}
+                </a>
+            
+                {{-- Separator --}}
+                <div class="w-px h-4 bg-slate-200 mx-1"></div>
+            
+                {{-- 2. Type Spending Tab --}}
+                <a href="{{ route('type-spending.index') }}" 
+                   class="px-4 py-2 text-sm font-bold rounded-lg transition-all {{ request()->routeIs('type-spending.*') ? 'bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50' }}">
+                   {{ __('spending.type_header') }}
+                </a>
+            
             </div>
 
             <div class="flex flex-wrap items-center gap-2">

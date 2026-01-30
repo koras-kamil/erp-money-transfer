@@ -61,6 +61,20 @@
             </div>
         </a>
 
+        {{-- ACCOUNTS (NEW SEPARATE SECTION) --}}
+        <a href="{{ route('accounts.index') }}" 
+           class="flex items-center gap-3 px-2.5 py-2 rounded-lg transition-all group relative overflow-hidden
+           {{ request()->routeIs('accounts.*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white' }}"
+           :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center' : ''">
+            <div class="w-5 h-5 flex-shrink-0 flex items-center justify-center">
+                <svg class="w-5 h-5 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            </div>
+            <span x-show="!isCollapsed || window.innerWidth < 768" class="text-xs font-bold whitespace-nowrap transition-opacity duration-200">{{ __('menu.account') }}</span>
+            <div x-show="isCollapsed && window.innerWidth >= 768" class="absolute ltr:left-14 rtl:right-14 bg-slate-900 text-white text-[10px] px-2 py-1 rounded shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-50 whitespace-nowrap border border-slate-700 font-medium">
+                {{ __('Accounts') }}
+            </div>
+        </a>
+
         {{-- DEFINITION GROUP --}}
         <x-nav-group label="{{ __('menu.define') }}" 
                      :active="request()->routeIs('currency.*') || request()->routeIs('cash-boxes.*') || request()->routeIs('group-spending.*') || request()->routeIs('type-spending.*') || request()->routeIs('profit.*') || request()->routeIs('capitals.*')">
