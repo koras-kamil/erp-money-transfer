@@ -9,7 +9,6 @@
     
     <title>{{ config('app.name', 'Smart System') }}</title>
 
-    {{-- Pre-connect CDNs --}}
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://unpkg.com">
 
@@ -23,7 +22,6 @@
     <style>
         [v-cloak], [x-cloak] { display: none !important; }
         
-        /* 1. CSS-Only Instant Preloader */
         #preloader {
             position: fixed;
             inset: 0;
@@ -47,7 +45,6 @@
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Existing Styles */
         .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
@@ -60,6 +57,7 @@
       x-data="layoutData()"
       x-init="init()">
 
+    {{-- 1. CSS-Only Instant Preloader --}}
     <div id="preloader" x-ref="preloader">
         <div class="loader-circle"></div>
         <p class="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">
@@ -67,7 +65,7 @@
         </p>
     </div>
 
-    {{-- SECONDARY AJAX LOADING SPINNER (For background fetches) --}}
+    {{-- SECONDARY AJAX LOADING SPINNER --}}
     <div x-show="isLoading" x-cloak x-transition.opacity class="fixed inset-0 z-[200] flex items-center justify-center bg-white/60 backdrop-blur-[2px]">
         <svg class="animate-spin h-10 w-10 text-indigo-600" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -99,7 +97,7 @@
                     {{ $slot }}
                 </div>
             </div>
-            <footer class="px-10 py-8 text-center mt-auto"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">© {{ date('Y') }} Smart System</p></footer>
+            <footer class="px-10 py-8 text-center mt-auto"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-slate-500 transition-colors">© {{ date('Y') }} Smart System</p></footer>
         </main>
     </div>
 
@@ -110,16 +108,29 @@
             Alpine.data('layoutData', () => ({
                 isLoading: false,
                 isBlurred: false,
+                showExchangeModal: false, // 🔥 Restored
+                exchangeRate: '148,000',   // 🔥 Restored
                 isCollapsed: Alpine.$persist(false).as('sidebar-collapsed'),
 
                 init() {
-                    // 2. Hide Preloader after Alpine and components render
                     window.addEventListener('load', () => {
                         this.$refs.preloader.style.opacity = '0';
-                        setTimeout(() => {
-                            this.$refs.preloader.style.display = 'none';
-                        }, 500);
+                        setTimeout(() => { this.$refs.preloader.style.display = 'none'; }, 500);
                     });
+
+                    // Auto-fetch currency price if needed
+                    this.fetchCurrencyPrice();
+                },
+
+                // 🔥 Restored Financial Button Logic
+                async fetchCurrencyPrice() {
+                    try {
+                        const response = await fetch('/api/get-currency-price'); // Adjust your route
+                        const data = await response.json();
+                        if(data.price) this.exchangeRate = data.price;
+                    } catch (e) {
+                        console.error("Currency fetch failed");
+                    }
                 },
                 
                 toggleBlur() { this.isBlurred = !this.isBlurred; }

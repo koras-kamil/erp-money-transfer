@@ -277,4 +277,15 @@ class AccountController extends Controller
         }
         return back()->with('error', __('account.none_selected'));
     }
+
+
+    public function print(Request $request)
+{
+    // Eager load relationships for performance
+    $accounts = Account::with(['currency', 'branch', 'city', 'neighborhood', 'creator'])
+        ->latest()
+        ->get();
+
+    return view('accounts.pdf', compact('accounts'));
+}
 }

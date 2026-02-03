@@ -29,6 +29,10 @@ Route::prefix('accounts')->name('accounts.')->group(function () {
 // 2. Resource Route
 Route::resource('accounts', AccountController::class);
 
+
+//pdf routes
+
+Route::get('/accounts/print', [AccountController::class, 'print'])->name('accounts.print');
 /*
 |--------------------------------------------------------------------------
 | ZONE ROUTES

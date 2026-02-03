@@ -101,7 +101,7 @@
                     </div>
                 </div>
 
-                <x-btn type="print" @click="window.print()" title="{{ __('account.print') }}" />
+<x-btn type="print" href="{{ route('accounts.print') }}" target="_blank" title="{{ __('account.print') }}" />
                 <x-btn type="add" @click="openCreate()" title="{{ __('account.add_new') }}" />
             </div>
         </div>
