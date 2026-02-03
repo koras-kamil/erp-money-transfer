@@ -18,23 +18,34 @@ use Spatie\Activitylog\LogOptions;
 // Custom Traits
 use App\Traits\BelongsToBranch;
 
-
 class CashBox extends Model
 {
-    // 2. Add the Trait here
     use HasFactory, SoftDeletes, LogsActivity, BelongsToBranch;
 
+    /**
+     * The attributes that are mass assignable.
+     */
     protected $fillable = [
         'name', 
         'type', 
         'currency_id', 
-        'branch_id', // <--- Critical for the Branch Switcher to work
+        'branch_id', 
         'user_id', 
         'balance', 
-        'description', 
+        'description', // Ensures the Note is saved
         'date_opened', 
-        'is_active',
+        'is_active',   // Ensures the Active Status is saved
         'deleted_by',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     * This converts 'is_active' to a true boolean (true/false) automatically.
+     */
+    protected $casts = [
+        'is_active' => 'boolean',
+        'balance' => 'decimal:2',
+        'date_opened' => 'datetime',
     ];
 
     /**
@@ -43,7 +54,15 @@ class CashBox extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'balance', 'is_active', 'branch_id'])
+            ->logOnly([
+                'name', 
+                'balance', 
+                'is_active', 
+                'branch_id', 
+                'currency_id', 
+                'type', 
+                'description'
+            ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -58,13 +77,11 @@ class CashBox extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Note: The 'branch' relationship might also be inside FilterByBranch trait,
-    // but keeping it here is safe (Class methods override Trait methods).
     public function branch() {
         return $this->belongsTo(Branch::class);
     }
 
- public function deleter()
+    public function deleter()
     {
         return $this->belongsTo(User::class, 'deleted_by');
     }

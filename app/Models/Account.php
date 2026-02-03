@@ -20,8 +20,9 @@ class Account extends Model
         'mobile_number_2', 
         'account_type',
         'currency_id', 
-        'city_id',          // ✅ Added
-        'neighborhood_id',  // ✅ Added
+        'city_id',
+        'neighborhood_id',
+        'branch_id',        // ✅ Added (Now matches your DB)
         'location', 
         'debt_limit', 
         'debt_due_time', 
@@ -29,19 +30,32 @@ class Account extends Model
         'created_by'
     ];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+        'debt_limit' => 'decimal:2',
+        'debt_due_time' => 'integer',
+    ];
+
     public function currency()
     {
         return $this->belongsTo(CurrencyConfig::class, 'currency_id');
     }
 
-    public function city() // ✅ New Relation
+    public function city()
     {
         return $this->belongsTo(City::class);
     }
 
-    public function neighborhood() // ✅ New Relation
+    public function neighborhood()
     {
         return $this->belongsTo(Neighborhood::class);
+    }
+
+    // ✅ Branch Relationship
+    public function branch()
+    {
+        // Ensure you have a Branch model created (App\Models\Branch)
+        return $this->belongsTo(Branch::class); 
     }
 
     public function creator()

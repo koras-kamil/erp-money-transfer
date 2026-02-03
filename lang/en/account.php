@@ -1,76 +1,111 @@
 <?php
 
 return [
-    // Page Headers & Navigation
+    // --- Page Headers & Navigation ---
     'title' => 'Account Management',
     'subtitle' => 'List of all system accounts',
-    'zones_list' => 'Location Management',
-    'manage_full_page' => 'Manage Cities and Neighborhoods',
-    
-    // Tabs
-    'main_tab' => 'Main Accounts',
-    'zones_tab' => 'Zones Management',
-    'reports_tab' => 'Debt Reports',
-    'reports_coming' => 'Reports coming soon',
+    'zones_list' => 'Zones',
+    'manage_full_page' => 'Manage Cities & Neighborhoods',
+    'trash' => 'Trash Bin',
+    'trash_bin' => 'Deleted List',
+    'back_to_list' => 'Back to List',
 
-    // Table Columns & Labels
+    // --- Tabs ---
+    'main_tab' => 'Main Accounts',
+    'zones_tab' => 'Zone Management',
+    'reports_tab' => 'Debt Reports',
+    'reports_coming' => 'Reports Coming Soon',
+
+    // --- Toolbar & Actions ---
+    'add_new' => 'Add New',
+    'print' => 'Print',
+    'columns' => 'Columns',
+    'reset_layout' => 'Reset Layout',
+    'search' => 'Search...',
+    'selected' => 'Selected',
+    'delete_selected' => 'Delete Selected',
+    'actions' => 'Actions',
+    'edit' => 'Edit',
+    'delete' => 'Delete',
+    'restore' => 'Restore',
+    'delete_permanently' => 'Delete Permanently',
+    'map' => 'Map',
+    'road_map' => 'Road Map',
+    'satellite_map' => 'Satellite',
+    'no_gps' => 'No GPS',
+
+    // --- Table Columns ---
+    'id' => '#',
     'image' => 'Image',
     'code' => 'Code',
     'manual_code' => 'Manual Code',
     'name' => 'Name',
     'secondary_name' => 'Secondary Name',
     'type' => 'Type',
+    'branch' => 'Branch',
     'mobile_1' => 'Mobile 1',
     'mobile_2' => 'Mobile 2',
     'currency' => 'Currency',
     'city' => 'City',
     'neighborhood' => 'Neighborhood',
     'debt_limit' => 'Debt Limit',
-    'due_time' => 'Due Time',
+    'due_time' => 'Due Date',
+    'days' => 'Days',
     'gps_location' => 'GPS Location',
     'status' => 'Status',
-    'actions' => 'Actions',
     'created_by' => 'Created By',
-    'created_at' => 'Created At',
+    'created_at' => 'Created Date',
+    'time' => 'Time',
+    'deleted_at' => 'Deleted At',
 
-    // Form Inputs & Modals
-    'add_new' => 'Add New',
+    // --- Form Inputs & Modals ---
     'edit_account' => 'Edit Account',
     'new_account' => 'New Account',
     'account_code' => 'Account Code',
     'account_type' => 'Account Type',
     'select_currency' => 'Select Currency',
+    'select_branch' => 'Select Branch',
+    'select_city' => 'Select City',
+    'select_neighborhood' => 'Select Neighborhood',
     'profile_picture' => 'Profile Picture',
+    'upload_text' => 'Click to Upload',
     'active_account' => 'Active Account',
+    'active' => 'Active',
+    'inactive' => 'Inactive',
     'cancel' => 'Cancel',
     'save' => 'Save',
-    'delete' => 'Delete',
-    'edit' => 'Edit',
-    'map' => 'Map',
-    'no_gps' => 'No GPS',
     'none' => 'None',
     'all' => 'All',
 
-    // Account Types
+    // --- Account Types ---
     'customer' => 'Customer',
     'vendor' => 'Vendor',
     'buyer_and_seller' => 'Buyer & Seller',
     'other' => 'Other',
 
-    // Zone Specifics (Cities/Neighborhoods)
+    // --- Zone Specifics ---
     'cities' => 'Cities',
     'neighborhoods' => 'Neighborhoods',
     'city_name' => 'City Name',
     'neighborhood_name' => 'Neighborhood Name',
 
-    // Alerts & Confirmations
-    'are_you_sure' => 'Are you sure you want to delete this?',
-    'selected' => 'Selected',
-    'delete_selected' => 'Delete Selected',
+    // --- Alerts & Messages ---
+    'error_title' => 'Error',
+    'are_you_sure' => 'Are you sure you want to delete this data?',
+    'are_you_sure_permanent' => 'Are you sure? This action cannot be undone!',
+    'no_data_found' => 'No data found',
+    'trash_empty' => 'Trash bin is empty',
     
-    // Success Messages
+    // --- Controller Success Messages ---
+    'saved' => 'Saved successfully',
+    'updated' => 'Updated successfully',
+    'restored' => 'Restored successfully',
+    'deleted' => 'Deleted successfully',
+    'permanently_deleted' => 'Permanently deleted',
+    'deleted_selected' => 'Selected accounts deleted',
+    'none_selected' => 'No accounts selected',
     'cities_saved' => 'Cities saved successfully',
-    'city_deleted' => 'City deleted successfully',
+    'city_deleted' => 'City deleted',
     'neighborhoods_saved' => 'Neighborhoods saved successfully',
-    'neighborhood_deleted' => 'Neighborhood deleted successfully',
+    'neighborhood_deleted' => 'Neighborhood deleted',
 ];

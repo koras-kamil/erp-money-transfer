@@ -13,17 +13,17 @@ use Illuminate\Database\QueryException;
 
 class ProfitTypeController extends Controller
 {
-    public function index()
+   public function index()
     {
-        $types = ProfitType::with(['group', 'branch', 'creator'])
-                    ->orderBy('id', 'asc')
-                    ->get();
+        // Fetch the main data
+        $types = ProfitType::orderBy('id', 'desc')->get();
 
-        $activeGroups = ProfitGroup::where('is_active', true)->orderBy('name')->get();
-        $branches = Branch::where('is_active', true)->orderBy('name')->get();
+        // Fetch relation data needed for dropdowns
+        $groups = ProfitGroup::where('is_active', true)->get(); // <--- THIS WAS MISSING
+        $branches = Branch::all(); 
 
-        // FIX: Changed 'profit.types.index' to 'profit.type.index' (Singular)
-        return view('profit.type.index', compact('types', 'activeGroups', 'branches'));
+        // Pass ALL variables to the view
+        return view('profit.type.index', compact('types', 'groups', 'branches'));
     }
 
 public function store(Request $request)

@@ -48,4 +48,8 @@ return [
     'exchange_rate' => 'نرخی ئاڵوگۆڕ',
     'totals' => 'کۆی گشتی',
     'generated_by' => 'دەرچووە لە سیستەمەوە',
+        'reset_layout'=>' ڕێکخستنەوە',
+'columns'=>'کۆڵۆمەکان',
+'Select_Branch'=>'هەڵبژاردنی لق',
+ 'search'=>'گەڕان',
 ];

@@ -68,4 +68,6 @@ return [
     'privacy_mode'          => 'دۆخی تایبەت',
     'quick_actions'         => 'کردارە خێراکان',
     'all_branches'          => 'هەموو لقەکان',
+        'loading'=>'لۆد دەبێت '
+
 ];

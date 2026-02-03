@@ -61,4 +61,6 @@ return [
     'permanently_deleted_selected' => 'Selected currencies permanently deleted.',
     'restore_selected' => 'Restore Selected',
     'cancel' => 'Cancel',
+    'reset-layout'=>'reset lay out',
+    'Columns'=>'columns'
 ];

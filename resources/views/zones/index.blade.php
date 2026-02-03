@@ -1,57 +1,76 @@
 <x-app-layout>
-    {{-- STYLES --}}
+    {{-- LOTTIE PLAYER --}}
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+
+    {{-- STYLES (MATCHING ACCOUNTS EXACTLY) --}}
     <style>
-        /* Shared Styles */
-        .sheet-input { width: 100%; height: 100%; background: transparent; border: 1px solid transparent; padding: 10px 12px; font-size: 0.9rem; border-radius: 8px; transition: all 0.2s ease; font-weight: 600; color: #334155; }
-        .sheet-input:hover { background-color: #f8fafc; border-color: #e2e8f0; }
-        .sheet-input:focus { background-color: #ffffff; border-color: #6366f1; box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.1); outline: none; }
-        .sheet-input::placeholder { color: #94a3b8; font-weight: 400; }
-
-        .code-input { font-family: monospace; font-size: 0.85rem; letter-spacing: 0.05em; color: #6366f1; background-color: #f8fafc; border-color: #f1f5f9; }
-
-        /* Select Input Specifics */
-        select.sheet-input { cursor: pointer; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; -webkit-appearance: none; appearance: none; }
+        /* --- CORE TABLE STYLES --- */
+        .sheet-input { width: 100%; height: 100%; display: flex; align-items: center; background: transparent; border: 1px solid transparent; padding: 0 12px; font-size: 0.875rem; color: #1f2937; font-weight: 600; border-radius: 8px; transition: all 0.15s ease-in-out; }
+        .sheet-input:focus { background-color: #fff; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); outline: none; }
+        
+        select.sheet-input { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em; padding-right: 2.5rem; padding-left: 0.75rem; cursor: pointer; white-space: nowrap; }
         [dir="rtl"] select.sheet-input { background-position: left 0.5rem center; padding-right: 0.75rem; padding-left: 2.5rem; }
+        
+        .select-checkbox { width: 1.1rem; height: 1.1rem; border-radius: 4px; border: 1px solid #cbd5e1; color: #6366f1; cursor: pointer; transition: all 0.2s; }
+        .table-container::-webkit-scrollbar { height: 6px; }
+        .table-container::-webkit-scrollbar-track { background: #f1f1f1; }
+        .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .new-row { animation: slideIn 0.3s ease-out forwards; background-color: #f0fdf4 !important; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .select-checkbox { width: 1.15rem; height: 1.15rem; border-radius: 6px; border: 2px solid #cbd5e1; color: #6366f1; cursor: pointer; transition: all 0.2s; }
-        .select-checkbox:checked { border-color: #6366f1; }
+        /* --- HEADER INTERACTIVITY --- */
+        .th-container { position: relative; width: 100%; height: 32px; display: flex; align-items: center; overflow: visible; }
+        .th-title { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; gap: 4px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(0); opacity: 1; cursor: grab; z-index: 10; }
+        .th-title:active { cursor: grabbing; }
+        .search-active .th-title { transform: translateY(-150%); opacity: 0; pointer-events: none; }
 
-        /* Modern Pills for Sub-Tabs */
-        .pill-tab { position: relative; padding: 8px 24px; border-radius: 9999px; font-weight: 700; font-size: 0.85rem; transition: all 0.2s ease; border: 1px solid transparent; }
+        .th-search { position: absolute; inset: 0; display: flex; align-items: center; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(150%); opacity: 0; pointer-events: none; z-index: 20; background: #fff; }
+        .search-active .th-search { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+        .header-search-input { width: 100%; height: 28px; background-color: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px; padding-left: 8px; padding-right: 24px; font-size: 0.75rem; color: #1f2937; transition: all 0.15s; }
+        [dir="rtl"] .header-search-input { padding-left: 24px; padding-right: 8px; }
+        .header-search-input:focus { background-color: #fff; border-color: #3b82f6; outline: none; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
+
+        .resizer { position: absolute; right: -4px; top: 0; height: 100%; width: 10px; cursor: col-resize; z-index: 50; touch-action: none; }
+        .resizer:hover::after, .resizing::after { content: ''; position: absolute; right: 4px; top: 20%; height: 60%; width: 2px; background-color: #3b82f6; }
+        [dir="rtl"] .resizer { right: auto; left: -4px; }
+        [dir="rtl"] .resizer:hover::after { right: auto; left: 4px; }
+        .dragging-col { opacity: 0.4; background-color: #e0e7ff; border: 2px dashed #6366f1; }
+
+        /* Pill Tabs (For Cities/Neighborhoods) */
+        .pill-tab { position: relative; padding: 6px 18px; border-radius: 9999px; font-weight: 700; font-size: 0.8rem; transition: all 0.2s ease; border: 1px solid transparent; cursor: pointer; }
         .pill-active { background-color: #4f46e5; color: white; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3); }
         .pill-inactive { background-color: white; color: #64748b; border-color: #e2e8f0; }
         .pill-inactive:hover { background-color: #f8fafc; color: #334155; border-color: #cbd5e1; }
 
-        /* Animations */
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .new-row { animation: slideIn 0.2s ease-out forwards; background-color: #f0fdf4 !important; }
-        
-        .custom-scrollbar::-webkit-scrollbar { height: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        @media print { .no-print, button, .print\:hidden { display: none !important; } .overflow-x-auto { overflow: visible !important; } table { width: 100% !important; } }
     </style>
 
-    <div x-data="zoneManager('{{ session('active_tab', 'cities') }}')" class="py-8 w-full min-w-0" dir="{{ app()->getLocale() == 'ku' ? 'rtl' : 'ltr' }}">
+    {{-- Main Container --}}
+    <div x-data="zoneManager('{{ session('active_tab', 'cities') }}')" x-init="initData()" class="py-6 w-full min-w-0 bg-white min-h-screen" dir="{{ app()->getLocale() == 'ku' ? 'rtl' : 'ltr' }}">
 
-        {{-- 1. HEADER & NAVIGATION --}}
-        <div class="mx-4 md:mx-8 mb-8 flex flex-col md:flex-row justify-between items-end gap-6 no-print">
+        {{-- MAIN TOOLBAR (Tabs like Account Page) --}}
+        <div class="mx-4 mb-6 flex flex-col md:flex-row justify-between items-center gap-4 no-print">
             
-            {{-- Left Side: Title & Component --}}
-            <div class="flex flex-col gap-4">
-                <div>
-                    <h3 class="text-3xl font-black text-slate-800 tracking-tight">{{ __('account.zones_list') }}</h3>
-                    <p class="text-sm text-slate-500 font-medium mt-1">{{ __('account.manage_full_page') }}</p>
-                </div>
-                
-                {{-- NAV COMPONENT --}}
-                <x-account-nav active="zones" />
+            {{-- Main Navigation Tabs --}}
+            <div class="bg-slate-100 p-1 rounded-lg flex items-center shadow-inner">
+                <a href="{{ route('accounts.index') }}" class="px-5 py-2 text-sm font-bold rounded-md text-slate-500 hover:text-indigo-600 hover:bg-white/50 transition">
+                    {{ __('account.main_tab') }}
+                </a>
+                {{-- Active Tab (Zones) --}}
+                <a href="{{ route('zones.index') }}" class="px-5 py-2 text-sm font-bold rounded-md bg-white text-indigo-600 shadow-sm transition">
+                    {{ __('account.zones_tab') }}
+                </a>
+                <a href="#" class="px-5 py-2 text-sm font-bold rounded-md text-slate-500 hover:text-indigo-600 hover:bg-white/50 transition opacity-50 cursor-not-allowed">
+                    {{ __('account.reports_tab') }}
+                </a>
             </div>
 
-            {{-- Right Side: Sub-Tabs & Actions --}}
-            <div class="flex flex-col md:flex-row items-center gap-4">
+            <div class="flex flex-wrap items-center gap-2">
                 
                 {{-- Sub-Tabs (Cities/Neighborhoods) --}}
-                <div class="flex items-center gap-2 bg-slate-100/50 p-1.5 rounded-full border border-slate-200/60">
+                <div class="flex items-center gap-2 bg-slate-50 p-1 rounded-full border border-slate-200 mr-2">
                     <button @click="switchTab('cities')" class="pill-tab" :class="activeTab === 'cities' ? 'pill-active' : 'pill-inactive'">
                         {{ __('account.cities') }}
                     </button>
@@ -60,209 +79,343 @@
                     </button>
                 </div>
 
-                {{-- Toolbar --}}
-                <div class="flex items-center gap-3">
-                    <div x-show="selectedIds.length > 0" x-transition.scale.origin.right class="flex items-center gap-2 bg-red-50 px-3 py-2 rounded-xl border border-red-100 shadow-sm">
-                        <span class="text-xs font-bold text-red-600"><span x-text="selectedIds.length"></span> {{ __('account.selected') }}</span>
-                        <button @click="bulkDelete()" class="p-1 text-red-500 hover:bg-red-200 rounded-lg transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-                        <button @click="selectedIds = []" class="p-1 text-slate-400 hover:bg-slate-200 rounded-lg transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
-                    </div>
-                    
-                    {{-- Add New Button --}}
-                    <button @click="addNewRow()" class="h-10 px-6 bg-indigo-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transition-all transform active:scale-95 flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-                        <span>{{ __('account.add_new') }}</span>
-                    </button>
+                {{-- Bulk Delete --}}
+                <div x-show="selectedIds.length > 0" x-transition class="flex items-center gap-2 bg-red-50 px-2 py-1 rounded-lg border border-red-100 mr-2">
+                    <span class="text-xs font-bold text-red-600 px-2"><span x-text="selectedIds.length"></span> {{ __('account.selected') }}</span>
+                    <x-btn type="bulk-delete" @click="bulkDelete()">{{ __('account.delete_selected') }}</x-btn>
+                    <button @click="selectedIds = []" type="button" class="px-2 py-1.5 text-slate-500 hover:text-slate-700"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
                 </div>
+
+                {{-- Column Config --}}
+                <div x-data="{ open: false }" class="relative">
+                    <x-btn type="columns" @click="open = !open" @click.away="open = false" title="{{ __('account.columns') }}" />
+                    <div x-show="open" class="absolute top-full mt-3 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 p-3 ltr:right-0 rtl:left-0" style="display:none;">
+                        <div class="flex justify-between items-center px-2 py-1 mb-2 border-b border-slate-100 pb-2">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">{{ __('account.columns') }}</span>
+                            <button @click="resetLayout(); open = false;" class="text-[10px] text-blue-500 hover:underline cursor-pointer">{{ __('account.reset_layout') }}</button>
+                        </div>
+                        <div class="max-h-60 overflow-y-auto space-y-1">
+                            <template x-for="col in currentColumns" :key="col.field">
+                                <label class="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-50 rounded cursor-pointer transition">
+                                    <input type="checkbox" x-model="col.visible" class="rounded text-indigo-600 w-4 h-4 border-slate-300 focus:ring-indigo-500">
+                                    <span class="text-xs text-slate-700 font-medium" x-text="col.label"></span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <x-btn type="add" @click="addNewRow()" title="{{ __('account.add_new') }}" />
             </div>
         </div>
 
-        {{-- 2. CITIES TAB --}}
-        <div x-show="activeTab === 'cities'" class="bg-white shadow-xl shadow-slate-200/50 rounded-2xl border border-slate-200 mx-4 md:mx-8 overflow-hidden relative">
-            <form id="cities-form" action="{{ route('zones.cities.store') }}" method="POST">
-                @csrf
-                <div class="overflow-x-auto custom-scrollbar relative min-h-[400px]">
-                    <table class="w-full text-sm text-left rtl:text-right text-slate-500 whitespace-nowrap">
-                        <thead class="text-xs text-slate-600 uppercase bg-slate-50/80 border-b border-slate-200 font-extrabold sticky top-0 z-20 backdrop-blur-md">
+        {{-- TABLE CONTAINER --}}
+        <div class="relative w-full overflow-x-auto table-container bg-white shadow-sm rounded-lg border border-slate-200 mx-4 pb-20">
+            <div class="bg-white shadow-sm rounded-lg border border-slate-200 overflow-x-auto table-container">
+                <form id="sheet-form" :action="formAction" method="POST">
+                    @csrf
+                    <table class="w-full text-sm text-left rtl:text-right text-slate-500 whitespace-nowrap border-separate border-spacing-0 table-fixed">
+                        <thead class="text-xs text-slate-700 uppercase bg-blue-50/50 border-b border-blue-100 sticky top-0 z-20">
                             <tr>
-                                <th class="px-4 py-4 w-[50px] text-center bg-slate-50/95"><input type="checkbox" @click="toggleAllSelection('cities')" class="select-checkbox bg-white"></th>
-                                <th class="px-6 py-4 w-[60px] text-center bg-slate-50/95">#</th>
-                                <th class="px-6 py-4 w-[15%]">{{ __('account.code') }}</th>
-                                <th class="px-6 py-4 w-[40%]">{{ __('account.city_name') }}</th>
-                                <th class="px-6 py-4 w-[20%] text-center">{{ __('account.created_by') }}</th>
-                                <th class="px-6 py-4 w-[10%] text-center bg-slate-50/95">{{ __('account.actions') }}</th>
+                                <th class="px-4 py-3 w-[40px] text-center bg-slate-50/95 border-b border-blue-100"><input type="checkbox" @click="toggleAllSelection()" :checked="allSelected" class="select-checkbox bg-white"></th>
+
+                                {{-- Draggable Columns --}}
+                                <template x-for="(col, index) in currentColumns" :key="col.field">
+                                    <th x-show="col.visible" 
+                                        class="px-4 py-2 relative h-12 transition-colors duration-200 border-r border-transparent select-none group border-b border-blue-100 bg-slate-50/95"
+                                        :style="'width:' + col.width + 'px'"
+                                        draggable="true"
+                                        @dragstart="dragStart($event, index)"
+                                        @dragover.prevent="dragOver($event)"
+                                        @drop="drop($event, index)"
+                                        :class="[{'dragging-col': draggingIndex === index}, col.class]">
+                                        
+                                        <div class="th-container" :class="{ 'search-active': openFilter === col.field }">
+                                            <div class="th-title">
+                                                <div @click="sortBy(col.field)" class="flex items-center gap-1 cursor-pointer flex-1 h-full hover:text-indigo-600 transition-colors">
+                                                    <span x-text="col.label"></span>
+                                                    <svg class="w-3 h-3 text-indigo-500 transition-transform" :class="sortCol === col.field && !sortAsc ? 'rotate-180' : ''" x-show="sortCol === col.field" fill="currentColor" viewBox="0 0 20 20"><path d="M5 10l5-5 5 5H5z"/></svg>
+                                                </div>
+                                                {{-- Search Trigger --}}
+                                                <button type="button" @click.stop="openFilter = col.field; setTimeout(() => $refs['input-'+col.field]?.focus(), 100)" class="p-1 rounded-md text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition" :class="filters[col.field] ? 'text-indigo-600' : ''">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                                </button>
+                                            </div>
+                                            {{-- Search Input (Correct Implementation) --}}
+                                            <div class="th-search" @click.stop>
+                                                <div class="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none rtl:right-0 rtl:left-auto rtl:pr-2">
+                                                    <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                                </div>
+                                                <input type="text" :x-ref="'input-'+col.field" x-model.debounce.500ms="filters[col.field]" @input="filterData()" class="header-search-input w-full" placeholder="{{ __('account.search') }}">
+                                                <button type="button" @click.stop="filters[col.field] = ''; filterData(); openFilter = null;" class="absolute right-0 top-0 h-full px-2 text-gray-400 hover:text-red-500 rtl:left-0 rtl:right-auto transition">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="resizer" @mousedown.stop.prevent="initResize($event, col)"></div>
+                                    </th>
+                                </template>
+
+                                {{-- Fixed Actions Column --}}
+                                <th class="px-4 py-3 w-[5%] text-center print:hidden bg-blue-50/50 border-b border-blue-100 sticky right-0 z-20">{{ __('account.actions') }}</th>
                             </tr>
                         </thead>
-                        <tbody id="cities-body" class="divide-y divide-slate-100">
-                            @forelse($cities as $index => $city)
-                            <tr class="hover:bg-indigo-50/30 transition duration-150 group">
-                                <td class="px-4 py-3 text-center"><input type="checkbox" :value="{{ $city->id }}" x-model="selectedIds" class="select-checkbox"></td>
-                                <td class="px-6 py-3 text-center font-mono text-xs font-bold text-slate-400">{{ $loop->iteration }} <input type="hidden" name="cities[{{ $index }}][id]" value="{{ $city->id }}"></td>
-                                <td class="p-2"><input type="text" name="cities[{{ $index }}][code]" value="{{ $city->code }}" class="sheet-input code-input" placeholder="CODE"></td>
-                                <td class="p-2"><input type="text" name="cities[{{ $index }}][city_name]" value="{{ $city->city_name }}" class="sheet-input" placeholder="{{ __('account.city_name') }}"></td>
-                                <td class="px-6 py-3 text-center text-xs text-slate-400"><span class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-md">{{ $city->creator->name ?? 'System' }}</span></td>
-                                <td class="px-6 py-3 text-center">
-                                    <div class="flex items-center justify-center gap-2 opacity-30 group-hover:opacity-100 transition-all duration-200">
-                                        <button type="button" @click="saveForm('cities-form')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg></button>
-                                        <button type="button" onclick="deleteItem('{{ route('zones.cities.destroy', $city->id) }}')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr class="no-data-row"><td colspan="6" class="py-16 text-center text-slate-400 flex flex-col items-center justify-center"><div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4"><svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg></div><span class="text-sm font-medium text-slate-500">{{ __('account.none') }}</span></td></tr>
-                            @endforelse
+                        <tbody class="divide-y divide-slate-100">
+                            <template x-for="(row, rowIndex) in filteredRows" :key="row.id || ('new-'+rowIndex)">
+                                <tr class="bg-white hover:bg-slate-50 transition-colors group/row" 
+                                    :class="[editingId === row.id ? 'bg-indigo-50/20' : '', selectedIds.includes(row.id) ? 'bg-indigo-50/10' : '', row.isNew ? 'new-row' : '']">
+                                    
+                                    <td class="px-4 py-4 text-center"><input type="checkbox" :value="row.id" x-model="selectedIds" class="select-checkbox"></td>
+
+                                    {{-- Cells Loop --}}
+                                    <template x-for="col in currentColumns" :key="col.field">
+                                        <td x-show="col.visible" :class="col.field === 'id' ? 'px-4 py-4 font-normal text-slate-500 text-center' : 'p-1'">
+                                            
+                                            {{-- ID --}}
+                                            <template x-if="col.field === 'id'">
+                                                <div class="font-normal text-slate-400">
+                                                    <span x-text="rowIndex + 1"></span>
+                                                    <input type="hidden" :name="(activeTab === 'cities' ? 'cities[' : 'neighborhoods[') + rowIndex + '][id]'" :value="row.id">
+                                                </div>
+                                            </template>
+
+                                            {{-- Code --}}
+                                            <template x-if="col.field === 'code'">
+                                                <input type="text" :name="(activeTab === 'cities' ? 'cities[' : 'neighborhoods[') + rowIndex + '][code]'" :value="row.code" class="sheet-input font-normal uppercase text-slate-500" readonly>
+                                            </template>
+
+                                            {{-- City Name --}}
+                                            <template x-if="activeTab === 'cities' && col.field === 'city_name'">
+                                                <div>
+                                                    <span x-show="editingId !== row.id" x-text="row.city_name" class="px-3 block text-slate-700 font-bold truncate"></span>
+                                                    <input x-show="editingId === row.id" :id="'input-name-'+row.id" type="text" :name="'cities['+rowIndex+'][city_name]'" x-model="row.city_name" class="sheet-input font-bold text-slate-700">
+                                                </div>
+                                            </template>
+
+                                            {{-- Neighborhood Name --}}
+                                            <template x-if="activeTab === 'neighborhoods' && col.field === 'neighborhood_name'">
+                                                <div>
+                                                    <span x-show="editingId !== row.id" x-text="row.neighborhood_name" class="px-3 block text-slate-700 font-bold truncate"></span>
+                                                    <input x-show="editingId === row.id" :id="'input-neigh-'+row.id" type="text" :name="'neighborhoods['+rowIndex+'][neighborhood_name]'" x-model="row.neighborhood_name" class="sheet-input font-bold text-slate-700">
+                                                </div>
+                                            </template>
+
+                                            {{-- City Select (For Neighborhoods) --}}
+                                            <template x-if="activeTab === 'neighborhoods' && col.field === 'city_id'">
+                                                <div>
+                                                    <span x-show="editingId !== row.id" x-text="getCityName(row.city_id)" class="px-3 block text-slate-600 font-normal truncate"></span>
+                                                    <select x-show="editingId === row.id" :name="'neighborhoods['+rowIndex+'][city_id]'" x-model="row.city_id" class="sheet-input font-normal text-slate-700">
+                                                        <option value="" disabled>{{ __('account.select_city') }}</option>
+                                                        <template x-for="c in cities" :key="c.id"><option :value="c.id" x-text="c.city_name"></option></template>
+                                                    </select>
+                                                </div>
+                                            </template>
+
+                                            {{-- User --}}
+                                            <template x-if="col.field === 'user'">
+                                                <div class="px-4 py-4 text-[10px] uppercase text-slate-400 font-normal text-center truncate" x-text="getUserName(row.user_id)"></div>
+                                            </template>
+
+                                            {{-- Date --}}
+                                            <template x-if="col.field === 'created_at'">
+                                                <div class="px-4 py-4 text-center text-xs text-slate-400 font-mono font-normal" x-text="formatDate(row.created_at)"></div>
+                                            </template>
+                                        </td>
+                                    </template>
+                                    
+                                    {{-- Actions --}}
+                                    <td class="px-4 py-4 text-center print:hidden">
+                                        <div class="flex items-center justify-center gap-2">
+                                            <template x-if="editingId === row.id">
+                                                <div class="flex items-center gap-1">
+                                                    <x-btn type="cancel" @click="cancelEdit(row)" title="{{ __('account.cancel') }}" />
+                                                    <x-btn type="save" @click="saveRow()" title="{{ __('account.save') }}" />
+                                                </div>
+                                            </template>
+                                            <template x-if="editingId !== row.id">
+                                                <div class="flex items-center gap-2">
+                                                    <x-btn type="delete" @click="deleteRow(row.id)" title="{{ __('account.delete') }}" />
+                                                    <x-btn type="edit" @click="startEdit(row.id)" title="{{ __('account.edit') }}" />
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+
+                            {{-- NO DATA ANIMATION --}}
+                            <template x-if="filteredRows.length === 0">
+                                <tr class="bg-white">
+                                    <td :colspan="currentColumns.length + 2" class="py-12 text-center">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <dotlottie-player src="https://lottie.host/ace77418-be70-4ea4-8c0a-88efe0221c91/aCjbIohU9b.lottie" background="transparent" speed="1" style="width: 200px; height: 200px;" loop autoplay></dotlottie-player>
+                                            <span class="text-slate-400 font-medium mt-4">{{ __('account.no_data_found') }}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
-
-        {{-- 4. NEIGHBORHOODS TAB --}}
-        <div x-show="activeTab === 'neighborhoods'" class="bg-white shadow-xl shadow-slate-200/50 rounded-2xl border border-slate-200 mx-4 md:mx-8 overflow-hidden relative" style="display: none;">
-            <form id="neighborhoods-form" action="{{ route('zones.neighborhoods.store') }}" method="POST">
-                @csrf
-                <div class="overflow-x-auto custom-scrollbar relative min-h-[400px]">
-                    <table class="w-full text-sm text-left rtl:text-right text-slate-500 whitespace-nowrap">
-                        <thead class="text-xs text-slate-600 uppercase bg-slate-50/80 border-b border-slate-200 font-extrabold sticky top-0 z-20 backdrop-blur-md">
-                            <tr>
-                                <th class="px-4 py-4 w-[50px] text-center bg-slate-50/95"><input type="checkbox" @click="toggleAllSelection('neighborhoods')" class="select-checkbox bg-white"></th>
-                                <th class="px-6 py-4 w-[60px] text-center bg-slate-50/95">#</th>
-                                <th class="px-6 py-4 w-[15%]">{{ __('account.code') }}</th>
-                                <th class="px-6 py-4 w-[25%]">{{ __('account.city_name') }}</th>
-                                <th class="px-6 py-4 w-[30%]">{{ __('account.neighborhood_name') }}</th>
-                                <th class="px-6 py-4 w-[15%] text-center">{{ __('account.created_by') }}</th>
-                                <th class="px-6 py-4 w-[10%] text-center bg-slate-50/95">{{ __('account.actions') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody id="neighborhoods-body" class="divide-y divide-slate-100">
-                            @forelse($neighborhoods as $index => $neigh)
-                            <tr class="hover:bg-indigo-50/30 transition duration-150 group">
-                                <td class="px-4 py-3 text-center"><input type="checkbox" :value="{{ $neigh->id }}" x-model="selectedIds" class="select-checkbox"></td>
-                                <td class="px-6 py-3 text-center font-mono text-xs font-bold text-slate-400">{{ $loop->iteration }} <input type="hidden" name="neighborhoods[{{ $index }}][id]" value="{{ $neigh->id }}"></td>
-                                <td class="p-2"><input type="text" name="neighborhoods[{{ $index }}][code]" value="{{ $neigh->code }}" class="sheet-input code-input" placeholder="---"></td>
-                                <td class="p-2">
-                                    <select name="neighborhoods[{{ $index }}][city_id]" class="sheet-input">
-                                        @foreach($cities as $c) <option value="{{ $c->id }}" {{ $neigh->city_id == $c->id ? 'selected' : '' }}>{{ $c->city_name }}</option> @endforeach
-                                    </select>
-                                </td>
-                                <td class="p-2"><input type="text" name="neighborhoods[{{ $index }}][neighborhood_name]" value="{{ $neigh->neighborhood_name }}" class="sheet-input" placeholder="{{ __('account.neighborhood_name') }}"></td>
-                                <td class="px-6 py-3 text-center text-xs text-slate-400"><span class="px-2 py-1 bg-slate-100 border border-slate-200 rounded-md">{{ $neigh->creator->name ?? 'System' }}</span></td>
-                                <td class="px-6 py-3 text-center">
-                                    <div class="flex items-center justify-center gap-2 opacity-30 group-hover:opacity-100 transition-all duration-200">
-                                        <button type="button" @click="saveForm('neighborhoods-form')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg></button>
-                                        <button type="button" onclick="deleteItem('{{ route('zones.neighborhoods.destroy', $neigh->id) }}')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr class="no-data-row"><td colspan="7" class="py-16 text-center text-slate-400 flex flex-col items-center justify-center"><div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4"><svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div><span class="text-sm font-medium text-slate-500">{{ __('account.none') }}</span></td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </form>
-        </div>
-
+        <form id="delete-form" action="" method="POST" class="hidden">@csrf @method('DELETE')</form>
     </div>
-
-    {{-- DELETE FORM (Hidden) --}}
-    <form id="delete-form" action="" method="POST" class="hidden">@csrf @method('DELETE')</form>
 
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('zoneManager', (defaultTab) => ({
                 activeTab: defaultTab,
-                selectedIds: [],
+                cities: @json($cities),
+                neighborhoods: @json($neighborhoods),
                 
-                switchTab(tab) {
-                    this.activeTab = tab;
-                    this.selectedIds = [];
+                // State
+                originalRows: [], filteredRows: [], editingId: null, selectedIds: [], openFilter: null, sortCol: null, sortAsc: true, filters: {}, draggingIndex: null,
+
+                // Config
+                cityColumns: [
+                    { field: 'id', label: '#', visible: true, width: 50 },
+                    { field: 'code', label: '{{ __('account.code') }}', visible: true, width: 100 },
+                    { field: 'city_name', label: '{{ __('account.city_name') }}', visible: true, width: 250 },
+                    { field: 'user', label: '{{ __('account.created_by') }}', visible: true, width: 100 },
+                    { field: 'created_at', label: '{{ __('account.created_at') }}', visible: true, width: 120 },
+                ],
+                neighColumns: [
+                    { field: 'id', label: '#', visible: true, width: 50 },
+                    { field: 'code', label: '{{ __('account.code') }}', visible: true, width: 100 },
+                    { field: 'city_id', label: '{{ __('account.city_name') }}', visible: true, width: 200 },
+                    { field: 'neighborhood_name', label: '{{ __('account.neighborhood_name') }}', visible: true, width: 250 },
+                    { field: 'user', label: '{{ __('account.created_by') }}', visible: true, width: 100 },
+                    { field: 'created_at', label: '{{ __('account.created_at') }}', visible: true, width: 120 },
+                ],
+
+                get currentColumns() { return this.activeTab === 'cities' ? this.cityColumns : this.neighColumns; },
+                get formAction() { return this.activeTab === 'cities' ? "{{ route('zones.cities.store') }}" : "{{ route('zones.neighborhoods.store') }}"; },
+
+                initData() {
+                    this.loadTab(this.activeTab);
+                    const cCols = localStorage.getItem('zones_city_cols'); if(cCols) this.cityColumns = JSON.parse(cCols);
+                    const nCols = localStorage.getItem('zones_neigh_cols'); if(nCols) this.neighColumns = JSON.parse(nCols);
                 },
 
-                saveForm(id) { document.getElementById(id).submit(); },
+                switchTab(tab) { this.activeTab = tab; this.loadTab(tab); this.selectedIds = []; this.editingId = null; },
+                
+                loadTab(tab) {
+                    this.originalRows = tab === 'cities' ? JSON.parse(JSON.stringify(this.cities)) : JSON.parse(JSON.stringify(this.neighborhoods));
+                    this.filteredRows = JSON.parse(JSON.stringify(this.originalRows));
+                    this.filters = {};
+                },
 
+                // --- DRAG & DROP ---
+                dragStart(e, index) { this.draggingIndex = index; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', index); },
+                dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; },
+                drop(e, targetIndex) {
+                    if (this.draggingIndex === null || this.draggingIndex === targetIndex) return;
+                    let cols = this.activeTab === 'cities' ? this.cityColumns : this.neighColumns;
+                    const element = cols.splice(this.draggingIndex, 1)[0];
+                    cols.splice(targetIndex, 0, element);
+                    this.draggingIndex = null;
+                    this.saveState();
+                },
+
+                // --- RESIZING ---
+                initResize(e, col) {
+                    const startX = e.clientX; 
+                    const startWidth = parseInt(col.width) || 100;
+                    const onMouseMove = (moveEvent) => {
+                        const diff = moveEvent.clientX - startX;
+                        const isRtl = document.dir === 'rtl';
+                        col.width = isRtl ? startWidth - diff : startWidth + diff;
+                    };
+                    const onMouseUp = () => {
+                        window.removeEventListener('mousemove', onMouseMove);
+                        window.removeEventListener('mouseup', onMouseUp);
+                        this.saveState();
+                    };
+                    window.addEventListener('mousemove', onMouseMove);
+                    window.addEventListener('mouseup', onMouseUp);
+                },
+
+                saveState() { 
+                    if(this.activeTab === 'cities') localStorage.setItem('zones_city_cols', JSON.stringify(this.cityColumns));
+                    else localStorage.setItem('zones_neigh_cols', JSON.stringify(this.neighColumns));
+                },
+                
+                resetLayout() { 
+                    localStorage.removeItem('zones_city_cols'); 
+                    localStorage.removeItem('zones_neigh_cols'); 
+                    window.location.reload(); 
+                },
+
+                // Helpers
+                getCityName(id) { const c = this.cities.find(x => x.id == id); return c ? c.city_name : '-'; },
+                getUserName(id) { return id ? '{{ Auth::user()->name }}' : 'SYSTEM'; },
+                formatDate(date) { return date ? new Date(date).toISOString().slice(0,16).replace('T',' ') : '-'; },
+
+                // Actions
+                get allSelected() { return this.filteredRows.length > 0 && this.selectedIds.length === this.filteredRows.length; },
+                toggleAllSelection() { this.selectedIds = this.allSelected ? [] : this.filteredRows.map(r => r.id); },
+                
                 addNewRow() {
-                    let container, index, row, nextNumber;
+                    const newId = 'new-' + Date.now();
+                    const newRow = this.activeTab === 'cities' 
+                        ? { id: newId, code: 'NEW', city_name: '', user_id: {{ Auth::id() }}, created_at: new Date(), isNew: true }
+                        : { id: newId, code: 'NEW', city_id: '', neighborhood_name: '', user_id: {{ Auth::id() }}, created_at: new Date(), isNew: true };
                     
-                    document.querySelectorAll('.no-data-row').forEach(el => el.style.display = 'none');
-
-                    if (this.activeTab === 'cities') {
-                        container = document.getElementById('cities-body');
-                        index = Date.now();
-                        nextNumber = container.querySelectorAll('tr:not(.no-data-row)').length + 1;
-
-                        row = `
-                        <tr class="new-row hover:bg-indigo-50/30 transition duration-150 group">
-                            <td class="px-4 py-3 text-center"><input type="checkbox" disabled class="select-checkbox opacity-50"></td>
-                            <td class="px-6 py-3 text-center font-mono text-xs font-bold text-slate-400">${nextNumber}</td>
-                            <td class="p-2">
-                                <input type="text" name="cities[${index}][code]" value="${nextNumber}" class="sheet-input code-input" placeholder="CODE">
-                            </td>
-                            <td class="p-2">
-                                <input type="text" name="cities[${index}][city_name]" class="sheet-input" placeholder="{{ __('account.city_name') }}" autofocus>
-                            </td>
-                            <td class="px-6 py-3 text-center text-xs text-slate-400">{{ Auth::user()->name }}</td>
-                            <td class="px-6 py-3 text-center">
-                                <div class="flex items-center justify-center gap-2">
-                                    <button type="button" onclick="document.getElementById('cities-form').submit()" class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg></button>
-                                    {{-- CANCEL BUTTON (Removes the row) --}}
-                                    <button type="button" onclick="this.closest('tr').remove()" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg></button>
-                                </div>
-                            </td>
-                        </tr>`;
-                    } else {
-                        container = document.getElementById('neighborhoods-body');
-                        index = Date.now();
-                        nextNumber = container.querySelectorAll('tr:not(.no-data-row)').length + 1;
-                        let cityOptions = `@foreach($cities as $c) <option value="{{ $c->id }}">{{ $c->city_name }}</option> @endforeach`;
-                        
-                        row = `
-                        <tr class="new-row hover:bg-indigo-50/30 transition duration-150 group">
-                            <td class="px-4 py-3 text-center"><input type="checkbox" disabled class="select-checkbox opacity-50"></td>
-                            <td class="px-6 py-3 text-center font-mono text-xs font-bold text-slate-400">${nextNumber}</td>
-                            <td class="p-2">
-                                <input type="text" name="neighborhoods[${index}][code]" value="${nextNumber}" class="sheet-input code-input" placeholder="CODE">
-                            </td>
-                            <td class="p-2">
-                                <select name="neighborhoods[${index}][city_id]" class="sheet-input">
-                                    ${cityOptions}
-                                </select>
-                            </td>
-                            <td class="p-2">
-                                <input type="text" name="neighborhoods[${index}][neighborhood_name]" class="sheet-input" placeholder="{{ __('account.neighborhood_name') }}" autofocus>
-                            </td>
-                            <td class="px-6 py-3 text-center text-xs text-slate-400">{{ Auth::user()->name }}</td>
-                            <td class="px-6 py-3 text-center">
-                                <div class="flex items-center justify-center gap-2">
-                                    <button type="button" onclick="document.getElementById('neighborhoods-form').submit()" class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg></button>
-                                    {{-- CANCEL BUTTON (Removes the row) --}}
-                                    <button type="button" onclick="this.closest('tr').remove()" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg></button>
-                                </div>
-                            </td>
-                        </tr>`;
-                    }
-                    container.insertAdjacentHTML('beforeend', row);
-                    
-                    setTimeout(() => {
-                        const newRow = container.lastElementChild;
-                        newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        const input = newRow.querySelector('input[autofocus]');
-                        if(input) input.focus();
-                    }, 50);
+                    this.filteredRows.unshift(newRow);
+                    this.startEdit(newId);
                 },
-
-                toggleAllSelection(type) {
-                    this.selectedIds = [];
+                startEdit(id) { 
+                    this.editingId = id; 
+                    setTimeout(() => { 
+                        let el = this.activeTab === 'cities' ? document.getElementById('input-name-'+id) : document.getElementById('input-neigh-'+id);
+                        if(el) el.focus(); 
+                    }, 100); 
+                },
+                cancelEdit(row) {
+                    if (String(row.id).startsWith('new-')) { this.filteredRows = this.filteredRows.filter(r => r.id !== row.id); }
+                    this.editingId = null;
+                },
+                saveRow() { document.getElementById('sheet-form').submit(); },
+                
+                // Filter
+                filterData() {
+                    this.filteredRows = this.originalRows.filter(row => {
+                        let cols = this.activeTab === 'cities' ? this.cityColumns : this.neighColumns;
+                        return cols.every(col => {
+                            const filterVal = this.filters[col.field]?.toLowerCase() || '';
+                            if (!filterVal) return true;
+                            let cellVal = String(row[col.field] || '');
+                            if (col.field === 'city_id') cellVal = this.getCityName(row.city_id);
+                            return cellVal.toLowerCase().includes(filterVal);
+                        });
+                    });
+                    this.sortData();
+                },
+                sortBy(field) {
+                    if (this.sortCol === field) this.sortAsc = !this.sortAsc; else { this.sortCol = field; this.sortAsc = true; }
+                    this.sortData();
+                },
+                sortData() {
+                    if (!this.sortCol) return;
+                    this.filteredRows.sort((a, b) => {
+                        let valA = a[this.sortCol]; let valB = b[this.sortCol];
+                        if (valA < valB) return this.sortAsc ? -1 : 1; if (valA > valB) return this.sortAsc ? 1 : -1; return 0;
+                    });
+                },
+                deleteRow(id) {
+                    const route = this.activeTab === 'cities' ? "{{ route('zones.cities.destroy', ':id') }}" : "{{ route('zones.neighborhoods.destroy', ':id') }}";
+                    const form = document.getElementById('delete-form'); form.action = route.replace(':id', id);
+                    if (window.confirmAction) { window.confirmAction('delete-form', "{{ __('account.delete_confirm') }}"); } 
+                    else { if(confirm("{{ __('account.delete_confirm') }}")) form.submit(); }
+                },
+                bulkDelete() {
+                    if (this.selectedIds.length === 0) return;
+                    // For zones, you might need a dedicated bulk delete route. 
+                    // This alert is here until you implement that controller logic.
+                    alert('Please implement bulk delete controller logic for zones.'); 
                 }
             }));
         });
-
-        function deleteItem(url) {
-            if(confirm('{{ __('account.are_you_sure') }}')) {
-                const form = document.getElementById('delete-form');
-                form.action = url;
-                form.submit();
-            }
-        }
     </script>
 </x-app-layout>

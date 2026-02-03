@@ -58,18 +58,32 @@ Route::prefix('currency-config')->name('currency.')->group(function () {
 });
 
 // 3. Cash Boxes
-Route::prefix('cash-boxes')->name('cash-boxes.')->group(function () {
-    Route::get('/print', [CashBoxController::class, 'downloadPdf'])->name('print');
-    Route::post('/store-bulk', [CashBoxController::class, 'storeBulk'])->name('store-bulk');
-    Route::get('/export', [CashBoxController::class, 'export'])->name('export');
-    Route::delete('/bulk-delete', [CashBoxController::class, 'bulkDelete'])->name('bulk-delete');
-    Route::post('/bulk-restore', [CashBoxController::class, 'bulkRestore'])->name('bulk-restore');
-    Route::delete('/bulk-force-delete', [CashBoxController::class, 'bulkForceDelete'])->name('bulk-force-delete');
-    Route::get('/trash', [CashBoxController::class, 'trash'])->name('trash');
-    Route::post('/{id}/restore', [CashBoxController::class, 'restore'])->name('restore');
-    Route::delete('/{id}/force-delete', [CashBoxController::class, 'forceDelete'])->name('force-delete');
+Route::middleware(['auth'])->group(function () {
+
+    // --- Cash Box Routes ---
+    Route::prefix('cash-boxes')->name('cash-boxes.')->group(function () {
+        
+        // 1. Print / Export (Must be defined before resource to avoid ID collision)
+        // Fixed: Name changed to 'downloadPdf' to match your View's route('cash-boxes.downloadPdf')
+        Route::get('/print', [CashBoxController::class, 'downloadPdf'])->name('downloadPdf');
+        Route::get('/export', [CashBoxController::class, 'export'])->name('export');
+
+        // 2. Bulk Actions (Grid Editing & Deleting)
+        Route::post('/store-bulk', [CashBoxController::class, 'storeBulk'])->name('store-bulk');
+        Route::delete('/bulk-delete', [CashBoxController::class, 'bulkDelete'])->name('bulk-delete');
+        Route::post('/bulk-restore', [CashBoxController::class, 'bulkRestore'])->name('bulk-restore');
+        Route::delete('/bulk-force-delete', [CashBoxController::class, 'bulkForceDelete'])->name('bulk-force-delete');
+
+        // 3. Trash & Restoration
+        Route::get('/trash', [CashBoxController::class, 'trash'])->name('trash');
+        Route::post('/{id}/restore', [CashBoxController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [CashBoxController::class, 'forceDelete'])->name('force-delete');
+    });
+
+    // 4. Standard Resource Routes (Index, Store, Update, Destroy)
+    Route::resource('cash-boxes', CashBoxController::class);
+
 });
-Route::resource('cash-boxes', CashBoxController::class);
 
 // 4. Spending
 Route::prefix('group-spending')->name('group-spending.')->group(function () {

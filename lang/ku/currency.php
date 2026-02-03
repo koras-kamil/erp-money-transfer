@@ -1,81 +1,54 @@
 <?php
 
 return [
-    // Page & PDF Titles
+    // --- Page Titles ---
     'config_title' => 'ڕێکخستنی دراو',
     'title'        => 'لیستی دراوەکان',
     'trash'        => 'سەلەی سڕاوەکان',
+    'columns_title' => 'کۆڵۆمەکان', // Used in the column dropdown header
 
-
-    'all' => ' هەمووی',
-    'none' => 'هیچیان',
-
-    'deleted_selected' => 'دراوە دیاریکراوەکان بە سەرکەوتوویی سڕانەوە.',
-    'nothing_selected' => 'هیچ دراوێک دیاری نەکراوە.',
-    'bulk_delete_confirm' => 'دڵنیایت دەتەوێت ئەمانە بسڕیتەوە؟',
-    'delete_selected' => 'سڕینەوەی دیاریکراوەکان',
-    'selected' => 'دیاریکراو',
-
-    // Table Headers
-    'id'           => 'ڕیز',
-    'code'         => 'کۆد',
-    'name'         => 'ناو',
-    'rate'         => 'نرخ',
-    'type'         => 'جۆری دراو',
-    'symbol'       => 'هێما',
-    'digit'        => 'ژمارەی پۆینت',
-    'price_total'  => 'نرخی (100 دۆلار)',
-    'price_single' => 'نرخی (1 دۆلار)',
-    'price_sell'   => 'نرخی فرۆشتن',
-    'branch'       => 'لقی سەرەکی',
-    'active'       => 'چالاک',
+    // --- Table Columns ---
+    'id'           => '#',
+    'name'         => 'ناوی دراو',      // currency_type
+    'symbol'       => 'هێما',          // symbol
+    'hidden_digit' => 'پۆینتی شاراوە', // digit_number (Hidden Column)
+    'price_total'  => 'نرخی (100$)',   // price_total
+    'price_single' => 'نرخی (1$)',     // price_single
+    'branch'       => 'لق',            // branch_id
+    'created_by'   => 'بەکارهێنەر',    // User who created it
+    'date'         => 'بەروار',        // Date column
+    'active'       => 'چالاک',         // is_active
     'actions'      => 'کردارەکان',
-    
-    // Trash Specific Headers
-    'deleted_by'   => 'سڕایەوە لەلایەن',
-    'deleted_at'   => 'کاتی سڕینەوە',
-    'system'       => 'سیستەم',
 
-    // Buttons & Labels
+    // --- Actions & Buttons ---
     'add_new'      => '+ زیادکردنی دراو',
-    'save_changes' => 'خەزنکردن',
     'print'        => 'پرینت',
-    'type_here'    => 'لێرە بنووسە...',
-    'new'          => 'نوێ',
+    'search'       => 'گەڕان...',
+    'reset_layout' => 'ڕێکخستنەوە',    // Reset Layout button
     'back'         => 'گەڕانەوە',
     'restore'      => 'گەڕاندنەوە',
-    'perm_delete'  => 'سڕینەوەی یەکجاری',
+    'save'         => 'خەزنکردن',      // Save button in table
+    'cancel'       => 'پاشگەزبوونەوە', // Cancel button in table
+    'edit'         => 'دەستکاری',
+    'delete'       => 'سڕینەوە',
 
-    // Alerts & Messages
-    'saved'            => 'بە سەرکەوتوویی خەزنکرا!',
-    'deleted'          => 'بە سەرکەوتوویی سڕایەوە.',
-    'restored'         => 'بە سەرکەوتوویی گەڕێندرایەوە.',
-    'permanently_deleted' => 'بە یەکجاری سڕایەوە.',
-    'error'            => 'هەڵەیەک ڕوویدا، تکایە دووبارە هەوڵ بدەرەوە.',
-    'no_changes'       => 'هیچ گۆڕانکارییەک نییە بۆ خەزنکردن.',
-    'check_inputs'     => 'تکایە دڵنیابەرەوە لە زانیارییەکان.',
-    'delete_confirm'   => 'دڵنیایت لە سڕینەوەی ئەم دراوە؟',
-    'trash_empty'      => 'سەلەی سڕاوەکان بەتاڵە',
-
-    // PDF Specific
-    'print_date' => 'بەرواری پرینت',
-    'printed_by' => 'پرینت کراوە لەلایەن',
-
-    // SweetAlert / Confirmations
-    'are_you_sure'        => 'دڵنیایت؟',
-    'delete_warning'      => 'ئەم کردەوeye پاشگەزبوونەوەی نییە!',
-    'warning_perm_delete' => 'دڵنیایت لە سڕینەوەی یەکجاری؟',
-    'cant_undone'         => 'ئەم کردارە پاشگەزبوونەوەی نییە!',
-    'yes_delete'          => 'بەڵێ، بیسڕەوە!',
-    'cancel'              => 'پاشگەزبوونەوە',
-    'ok'                  => 'باشە',
-
-
-      'restored_selected' => 'دراوە دیاریکراوەکان بە سەرکەوتوویی گەڕێنرانەوە.',
-    'permanently_deleted_selected' => 'دراوە دیاریکراوەکان بە یەکجاری سڕانەوە.',
+    // --- Selection & Bulk Actions ---
+    'selected'         => 'دیاریکراو',
+    'delete_selected'  => 'سڕینەوەی دیاریکراوەکان',
     'restore_selected' => 'گەڕاندنەوەی دیاریکراوەکان',
-    'cancel' => 'پاشگەزبوونەوە',
+    'select_branch'    => 'هەڵبژاردنی لق', // Dropdown placeholder
 
+    // --- Alerts & Confirmations ---
+    'delete_confirm'      => 'دڵنیایت لە سڕینەوەی ئەم دراوە؟',
+    'bulk_delete_confirm' => 'دڵنیایت دەتەوێت ئەمانە بسڕیتەوە؟',
+    'saved'               => 'بە سەرکەوتوویی خەزنکرا!',
+    'deleted'             => 'بە سەرکەوتوویی سڕایەوە.',
+    'restored'            => 'بە سەرکەوتوویی گەڕێندرایەوە.',
+    'system'              => 'سیستەم', // Default fallback for user name
 
- 
+    // --- Trash Specific ---
+    'deleted_by'   => 'سڕایەوە لەلایەن',
+    'deleted_at'   => 'کاتی سڕینەوە',
+    'perm_delete'  => 'سڕینەوەی یەکجاری',
+    'trash_empty'  => 'سەلەی سڕاوەکان بەتاڵە',
 ];

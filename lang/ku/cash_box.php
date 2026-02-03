@@ -75,5 +75,9 @@ return [
     'cannot_delete_used_bulk' => 'هەندێک ئایتم نەسڕانەوە چونکە بەکارهاتوون.',
     'error' => 'هەڵەیەک ڕوویدا.',
     'trash_empty' =>'سڕاوەکان بەتاڵە' ,
-    'delete_confirm' => 'دڵنیای لە سڕینەوەی '
+    'delete_confirm' => 'دڵنیای لە سڕینەوەی ',
+    'reset_layout'=>' ڕێکخستنەوە',
+'columns'=>'کۆڵۆمەکان',
+'Select_Branch'=>'هەڵبژاردنی لق',
+ 'search'=>'گەڕان',
 ];

@@ -76,7 +76,11 @@ return [
     'trash_empty' =>'سڕاوەکان بەتاڵە' ,
     'confirm_delete' => 'دڵنیای لە سڕینەوەی ',
     'created_at'=>'بەروار' ,
-    'group_title'=> 'گروپی خەرجی'
+    'group_title'=> 'گروپی خەرجی',
+       'reset_layout'=>' ڕێکخستنەوە',
+'columns'=>'کۆڵۆمەکان',
+'Select_Branch'=>'هەڵبژاردنی لق',
+ 'search'=>'گەڕان',
 
     
 ];

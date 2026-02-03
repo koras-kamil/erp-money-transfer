@@ -68,4 +68,6 @@ return [
     'cancel' => 'Cancel',
     'cannot_delete_used_bulk' => 'Some items could not be deleted because they are in use.',
     'error' => 'An error occurred.',
+       'reset-layout'=>'reset lay out',
+    'Columns'=>'columns'
 ];

@@ -6,23 +6,38 @@ use App\Http\Controllers\ZoneController;
 
 /*
 |--------------------------------------------------------------------------
-| ACCOUNT & ZONE ROUTES
+| ACCOUNT ROUTES
 |--------------------------------------------------------------------------
 */
 
-// 1. Accounts
-Route::delete('accounts/bulk-delete', [AccountController::class, 'bulkDelete'])->name('accounts.bulk-delete');
+// 1. Trash Routes (MUST BE BEFORE RESOURCE)
+Route::prefix('accounts')->name('accounts.')->group(function () {
+    Route::get('trash', [AccountController::class, 'trash'])->name('trash');
+    Route::post('{id}/restore', [AccountController::class, 'restore'])->name('restore');
+    Route::delete('{id}/force-delete', [AccountController::class, 'forceDelete'])->name('force-delete');
+    
+    // 🔥 ADDED MISSING BULK RESTORE ROUTE
+    Route::post('bulk-restore', [AccountController::class, 'bulkRestore'])->name('bulk-restore');
+    
+    // Bulk Force Delete
+    Route::delete('bulk-force-delete', [AccountController::class, 'bulkForceDelete'])->name('bulk-force-delete');
+    
+    // Bulk Soft Delete (for Index page)
+    Route::delete('bulk-delete', [AccountController::class, 'bulkDelete'])->name('bulk-delete');
+});
+
+// 2. Resource Route
 Route::resource('accounts', AccountController::class);
 
-// 2. Zones (Cities & Neighborhoods)
+/*
+|--------------------------------------------------------------------------
+| ZONE ROUTES
+|--------------------------------------------------------------------------
+*/
 Route::controller(ZoneController::class)->prefix('zones')->name('zones.')->group(function () {
     Route::get('/', 'index')->name('index');
-    
-    // Cities Actions
     Route::post('/cities', 'storeCities')->name('cities.store');
     Route::delete('/cities/{id}', 'destroyCity')->name('cities.destroy');
-    
-    // Neighborhood Actions
     Route::post('/neighborhoods', 'storeNeighborhoods')->name('neighborhoods.store');
     Route::delete('/neighborhoods/{id}', 'destroyNeighborhood')->name('neighborhoods.destroy');
 });

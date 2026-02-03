@@ -33,14 +33,19 @@ class CashBoxController extends Controller
             'boxes.*.currency_id' => 'required|exists:currency_configs,id',
             'boxes.*.branch_id' => 'required|exists:branches,id',
             'boxes.*.balance' => 'required|numeric',
-            'boxes.*.description' => 'nullable|string|max:1000', // Added validation for description
+            'boxes.*.description' => 'nullable|string|max:1000',
+            'boxes.*.is_active' => 'nullable', // Allow 0, 1, true, false
         ]);
 
         foreach ($request->boxes as $data) {
-            $isActive = isset($data['is_active']);
+            // FIX: Robust boolean check. Handles "1", "0", "true", "false", 1, 0 correctly.
+            // isset() alone is dangerous because isset("0") returns true.
+            $isActive = filter_var($data['is_active'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-            if (isset($data['id']) && $data['id']) {
-                // UPDATE EXISTING
+            // FIX: Check if ID exists AND is numeric. 
+            // This prevents errors if JS sends "new-123" as an ID.
+            if (!empty($data['id']) && is_numeric($data['id'])) {
+                // --- UPDATE EXISTING ---
                 $box = CashBox::find($data['id']);
                 if ($box) {
                     $box->update([
@@ -49,19 +54,19 @@ class CashBoxController extends Controller
                         'currency_id' => $data['currency_id'],
                         'branch_id'   => $data['branch_id'],
                         'balance'     => $data['balance'],
-                        'description' => $data['description'] ?? null, // ADDED THIS LINE
+                        'description' => $data['description'] ?? null,
                         'is_active'   => $isActive,
                     ]);
                 }
             } else {
-                // CREATE NEW
+                // --- CREATE NEW ---
                 CashBox::create([
                     'name'        => $data['name'],
                     'type'        => $data['type'] ?? null,
                     'currency_id' => $data['currency_id'],
                     'branch_id'   => $data['branch_id'],
                     'balance'     => $data['balance'],
-                    'description' => $data['description'] ?? null, // ADDED THIS LINE
+                    'description' => $data['description'] ?? null,
                     'date_opened' => now(),
                     'user_id'     => Auth::id(),
                     'is_active'   => $isActive,
@@ -212,65 +217,56 @@ class CashBoxController extends Controller
         return $pdf->stream('cash_box_report.pdf');
     }
 
+    public function bulkDelete(Request $request)
+    {
+        $ids = json_decode($request->input('ids', '[]'), true);
 
+        if (!empty($ids) && is_array($ids)) {
+            foreach($ids as $id) {
+                $cashBox = CashBox::find($id);
+                if($cashBox) {
+                    $cashBox->update(['deleted_by' => Auth::id()]);
+                    $cashBox->delete();
+                }
+            }
+            return back()->with('success', __('cash_box.deleted_selected'));
+        }
 
-public function bulkDelete(Request $request)
-{
-    $ids = json_decode($request->input('ids', '[]'), true);
+        return back()->with('error', __('cash_box.nothing_selected'));
+    }
 
-    if (!empty($ids) && is_array($ids)) {
-        // Loop through IDs to save 'deleted_by' for each item
-        foreach($ids as $id) {
-            $cashBox = CashBox::find($id);
-            if($cashBox) {
-                // 1. Record who is deleting it
-                $cashBox->update(['deleted_by' => Auth::id()]);
-                
-                // 2. Perform the soft delete
-                $cashBox->delete();
+    public function bulkRestore(Request $request)
+    {
+        $ids = json_decode($request->input('ids', '[]'), true);
+
+        if (!empty($ids) && is_array($ids)) {
+            CashBox::onlyTrashed()->whereIn('id', $ids)->restore();
+            return back()->with('success', __('cash_box.restored_selected'));
+        }
+
+        return back()->with('error', __('cash_box.nothing_selected'));
+    }
+
+    public function bulkForceDelete(Request $request)
+    {
+        $ids = json_decode($request->input('ids', '[]'), true);
+
+        if (!empty($ids) && is_array($ids)) {
+            try {
+                $items = CashBox::onlyTrashed()->whereIn('id', $ids)->get();
+                foreach($items as $item) {
+                    $item->forceDelete();
+                }
+                return back()->with('success', __('cash_box.permanently_deleted_selected'));
+            } catch (QueryException $e) {
+                // Foreign Key Constraint Error (Postgres/MySQL)
+                if ($e->getCode() == "23503") {
+                    return back()->with('error', __('cash_box.cannot_delete_used_bulk'));
+                }
+                return back()->with('error', __('cash_box.error'));
             }
         }
-        
-        return back()->with('success', __('cash_box.deleted_selected'));
+
+        return back()->with('error', __('cash_box.nothing_selected'));
     }
-
-    return back()->with('error', __('cash_box.nothing_selected'));
-}
-
-public function bulkRestore(Request $request)
-{
-    $ids = json_decode($request->input('ids', '[]'), true);
-
-    if (!empty($ids) && is_array($ids)) {
-        CashBox::onlyTrashed()->whereIn('id', $ids)->restore();
-        return back()->with('success', __('cash_box.restored_selected'));
-    }
-
-    return back()->with('error', __('cash_box.nothing_selected'));
-}
-
-public function bulkForceDelete(Request $request)
-{
-    $ids = json_decode($request->input('ids', '[]'), true);
-
-    if (!empty($ids) && is_array($ids)) {
-        try {
-            $items = CashBox::onlyTrashed()->whereIn('id', $ids)->get();
-            foreach($items as $item) {
-                $item->forceDelete();
-            }
-            return back()->with('success', __('cash_box.permanently_deleted_selected'));
-        } catch (QueryException $e) {
-             // Foreign Key Constraint Error (Postgres/MySQL)
-            if ($e->getCode() == "23503") {
-                return back()->with('error', __('cash_box.cannot_delete_used_bulk'));
-            }
-            return back()->with('error', __('cash_box.error'));
-        }
-    }
-
-    return back()->with('error', __('cash_box.nothing_selected'));
-}
-
-
 }

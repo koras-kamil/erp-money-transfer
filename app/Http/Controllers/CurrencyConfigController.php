@@ -26,66 +26,56 @@ class CurrencyConfigController extends Controller
     /**
      * Handle Bulk Save (Create & Update) with SMART OPERATOR LOGIC
      */
-    public function store(Request $request)
-    {
-        DB::transaction(function () use ($request) {
-            $inputs = $request->input('currencies', []);
+   public function store(Request $request)
+{
+    DB::transaction(function () use ($request) {
+        $inputs = $request->input('currencies', []);
 
-            foreach ($inputs as $data) {
-                
-                // 1. Clean the Price (Remove commas, e.g. "1,500" -> "1500")
-                $priceTotal = isset($data['price_total']) ? str_replace(',', '', $data['price_total']) : 0;
-                
-                // 2. Calculate Single Price (Price for $1)
-                $priceSingle = $priceTotal > 0 ? ($priceTotal / 100) : 0;
+        foreach ($inputs as $data) {
+            
+            // 1. Clean Data
+            $priceTotal = isset($data['price_total']) ? str_replace(',', '', $data['price_total']) : 0;
+            $priceSingle = $priceTotal > 0 ? ($priceTotal / 100) : 0;
 
-                // 3. SMART AUTO-DETECT OPERATOR
-                // If the user selected one manually, keep it. Otherwise, auto-detect.
-                if (!empty($data['math_operator'])) {
-                    $operator = $data['math_operator'];
-                } 
-                else {
-                    // LOGIC:
-                    // Rate > 2.0 (e.g. 1500 IQD) -> DIVIDE (/)
-                    // Rate <= 2.0 (e.g. 0.95 EUR) -> MULTIPLY (*)
-                    if ($priceSingle > 2.0) {
-                        $operator = '/';
-                    } else {
-                        $operator = '*';
-                    }
+            // 2. Smart Operator Logic
+            if (!empty($data['math_operator'])) {
+                $operator = $data['math_operator'];
+            } else {
+                $operator = ($priceSingle > 2.0) ? '/' : '*';
+            }
+
+            $saveData = [
+                'currency_type' => $data['currency_type'],
+                'symbol'        => $data['symbol'],
+                'digit_number'  => $data['digit_number'] ?? 0, // Safety default
+                'price_total'   => $priceTotal,
+                'price_single'  => $priceSingle,
+                'price_sell'    => $data['price_sell'] ?? 0,
+                'branch_id'     => $data['branch_id'] ?? null,
+                'is_active'     => isset($data['is_active']) ? 1 : 0,
+                'math_operator' => $operator,
+            ];
+
+            // --- FIX IS HERE ---
+            // Check if ID exists AND is not empty
+            if (!empty($data['id'])) {
+                // UPDATE EXISTING
+                $currency = CurrencyConfig::find($data['id']);
+                if ($currency) {
+                    $currency->update($saveData);
                 }
-
-                $saveData = [
-                    'currency_type' => $data['currency_type'],
-                    'symbol'        => $data['symbol'],
-                    'digit_number'  => $data['digit_number'],
-                    'price_total'   => $priceTotal,
-                    'price_single'  => $priceSingle,
-                    'price_sell'    => $data['price_sell'] ?? 0,
-                    'branch_id'     => $data['branch_id'] ?? null,
-                    'is_active'     => isset($data['is_active']) ? 1 : 0,
-                    'math_operator' => $operator, // <--- SAVING THE SMART OPERATOR
-                ];
-
-                if (isset($data['id'])) {
-                    // Update existing
-                    $currency = CurrencyConfig::find($data['id']);
-                    if ($currency) {
-                        $currency->update($saveData);
-                    }
-                } else {
-                    // Create new
-                    if (!empty($data['currency_type'])) {
-                        $saveData['created_by'] = Auth::id();
-                        CurrencyConfig::create($saveData);
-                    }
+            } else {
+                // CREATE NEW
+                if (!empty($data['currency_type'])) {
+                    $saveData['created_by'] = Auth::id();
+                    CurrencyConfig::create($saveData);
                 }
             }
-        });
+        }
+    });
 
-        return back()->with('success', __('currency.saved') ?? 'Saved Successfully');
-    }
-
+    return back()->with('success', __('currency.saved') ?? 'Saved Successfully');
+}
     /**
      * Update Rates (Bulk update from Modal) - ALSO UPDATES OPERATOR
      */
@@ -96,19 +86,15 @@ class CurrencyConfigController extends Controller
         ]);
 
         foreach ($request->rates as $id => $priceTotalInput) {
-            // 1. Clean Data
             $priceTotal = str_replace(',', '', $priceTotalInput);
             $priceSingle = $priceTotal / 100;
 
-            // 2. RE-EVALUATE OPERATOR
-            // If market changes significantly (e.g., currency revaluation), update operator.
             if ($priceSingle > 2.0) {
                 $op = '/';
             } else {
                 $op = '*';
             }
 
-            // 3. Update Record
             CurrencyConfig::where('id', $id)->update([
                 'price_total'   => $priceTotal,
                 'price_single'  => $priceSingle,
