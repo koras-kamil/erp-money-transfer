@@ -9,19 +9,26 @@
     
     <title>{{ config('app.name', 'Smart System') }}</title>
 
+    {{-- 🚀 PRE-CONNECT TO CDNs --}}
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://unpkg.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://unpkg.com">
 
+    {{-- CORE STYLES & SCRIPTS --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
+    {{-- DEFERRED PLUGINS --}}
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
 
     <style>
+        /* 🔥 CLOAKING: Prevents UI flashing */
         [v-cloak], [x-cloak] { display: none !important; }
         
+        /* 1. CSS-Only Instant Preloader */
         #preloader {
             position: fixed;
             inset: 0;
@@ -45,11 +52,18 @@
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* Optimized Scrollbar */
         .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
-        .content-blur { filter: blur(12px) grayscale(30%); pointer-events: none; opacity: 0.7; transition: all 0.3s ease; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; transition: background 0.2s; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Privacy Blur Effect */
+        .content-blur { filter: blur(12px) grayscale(30%); pointer-events: none; opacity: 0.7; transition: filter 0.3s ease, opacity 0.3s ease; }
+        
+        /* SweetAlert & Layering */
         div.swal2-container { z-index: 9999 !important; }
+        body.swal2-shown { padding-right: 0 !important; }
     </style>
 </head>
 
@@ -57,7 +71,7 @@
       x-data="layoutData()"
       x-init="init()">
 
-    {{-- 1. CSS-Only Instant Preloader --}}
+    {{-- 🔥 INSTANT PRELOADER (Hides when Alpine/Page is fully ready) --}}
     <div id="preloader" x-ref="preloader">
         <div class="loader-circle"></div>
         <p class="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">
@@ -75,7 +89,8 @@
 
     {{-- FLOATING PRIVACY BUTTON --}}
     <div class="fixed bottom-6 z-[90] print:hidden ltr:right-6 rtl:left-6">
-        <button @click="toggleBlur()" class="w-12 h-12 flex items-center justify-center rounded-full bg-white text-slate-500 hover:text-indigo-600 shadow-xl border border-slate-100 transition-all hover:scale-110">
+        <button @click="toggleBlur()" 
+                class="w-12 h-12 flex items-center justify-center rounded-full bg-white text-slate-500 hover:text-indigo-600 shadow-xl border border-slate-100 transition-all hover:scale-110 active:scale-95">
             <svg x-show="!isBlurred" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
             <svg x-show="isBlurred" x-cloak class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
         </button>
@@ -85,19 +100,31 @@
     @include('components.right-menu')
 
     <div class="flex-1 flex flex-col h-full relative min-w-0 overflow-hidden bg-[#f8fafc] transition-all duration-300">
+        
         <x-command-bar />
+
         <main class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
             <div class="max-w-7xl w-full mx-auto flex flex-col gap-8 pb-10">
+                
                 @if (isset($header))
                 <div class="w-full flex justify-center items-center">
-                    <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] text-center bg-white/50 px-6 py-2 rounded-full border border-slate-200/50 select-none">{{ $header }}</h2>
+                    <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] text-center bg-white/50 px-6 py-2 rounded-full border border-slate-200/50 select-none">
+                        {{ $header }}
+                    </h2>
                 </div>
                 @endif
-                <div :class="isBlurred ? 'content-blur' : ''" class="transition-all duration-300 bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-200/60 shadow-sm p-4 md:p-10 min-h-[500px]">
+
+                <div :class="isBlurred ? 'content-blur' : ''" 
+                     class="transition-all duration-300 bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-200/60 shadow-sm p-4 md:p-10 min-h-[500px]">
                     {{ $slot }}
                 </div>
             </div>
-            <footer class="px-10 py-8 text-center mt-auto"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-slate-500 transition-colors">© {{ date('Y') }} Smart System</p></footer>
+
+            <footer class="px-10 py-8 text-center mt-auto">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-slate-500 transition-colors">
+                    © {{ date('Y') }} Smart System
+                </p>
+            </footer>
         </main>
     </div>
 
@@ -108,35 +135,41 @@
             Alpine.data('layoutData', () => ({
                 isLoading: false,
                 isBlurred: false,
-                showExchangeModal: false, // 🔥 Restored
-                exchangeRate: '148,000',   // 🔥 Restored
+                mobileMenuOpen: false, // 🔥 Mobile state
+                showExchangeModal: false, // 🔥 Financial state
+                exchangeRate: '148,000', // 🔥 Currency price
                 isCollapsed: Alpine.$persist(false).as('sidebar-collapsed'),
 
                 init() {
+                    // Preloader fade-out
                     window.addEventListener('load', () => {
-                        this.$refs.preloader.style.opacity = '0';
-                        setTimeout(() => { this.$refs.preloader.style.display = 'none'; }, 500);
+                        if(this.$refs.preloader) {
+                            this.$refs.preloader.style.opacity = '0';
+                            setTimeout(() => { this.$refs.preloader.style.display = 'none'; }, 500);
+                        }
                     });
 
-                    // Auto-fetch currency price if needed
+                    // Auto-fetch price from your backend on boot
                     this.fetchCurrencyPrice();
                 },
 
-                // 🔥 Restored Financial Button Logic
+                // Financial functionality
                 async fetchCurrencyPrice() {
                     try {
-                        const response = await fetch('/api/get-currency-price'); // Adjust your route
+                        const response = await fetch('/api/get-currency-price');
                         const data = await response.json();
                         if(data.price) this.exchangeRate = data.price;
                     } catch (e) {
-                        console.error("Currency fetch failed");
+                        console.warn("Currency sync unavailable");
                     }
                 },
                 
-                toggleBlur() { this.isBlurred = !this.isBlurred; }
+                toggleBlur() { this.isBlurred = !this.isBlurred; },
+                closeMobileMenu() { this.mobileMenuOpen = false; }
             }));
         });
 
+        // Global SweetAlert config
         window.confirmAction = function(formId, message = null) {
             Swal.fire({
                 title: "{{ __('messages.confirm_action') }}",
