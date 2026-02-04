@@ -80,4 +80,7 @@ return [
 'columns'=>'کۆڵۆمەکان',
 'Select_Branch'=>'هەڵبژاردنی لق',
  'search'=>'گەڕان',
+  'required'=>' پێویستە ',
+  'name_required'=>'پێویستە ناوی سندووقەکە بنوسیت',
+  'error'=>'هەڵە'
 ];

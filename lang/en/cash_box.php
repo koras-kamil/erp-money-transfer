@@ -69,5 +69,9 @@ return [
     'cannot_delete_used_bulk' => 'Some items could not be deleted because they are in use.',
     'error' => 'An error occurred.',
        'reset-layout'=>'reset lay out',
-    'Columns'=>'columns'
+    'Columns'=>'columns',
+    'required'=>' required ',
+     'required'=>' required ',
+  'name_required'=>'name the cash box need to be written ',
+  'error'=>'erorr'
 ];

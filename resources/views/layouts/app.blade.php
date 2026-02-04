@@ -127,6 +127,7 @@
             </footer>
         </main>
     </div>
+    
 
     @include('partials.exchange-modal')
 

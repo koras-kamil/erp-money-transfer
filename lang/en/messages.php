@@ -72,5 +72,7 @@ return [
     'privacy_mode'          => 'Privacy Mode',
     'quick_actions'         => 'Quick Actions',
     'all_branches'          => 'All Branches',
-    'loading'=>'loading '
+    'loading'=>'loading ',
+
+      'error'=>'هەڵە'
 ];

@@ -2,21 +2,23 @@
     {{-- STYLES --}}
     <style>
         /* --- CORE TABLE STYLES --- */
-        /* LIGHT BORDER ADDED */
-        .sheet-input { width: 100%; height: 100%; display: flex; align-items: center; background: transparent; border: 1px solid #f3f4f6; padding: 0 12px; font-size: 0.875rem; color: #1f2937; font-weight: 600; border-radius: 8px; transition: all 0.15s ease-in-out; }
+        .sheet-input { width: 100%; height: 100%; display: flex; align-items: center; background: transparent; border: 1px solid transparent; padding: 0 12px; font-size: 0.75rem; color: #1f2937; font-weight: 500; border-radius: 6px; transition: all 0.15s ease-in-out; }
         .sheet-input:focus { background-color: #fff; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); outline: none; }
-        .sheet-input[readonly] { cursor: default; color: #64748b; background-color: transparent; border-color: transparent; }
+        .sheet-input[readonly], .sheet-input[disabled] { cursor: default; color: #64748b; background-color: transparent; }
+        
+        /* Red Placeholder for Required Fields */
+        .placeholder-red-400::placeholder { color: #f87171; opacity: 1; }
         
         select.sheet-input {
             -webkit-appearance: none; appearance: none;
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em;
-            padding-right: 2.5rem; padding-left: 0.75rem; cursor: pointer; white-space: nowrap;
+            background-position: right 0.25rem center; background-repeat: no-repeat; background-size: 1em 1em;
+            padding-right: 1.5rem; padding-left: 0.5rem; cursor: pointer; white-space: nowrap; 
         }
-        [dir="rtl"] select.sheet-input { background-position: left 0.5rem center; padding-right: 0.75rem; padding-left: 2.5rem; }
+        [dir="rtl"] select.sheet-input { background-position: left 0.25rem center; padding-right: 0.5rem; padding-left: 1.5rem; }
         
         /* Checkbox & Scrollbar */
-        .select-checkbox { width: 1.1rem; height: 1.1rem; border-radius: 4px; border: 1px solid #cbd5e1; color: #6366f1; cursor: pointer; transition: all 0.2s; }
+        .select-checkbox { width: 1rem; height: 1rem; border-radius: 4px; border: 1px solid #cbd5e1; color: #6366f1; cursor: pointer; transition: all 0.2s; }
         .table-container::-webkit-scrollbar { height: 6px; }
         .table-container::-webkit-scrollbar-track { background: #f1f1f1; }
         .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -24,9 +26,10 @@
         /* Animation */
         @keyframes slideIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         .new-row { animation: slideIn 0.3s ease-out forwards; background-color: #f0fdf4 !important; }
-        
+        .ag-row-editing { background-color: #f0fdf4 !important; border-bottom: 1px solid #bbf7d0 !important; }
+
         /* --- HEADER INTERACTIVITY --- */
-        .th-container { position: relative; width: 100%; height: 32px; display: flex; align-items: center; overflow: hidden; }
+        .th-container { position: relative; width: 100%; height: 28px; display: flex; align-items: center; overflow: hidden; }
         .th-title { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; gap: 4px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(0); opacity: 1; cursor: grab; }
         .th-title:active { cursor: grabbing; }
         .search-active .th-title { transform: translateY(-100%); opacity: 0; pointer-events: none; }
@@ -34,8 +37,8 @@
         .th-search { position: absolute; inset: 0; display: flex; align-items: center; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(100%); opacity: 0; pointer-events: none; }
         .search-active .th-search { transform: translateY(0); opacity: 1; pointer-events: auto; }
 
-        .header-search-input { width: 100%; height: 100%; background-color: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px; padding-left: 28px; padding-right: 24px; font-size: 0.75rem; color: #1f2937; transition: all 0.15s; }
-        [dir="rtl"] .header-search-input { padding-left: 24px; padding-right: 28px; }
+        .header-search-input { width: 100%; height: 100%; background-color: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px; padding-left: 24px; padding-right: 20px; font-size: 0.7rem; color: #1f2937; transition: all 0.15s; }
+        [dir="rtl"] .header-search-input { padding-left: 20px; padding-right: 24px; }
         .header-search-input:focus { background-color: #fff; border-color: #3b82f6; outline: none; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
 
         .resizer { position: absolute; right: -4px; top: 0; height: 100%; width: 8px; cursor: col-resize; z-index: 50; touch-action: none; }
@@ -47,7 +50,7 @@
         @media print { .no-print, button, .print\:hidden { display: none !important; } .overflow-x-auto { overflow: visible !important; } table { width: 100% !important; } }
     </style>
 
-    <div x-data="tableManager()" x-init="initData()" class="py-6 w-full min-w-0" dir="{{ app()->getLocale() == 'ku' ? 'rtl' : 'ltr' }}">
+    <div x-data="tableManager()" x-init="initData()" class="py-6 w-full min-w-0 bg-white min-h-screen" dir="{{ app()->getLocale() == 'ku' ? 'rtl' : 'ltr' }}">
 
         {{-- ERROR MESSAGES --}}
         @if ($errors->any())
@@ -120,7 +123,7 @@
                                 :class="[{'dragging-col': draggingIndex === index}, col.class]">
                                 
                                 <div class="th-container" :class="{ 'search-active': openFilter === col.field }">
-                                    {{-- Title (CENTERED) --}}
+                                    {{-- Title --}}
                                     <div class="th-title">
                                         <div @click="sortBy(col.field)" class="flex items-center justify-center gap-1 cursor-pointer flex-1 h-full hover:text-indigo-600 transition-colors">
                                             <span x-text="col.label"></span>
@@ -148,7 +151,6 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white">
                     <template x-for="(row, rowIndex) in filteredRows" :key="row.id || ('new-'+rowIndex)">
-                        {{-- ADDED bg-white --}}
                         <tr class="bg-white hover:bg-slate-50 transition-colors group" 
                             :class="[editingId === row.id ? 'bg-indigo-50/20' : '', selectedIds.includes(row.id) ? 'bg-indigo-50/10' : '', row.isNew ? 'new-row' : '']">
                             
@@ -166,11 +168,16 @@
                                         </div>
                                     </template>
 
-                                    {{-- Name --}}
+                                    {{-- Name (UPDATED: Regular Font + Red Text Placeholder) --}}
                                     <template x-if="col.field === 'name'">
                                         <div>
                                             <span x-show="editingId !== row.id" x-text="row.name" class="px-3 block text-slate-700 font-bold text-xs truncate"></span>
-                                            <input x-show="editingId === row.id" :id="'input-name-'+row.id" type="text" x-model="row.name" class="sheet-input font-bold text-xs text-slate-700" placeholder="پێویستە*">
+                                            <input x-show="editingId === row.id" 
+                                                   :id="'input-name-'+row.id" 
+                                                   type="text" 
+                                                   x-model="row.name" 
+                                                   class="sheet-input font-normal text-xs text-slate-700 placeholder-red-400" 
+                                                   placeholder="{{ __('cash_box.required') }}">
                                         </div>
                                     </template>
 
@@ -186,7 +193,7 @@
                                     <template x-if="col.field === 'currency'">
                                         <div>
                                             <div x-show="editingId !== row.id" class="text-center"><span x-text="getCurrencyName(row.currency_id)" class="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span></div>
-                                            <select x-show="editingId === row.id" x-model="row.currency_id" class="sheet-input text-center text-xs uppercase font-bold text-indigo-600">
+                                            <select x-show="editingId === row.id" x-model="row.currency_id" class="sheet-input text-center text-xs uppercase font-normal text-indigo-600">
                                                 <template x-for="curr in currencies" :key="curr.id"><option :value="curr.id" x-text="curr.currency_type"></option></template>
                                             </select>
                                         </div>
@@ -196,7 +203,7 @@
                                     <template x-if="col.field === 'balance'">
                                         <div>
                                             <div x-show="editingId !== row.id" x-text="formatNumberDisplay(row.balance)" class="text-center font-bold text-xs text-emerald-600"></div>
-                                            <input x-show="editingId === row.id" type="text" :value="formatNumberDisplay(row.balance)" @input="handleNumberInput($event, row)" class="sheet-input text-center font-bold text-xs text-emerald-600">
+                                            <input x-show="editingId === row.id" type="text" :value="formatNumberDisplay(row.balance)" @input="handleNumberInput($event, row)" class="sheet-input text-center font-normal text-xs text-emerald-600">
                                         </div>
                                     </template>
 
@@ -283,7 +290,7 @@
                 filters: {},
                 draggingIndex: null,
                 
-                // UPDATED COLUMN ORDER: ID First, Then Name...
+                // UPDATED COLUMN ORDER
                 defaultColumns: [
                     { field: 'id', label: '#', visible: true, width: 50 },
                     { field: 'name', label: '{{ __('cash_box.name') }}', visible: true, width: 200 },
@@ -300,7 +307,6 @@
 
                 initData() {
                     this.filteredRows = JSON.parse(JSON.stringify(this.originalRows));
-                    // Using NEW KEY to force reload column order
                     const savedCols = localStorage.getItem('cashbox_columns_v3');
                     this.columns = savedCols ? JSON.parse(savedCols) : JSON.parse(JSON.stringify(this.defaultColumns));
                     this.columns.forEach(col => { this.filters[col.field] = ''; });
@@ -325,7 +331,8 @@
 
                 // Resizing
                 initResize(e, col) {
-                    const startX = e.clientX; const startWidth = parseInt(col.width) || 100;
+                    const startX = e.clientX; 
+                    const startWidth = parseInt(col.width) || 100;
                     const onMouseMove = (moveEvent) => {
                         const diff = moveEvent.clientX - startX;
                         const isRtl = document.dir === 'rtl';
@@ -380,20 +387,39 @@
                     this.editingId = null;
                 },
                 
-                // SAVE LOGIC WITH VALIDATION
+                // SAVE LOGIC WITH NICE NOTIFICATION
                 saveRow(row) {
-                    // Client-Side Validation
+                    // Client-Side Validation with SweetAlert
                     if (!row.name || row.name.trim() === '') {
-                        alert('Error: Name is required.'); return;
+                        Swal.fire({
+                            icon: 'error',
+                            title: '{{ __("messages.error") }}',
+                            text: '{{ __("cash_box.name_required") }}',
+                            confirmButtonColor: '#4f46e5'
+                        });
+                        return;
                     }
                     if (!row.branch_id) {
-                        alert('Error: Branch is required.'); return;
+                        Swal.fire({
+                            icon: 'error',
+                            title: '{{ __("messages.error") }}',
+                            text: '{{ __("cash_box.branch_required") }}',
+                            confirmButtonColor: '#4f46e5'
+                        });
+                        return;
                     }
                     if (!row.currency_id) {
-                        alert('Error: Currency is required.'); return;
+                        Swal.fire({
+                            icon: 'error',
+                            title: '{{ __("messages.error") }}',
+                            text: '{{ __("cash_box.currency_required") }}',
+                            confirmButtonColor: '#4f46e5'
+                        });
+                        return;
                     }
 
-                    const formContainer = document.getElementById('singleRowInputs'); formContainer.innerHTML = '';
+                    const formContainer = document.getElementById('singleRowInputs');
+                    formContainer.innerHTML = '';
                     const createInput = (name, value) => { const i = document.createElement('input'); i.type = 'hidden'; i.name = `boxes[0][${name}]`; i.value = value || ''; formContainer.appendChild(i); };
                     
                     const idToSend = String(row.id).startsWith('new-') ? '' : row.id;

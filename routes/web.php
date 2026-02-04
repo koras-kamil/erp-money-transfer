@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\ActivityLogController;
 use App\Models\CurrencyConfig;
+use App\Notifications\SystemAlert; // Make sure to import your Notification class
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +42,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // --- BRANCHES ---
     Route::resource('branches', BranchController::class);
     Route::post('/switch-branch', [BranchController::class, 'switch'])->name('branch.switch');
+
+    // --- NOTIFICATIONS ---
+    
+    // 1. Mark All as Read (Linked to the "Mark All Read" button in your bell dropdown)
+    Route::get('/notifications/read-all', function () {
+        auth()->user()->unreadNotifications->markAsRead();
+        return back();
+    })->name('notifications.readAll');
+
+    // 2. Manual Test Trigger (Visit /test-notification to see the bell light up!)
+    Route::get('/test-notification', function () {
+        auth()->user()->notify(new SystemAlert(
+            'System Update', 
+            'The notification system has been successfully installed!',
+            'success'
+        ));
+        return back()->with('message', 'Test notification sent!');
+    });
 
     // --- ACTIVITY LOGS ---
     Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
