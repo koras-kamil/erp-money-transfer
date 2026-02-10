@@ -5,13 +5,11 @@
            isCollapsed: (window.innerWidth >= 768) ? $persist(false).as('sidebar-collapsed') : false,
            tooltip: { show: false, text: '', top: 0, left: 0 },
            
-           // Helper to calculate tooltip position dynamically
            showTooltip(e, text) {
                if (!this.isCollapsed || window.innerWidth < 768) return;
                const rect = e.currentTarget.getBoundingClientRect();
                this.tooltip.text = text;
                this.tooltip.top = rect.top + (rect.height / 2);
-               // Handle RTL/LTR positioning
                if (document.dir === 'rtl') {
                    this.tooltip.left = (window.innerWidth - rect.left) + 10;
                } else {
@@ -39,12 +37,10 @@
     <div class="h-16 flex items-center relative border-b border-slate-800 bg-[#1e293b]/50 whitespace-nowrap overflow-hidden shrink-0 transition-all duration-300 px-3"
          :class="isCollapsed ? 'justify-center' : 'justify-start'">
         
-        {{-- Mobile Close Button --}}
         <button @click="mobileMenuOpen = false" class="md:hidden absolute ltr:right-3 rtl:left-3 text-slate-400 hover:text-white transition-colors p-1">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
 
-        {{-- Logo --}}
         <div class="flex items-center gap-3 w-full">
             <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-indigo-600 rounded-xl shadow-lg shadow-indigo-500/40 transition-all duration-300 group-hover:scale-110">
                 <span class="text-white font-black text-lg">S</span>
@@ -70,7 +66,7 @@
     {{-- 3. MENU CONTENT --}}
     <div class="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 space-y-0.5 custom-scrollbar relative z-0">
         
-        {{-- Label --}}
+        {{-- === MAIN SECTION === --}}
         <div class="px-1 mb-2 transition-all duration-300 whitespace-nowrap overflow-hidden flex items-center" 
              :class="isCollapsed ? 'justify-center' : ''">
             <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] transition-all duration-300 origin-left"
@@ -120,18 +116,49 @@
                          :active="request()->routeIs('currency.*') || request()->routeIs('cash-boxes.*') || request()->routeIs('group-spending.*') || request()->routeIs('type-spending.*') || request()->routeIs('profit.*') || request()->routeIs('capitals.*')">
                 <x-slot:icon>
                     <div class="w-5 h-5 flex-shrink-0 flex items-center justify-center">
-                        {{-- NEW GRID ICON --}}
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                     </div>
                 </x-slot:icon>
-                
-                {{-- Children Links --}}
                 <a href="{{ route('currency.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('currency.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">{{ __('menu.currency') }}</a>
                 <a href="{{ route('cash-boxes.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('cash-boxes.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">{{ __('cash_box.title') }}</a>
                 <a href="{{ route('group-spending.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ (request()->routeIs('group-spending.*') || request()->routeIs('type-spending.*')) ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">{{ __('spending.group_title') }}</a>
                 <a href="{{ route('profit.groups.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('profit.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">{{ __('profit.menu_tab') }}</a>
                 <a href="{{ route('capitals.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('capitals.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">{{ __('menu.capital') }}</a>
             </x-nav-group>
+        </div>
+
+        {{-- 🔥 NEW ACCOUNTANT SECTION (UPDATED LINK) --}}
+        <div class="mt-2 pt-2 border-t border-slate-800">
+            {{-- Section Label --}}
+            <div class="px-1 mb-2 transition-all duration-300 flex items-center" :class="isCollapsed ? 'justify-center' : ''">
+                <p class="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em] px-1 whitespace-nowrap transition-all duration-300 origin-left"
+                   :class="isCollapsed && window.innerWidth >= 768 ? 'w-0 opacity-0 hidden' : 'w-full opacity-100 block'">
+                   {{ __('accountant.menu_title') }}
+                </p>
+                <div class="h-1.5 w-1.5 bg-indigo-500 rounded-full transition-all duration-300"
+                     :class="isCollapsed && window.innerWidth >= 768 ? 'block opacity-100' : 'hidden opacity-0'">
+                </div>
+            </div>
+
+            <div @mouseenter="showTooltip($event, '{{ __('accountant.menu_title') }}')" @mouseleave="hideTooltip()">
+                <x-nav-group label="{{ __('accountant.menu_title') }}" :active="request()->routeIs('accountant.*')">
+                    <x-slot:icon>
+                        <div class="w-5 h-5 flex-shrink-0 flex items-center justify-center">
+                            {{-- Calculator/Finance Icon --}}
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        </div>
+                    </x-slot:icon>
+                    
+                    <a href="{{ route('accountant.receiving.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.receiving.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                        {{ __('accountant.receiving_money') }}
+                    </a>
+                    
+                    {{-- 🟢 UPDATED: Pointing to Paying Index --}}
+                    <a href="{{ route('accountant.paying.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.paying.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                        {{ __('accountant.paying_money') }}
+                    </a>
+                </x-nav-group>
+            </div>
         </div>
 
         {{-- ADMIN SECTION --}}
@@ -166,11 +193,10 @@
    {{-- 4. FOOTER --}}
     <div class="p-3 border-t border-slate-800 bg-[#0a0f1c] space-y-2.5 shrink-0 z-20">
         
-        {{-- 🔥 FIXED FOOTER ROW: Grid ensures 50/50 width and equal height --}}
         <div class="grid gap-2 transition-all duration-300" 
              :class="(isCollapsed && window.innerWidth >= 768) ? 'grid-cols-1' : 'grid-cols-2'">
             
-            {{-- SETTINGS BUTTON (Fixed Height h-10) --}}
+            {{-- SETTINGS BUTTON --}}
             <a href="{{ route('settings.index') }}" 
                @mouseenter="showTooltip($event, '{{ __('settings.menu_label') }}')" @mouseleave="hideTooltip()"
                class="flex items-center justify-center h-10 rounded-xl bg-slate-800 text-slate-400 hover:bg-indigo-600 hover:text-white transition-all shadow-lg border border-slate-700/50 group relative w-full">
@@ -180,7 +206,7 @@
                 </svg>
             </a>
 
-            {{-- LANGUAGE DROPDOWN (Fixed Height h-10) --}}
+            {{-- LANGUAGE DROPDOWN --}}
             <div class="relative w-full h-10" x-data="{ langOpen: false }">
                 <button @click="langOpen = !langOpen" @click.outside="langOpen = false" class="flex items-center justify-center w-full h-full p-2.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700/50 transition-all font-bold text-xs uppercase shadow-lg">
                     {{ app()->getLocale() }}
@@ -218,7 +244,7 @@
         </div>
     </div>
 
-    {{-- 🔥 THE MAGIC TOOLTIP: Floats on top of everything, avoiding the clipping issue --}}
+    {{-- 🔥 THE MAGIC TOOLTIP --}}
     <div x-show="tooltip.show"
          x-cloak
          class="fixed z-[9999] px-3 py-1.5 text-[11px] font-bold text-white bg-slate-900 rounded-lg shadow-xl border border-slate-700 pointer-events-none transition-opacity duration-200 whitespace-nowrap"

@@ -8,6 +8,7 @@ use App\Http\Controllers\BranchController;
 use App\Http\Controllers\ActivityLogController;
 use App\Models\CurrencyConfig;
 use App\Notifications\SystemAlert; // Make sure to import your Notification class
+require __DIR__.'/accountant.php';
 
 /*
 |--------------------------------------------------------------------------

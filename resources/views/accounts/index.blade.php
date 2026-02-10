@@ -1,71 +1,44 @@
 <x-app-layout>
-    {{-- ASSETS --}}
+    {{-- 1. ASSETS --}}
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
 
     {{-- STYLES --}}
     <style>
-        /* --- CORE STYLES --- */
         .sheet-input { width: 100%; height: 100%; display: flex; align-items: center; background: transparent; border: 1px solid #f3f4f6; padding: 0 12px; font-size: 0.875rem; color: #1f2937; font-weight: 600; border-radius: 8px; transition: all 0.15s ease-in-out; }
         .sheet-input:focus { background-color: #fff; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); outline: none; }
-        
-        /* Modal Inputs */
         .form-input { width: 100%; border: 1px solid #e2e8f0; padding: 10px; border-radius: 10px; font-size: 0.9rem; transition: all 0.2s; }
         .form-input:focus { border-color: #6366f1; ring: 2px; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); outline: none; }
-
-        /* Scrollbar */
         .custom-scrollbar::-webkit-scrollbar { height: 10px; width: 10px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; border: 2px solid #f1f5f9; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
         #map-container { height: 450px; width: 100%; border-radius: 12px; z-index: 1; }
         [x-cloak] { display: none !important; }
-        
         .select-checkbox { width: 1.1rem; height: 1.1rem; border-radius: 4px; border: 1px solid #cbd5e1; color: #6366f1; cursor: pointer; transition: all 0.2s; }
-
-        /* --- HEADER INTERACTIVITY --- */
-        .th-container { position: relative; width: 100%; height: 32px; display: flex; align-items: center; justify-content: space-between; overflow: visible; }
-        .th-title { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; gap: 4px; transition: all 0.2s ease; transform: translateY(0); opacity: 1; cursor: grab; z-index: 10; }
+        .th-container { position: relative; width: 100%; height: 32px; display: flex; align-items: center; justify-content: center; overflow: visible; } /* Centered Header */
+        .th-title { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.2s ease; transform: translateY(0); opacity: 1; cursor: grab; z-index: 10; }
         .th-title:active { cursor: grabbing; }
         .search-active .th-title { transform: translateY(-150%); opacity: 0; pointer-events: none; }
-
-        /* Search Input */
         .th-search { position: absolute; inset: 0; display: flex; align-items: center; transition: all 0.2s ease; transform: translateY(150%); opacity: 0; pointer-events: none; z-index: 20; background-color: #f8fafc; }
         .search-active .th-search { transform: translateY(0); opacity: 1; pointer-events: auto; }
-
         .header-search-input { width: 100%; height: 28px; background-color: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding-left: 8px; padding-right: 24px; font-size: 0.75rem; color: #1f2937; transition: all 0.15s; }
         [dir="rtl"] .header-search-input { padding-left: 24px; padding-right: 8px; }
         .header-search-input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
-
-        /* Resizer */
         .resizer { position: absolute; right: -4px; top: 0; height: 100%; width: 8px; cursor: col-resize; z-index: 50; touch-action: none; }
         .resizer:hover::after, .resizing::after { content: ''; position: absolute; right: 4px; top: 20%; height: 60%; width: 2px; background-color: #3b82f6; }
         [dir="rtl"] .resizer { right: auto; left: -4px; }
         [dir="rtl"] .resizer:hover::after { right: auto; left: 4px; }
         .dragging-col { opacity: 0.4; background-color: #e0e7ff; border: 2px dashed #6366f1; }
-
         @media print { .no-print, button, .print\:hidden { display: none !important; } .overflow-x-auto { overflow: visible !important; } table { width: 100% !important; } }
     </style>
 
     <div x-data="accountsManager()" x-init="initData()" class="py-6 w-full min-w-0" dir="{{ app()->getLocale() == 'ku' ? 'rtl' : 'ltr' }}">
 
-        {{-- ERROR MESSAGES --}}
-        @if ($errors->any())
-            <div class="mx-4 mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <div class="flex items-center gap-2 mb-2 text-red-700 font-bold">
-                    <span>{{ __('account.error_title') }}</span>
-                </div>
-                <ul class="list-disc list-inside text-sm text-red-600">
-                    @foreach ($errors->all() as $error) <li>{{ $error }}</li> @endforeach
-                </ul>
-            </div>
-        @endif
-
         {{-- TOOLBAR --}}
         <div class="mx-4 mb-6 flex flex-col md:flex-row justify-between items-center gap-4 no-print">
-            {{-- Tabs --}}
             <div class="bg-slate-100 p-1 rounded-lg flex items-center shadow-inner">
                 <a href="{{ route('accounts.index') }}" class="px-5 py-2 text-sm font-bold rounded-md bg-white text-indigo-600 shadow-sm transition">{{ __('account.main_tab') }}</a>
                 <a href="{{ route('zones.index') }}" class="px-5 py-2 text-sm font-bold rounded-md text-slate-500 hover:text-indigo-600 hover:bg-white/50 transition">{{ __('account.zones_tab') }}</a>
@@ -73,7 +46,6 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
-                {{-- Bulk Actions --}}
                 <div x-show="selectedIds.length > 0" x-transition class="flex items-center gap-2 bg-red-50 px-2 py-1 rounded-lg border border-red-100 mr-2 ml-2">
                     <span class="text-xs font-bold text-red-600 px-2"><span x-text="selectedIds.length"></span> {{ __('account.selected') }}</span>
                     <x-btn type="bulk-delete" @click="bulkDelete()">{{ __('account.delete_selected') }}</x-btn>
@@ -82,7 +54,6 @@
 
                 <x-btn type="trash" href="{{ route('accounts.trash') }}" title="{{ __('account.trash') }}" />
                 
-                {{-- Column Config --}}
                 <div x-data="{ open: false }" class="relative">
                     <x-btn type="columns" @click="open = !open" @click.outside="open = false" title="{{ __('account.columns') }}" />
                     <div x-show="open" class="absolute top-full mt-3 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 p-3 ltr:right-0 rtl:left-0" style="display:none;">
@@ -101,32 +72,30 @@
                     </div>
                 </div>
 
-<x-btn type="print" href="{{ route('accounts.print') }}" target="_blank" title="{{ __('account.print') }}" />
+                <x-btn type="print" href="{{ route('accounts.print') }}" target="_blank" title="{{ __('account.print') }}" />
                 <x-btn type="add" @click="openCreate()" title="{{ __('account.add_new') }}" />
             </div>
         </div>
 
         {{-- TABLE CONTAINER --}}
         <div class="relative w-full overflow-x-auto table-container bg-white shadow-sm rounded-lg border border-slate-200 mx-4 pb-20">
-            
-            {{-- Loading Spinner --}}
             <div x-show="loading" class="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-50 flex items-center justify-center transition-opacity">
                 <div class="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
             </div>
 
-            <table class="w-full text-sm text-left rtl:text-right text-slate-500 whitespace-nowrap border-separate border-spacing-0">
+            <table class="w-full text-sm text-center rtl:text-center text-slate-500 whitespace-nowrap border-separate border-spacing-0">
                 <thead class="text-xs text-slate-700 uppercase bg-blue-50/50 border-b border-blue-100 sticky top-0 z-20">
                     <tr>
                         <th class="px-4 py-3 w-[40px] text-center bg-slate-50/95 border-b border-blue-100"><input type="checkbox" @click="toggleAllSelection()" :checked="data.length > 0 && selectedIds.length === data.length" class="select-checkbox bg-white"></th>
                         <template x-for="(col, index) in columns" :key="col.field">
+                            {{-- ✅ Added 'text-center' to TH --}}
                             <th x-show="col.visible" 
-                                class="px-4 py-2 relative h-12 transition-colors duration-200 border-r border-transparent select-none group border-b border-blue-100 bg-slate-50/95" 
+                                class="px-4 py-2 relative h-12 text-center transition-colors duration-200 border-r border-transparent select-none group border-b border-blue-100 bg-slate-50/95" 
                                 :style="'min-width:' + col.width + 'px'"
                                 draggable="true" @dragstart="dragStart($event, index)" @dragover.prevent="dragOver($event)" @drop="drop($event, index)"
                                 :class="[{'dragging-col': draggingIndex === index}, col.class]">
                                 
                                 <div class="th-container" :class="{ 'search-active': openFilter === col.field }">
-                                    {{-- Title --}}
                                     <div class="th-title">
                                         <div class="flex items-center justify-center gap-1 cursor-pointer flex-1 h-full hover:text-indigo-600 transition-colors" @click="sortBy(col.field)">
                                             <span x-text="col.label" class="whitespace-nowrap"></span>
@@ -135,27 +104,15 @@
                                                 <span :class="params.direction === 'desc' ? 'text-indigo-600' : 'text-slate-300'">▼</span>
                                             </span>
                                         </div>
-                                        
-                                        {{-- Search Icon (Only if searchable) --}}
                                         <button x-show="col.searchable !== false" type="button" @click.stop="openFilter = col.field; setTimeout(() => $refs['input-'+col.field]?.focus(), 100)" class="p-1 rounded-md text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition" :class="filters[col.field] ? 'text-indigo-600' : ''">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                                         </button>
                                     </div>
-                                    
-                                    {{-- Search Input (FIXED: x-model immediate, @input delayed) --}}
                                     <div x-show="col.searchable !== false" class="th-search" @click.stop>
                                         <div class="absolute inset-y-0 left-0 flex items-center pl-1.5 pointer-events-none rtl:right-0 rtl:left-auto rtl:pr-1.5">
                                             <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                                         </div>
-                                        
-                                        {{-- 🔥 KEY FIX HERE: x-model updates instantly, @input waits 500ms to fetch --}}
-                                        <input type="text" :x-ref="'input-'+col.field" 
-                                               x-model="filters[col.field]" 
-                                               @input.debounce.500ms="fetchData()" 
-                                               @keydown.escape="openFilter = null" 
-                                               class="header-search-input w-full" 
-                                               placeholder="{{ __('account.search') }}">
-                                               
+                                        <input type="text" :x-ref="'input-'+col.field" x-model="filters[col.field]" @input.debounce.500ms="fetchData()" @keydown.escape="openFilter = null" class="header-search-input w-full" placeholder="{{ __('account.search') }}">
                                         <button type="button" @click.stop="filters[col.field] = ''; fetchData(); openFilter = null;" class="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 p-0.5 rounded-md rtl:left-1 rtl:right-auto"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
                                     </div>
                                 </div>
@@ -170,13 +127,10 @@
                     <template x-for="acc in data" :key="acc.id">
                         <tr class="bg-white hover:bg-slate-50 transition-colors group" :class="selectedIds.includes(acc.id) ? 'bg-indigo-50/10' : ''">
                             <td class="px-4 py-2 text-center align-middle"><input type="checkbox" :value="acc.id" x-model="selectedIds" class="select-checkbox"></td>
-
                             <template x-for="col in columns" :key="col.field">
-                                <td x-show="col.visible" class="p-1" :class="col.class">
-                                    {{-- ID --}}
+                                {{-- ✅ Added 'text-center' to TD --}}
+                                <td x-show="col.visible" class="p-1 text-center" :class="col.class">
                                     <template x-if="col.field === 'id'"><div class="px-4 py-4 text-center font-mono text-xs text-slate-400" x-text="acc.id"></div></template>
-
-                                    {{-- IMAGE --}}
                                     <template x-if="col.field === 'image'">
                                         <div @click="zoomImage(acc.image_url)" class="flex items-center justify-center cursor-pointer p-1">
                                             <div class="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shadow-sm relative group-hover:scale-110 transition-transform">
@@ -185,49 +139,31 @@
                                             </div>
                                         </div>
                                     </template>
-
-                                    {{-- TEXT FIELDS --}}
-                                    <template x-if="col.field === 'name'"><span class="px-3 block text-slate-700 font-bold text-xs truncate" x-text="acc.name"></span></template>
-                                    <template x-if="col.field === 'secondary_name'"><span class="px-3 block text-slate-500 font-normal text-xs truncate" x-text="acc.secondary_name || '-'"></span></template>
-                                    <template x-if="col.field === 'branch_id'"><span class="px-2 block text-[10px] uppercase text-slate-500 font-normal truncate" x-text="acc.branch_text || '-'"></span></template>
-                                    
+                                    {{-- ✅ Forced Center Alignment for Name & Secondary Name --}}
+                                    <template x-if="col.field === 'name'"><span class="px-3 block text-center text-slate-700 font-bold text-xs truncate" x-text="acc.name"></span></template>
+                                    <template x-if="col.field === 'secondary_name'"><span class="px-3 block text-center text-slate-500 font-normal text-xs truncate" x-text="acc.secondary_name || '-'"></span></template>
+                                    <template x-if="col.field === 'branch_id'"><span class="px-2 block text-center text-[10px] uppercase text-slate-500 font-normal truncate" x-text="acc.branch_text || '-'"></span></template>
                                     <template x-if="col.field === 'account_type'"><div class="text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-slate-50 text-slate-600" x-text="acc.account_type"></span></div></template>
-                                    <template x-if="col.field === 'currency_id'"><div class="text-center"><span class="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase" x-text="acc.currency_text"></span></div></template>
+                                    
+                                    {{-- 🔥 SUPPORTED CURRENCIES (Showing NAME not SYMBOL) --}}
+                                    <template x-if="col.field === 'supported_currencies'">
+                                        <div class="px-3 flex gap-1 justify-center flex-wrap">
+                                            <template x-for="currId in (acc.supported_currency_ids || [])">
+                                                {{-- ✅ UPDATED: getCurrencyName() instead of Symbol --}}
+                                                <span class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-[4px] text-[9px] border border-slate-200 font-bold uppercase" 
+                                                      x-text="getCurrencyName(currId)"></span>
+                                            </template>
+                                        </div>
+                                    </template>
+
                                     <template x-if="col.field === 'debt_limit'"><div class="text-center font-bold text-xs text-emerald-600" x-text="acc.debt_limit ? Number(acc.debt_limit).toLocaleString() : '-'"></div></template>
-
-                                    {{-- COUNTDOWN --}}
-                                    <template x-if="col.field === 'debt_due_time'">
-                                        <div class="text-center">
-                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1"
-                                                  :class="acc.debt_due_time > 0 ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-slate-50 text-slate-400 border-slate-100'">
-                                                <span x-show="acc.debt_due_time > 0">⏳</span> 
-                                                <span x-text="acc.debt_due_time > 0 ? acc.debt_due_time + ' {{ __('account.days') }}' : '-'"></span>
-                                            </span>
-                                        </div>
-                                    </template>
-
-                                    {{-- CREATED BY --}}
+                                    <template x-if="col.field === 'debt_due_time'"><div class="text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1" :class="acc.debt_due_time > 0 ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-slate-50 text-slate-400 border-slate-100'"><span x-show="acc.debt_due_time > 0">⏳</span><span x-text="acc.debt_due_time > 0 ? acc.debt_due_time + ' {{ __('account.days') }}' : '-'"></span></span></div></template>
                                     <template x-if="col.field === 'created_by'"><div class="px-4 py-4 text-[10px] uppercase text-slate-500 font-bold text-center truncate" x-text="acc.creator_name"></div></template>
-                                    
-                                    {{-- DATE --}}
                                     <template x-if="col.field === 'created_at'"><div class="px-4 py-4 text-[10px] text-slate-400 font-normal text-center truncate" x-text="formatDate(acc.created_at)"></div></template>
-
-                                    {{-- GPS ICON --}}
-                                    <template x-if="col.field === 'location'">
-                                        <div class="text-center">
-                                            <button @click="viewMap(acc.location, acc.name)" class="p-1.5 rounded-full transition-colors" :class="acc.location ? 'text-indigo-600 hover:bg-indigo-50' : 'text-slate-300 cursor-not-allowed'" :disabled="!acc.location">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                            </button>
-                                        </div>
-                                    </template>
-                                    
-                                    {{-- STATUS --}}
+                                    <template x-if="col.field === 'location'"><div class="text-center"><button @click="viewMap(acc.location, acc.name)" class="p-1.5 rounded-full transition-colors" :class="acc.location ? 'text-indigo-600 hover:bg-indigo-50' : 'text-slate-300 cursor-not-allowed'" :disabled="!acc.location"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></div></template>
                                     <template x-if="col.field === 'is_active'"><div class="flex items-center justify-center"><input type="checkbox" :checked="acc.is_active" disabled class="w-4 h-4 text-indigo-600 rounded border-slate-300"></div></template>
-                                    
-                                    {{-- FALLBACK --}}
-                                    <template x-if="!['id','image','name','secondary_name','branch_id','account_type','currency_id','debt_limit','debt_due_time','created_by','created_at','location','is_active'].includes(col.field)">
-                                        <div class="px-3 text-xs text-slate-500 truncate" x-text="acc[col.field.replace('_id', '_text')] || acc[col.field] || '-'"></div>
-                                    </template>
+                                    {{-- Default Fallback Centered --}}
+                                    <template x-if="!['id','image','name','secondary_name','branch_id','account_type','supported_currencies','debt_limit','debt_due_time','created_by','created_at','location','is_active'].includes(col.field)"><div class="px-3 text-xs text-slate-500 truncate text-center" x-text="acc[col.field.replace('_id', '_text')] || acc[col.field] || '-'"></div></template>
                                 </td>
                             </template>
                             <td class="px-3 py-2 text-center print:hidden sticky-action group-hover:bg-slate-50 transition-colors">
@@ -238,21 +174,11 @@
                             </td>
                         </tr>
                     </template>
-                    
-                    {{-- NO DATA --}}
-                    <tr x-show="!loading && data.length === 0" x-transition.opacity class="bg-white">
-                        <td :colspan="Object.keys(columns).length + 2" class="py-10 text-center border-b border-slate-50">
-                            <div class="flex flex-col justify-center items-center">
-                                <dotlottie-player src="https://lottie.host/ace77418-be70-4ea4-8c0a-88efe0221c91/aCjbIohU9b.lottie" background="transparent" speed="1" style="width: 200px; height: 200px;" loop autoplay></dotlottie-player>
-                                <span class="text-slate-400 font-medium mt-4">{{ __('account.no_data_found') }}</span>
-                            </div>
-                        </td>
-                    </tr>
+                    <tr x-show="!loading && data.length === 0" x-transition.opacity class="bg-white"><td :colspan="Object.keys(columns).length + 2" class="py-10 text-center border-b border-slate-50"><div class="flex flex-col justify-center items-center"><dotlottie-player src="https://lottie.host/ace77418-be70-4ea4-8c0a-88efe0221c91/aCjbIohU9b.lottie" background="transparent" speed="1" style="width: 200px; height: 200px;" loop autoplay></dotlottie-player><span class="text-slate-400 font-medium mt-4">{{ __('account.no_data_found') }}</span></div></td></tr>
                 </tbody>
             </table>
         </div>
         
-        {{-- Pagination --}}
         <div class="mx-4 mt-2 px-4 py-3 bg-white border border-slate-200 rounded-lg flex justify-between items-center" x-show="pagination.last_page > 1">
             <div class="text-[10px] text-slate-500 font-medium"><span class="font-bold text-slate-700" x-text="pagination.from"></span> - <span class="font-bold text-slate-700" x-text="pagination.to"></span> / <span class="font-bold text-slate-700" x-text="pagination.total"></span></div>
             <div class="flex gap-1"><template x-for="link in pagination.links"><button @click="changePage(link.url)" x-html="link.label" :disabled="!link.url || link.active" class="w-7 h-7 flex items-center justify-center rounded-md text-[10px] font-bold transition-all border" :class="link.active ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white text-slate-500 hover:bg-slate-100 border-slate-200 hover:border-slate-300 disabled:opacity-50'" x-show="link.url"></button></template></div>
@@ -276,7 +202,30 @@
                     </div>
                     {{-- Right Col --}}
                     <div class="space-y-5">
-                        <div><label class="form-label">{{ __('account.currency') }} *</label><select name="currency_id" x-model="item.currency_id" class="form-input bg-white" required><option value="">{{ __('account.select_currency') }}</option>@foreach($currencies as $c)<option value="{{ $c->id }}">{{ $c->currency_type }}</option>@endforeach</select></div>
+                        
+                        {{-- 🔥 MULTI-SELECT SUPPORTED CURRENCIES ONLY --}}
+                        <div x-data="{ openMulti: false }">
+                            <label class="form-label">{{ __('account.supported_currencies') }} *</label>
+                            <div class="relative">
+                                <button type="button" @click="openMulti = !openMulti" @click.outside="openMulti = false" 
+                                    class="form-input bg-white text-left flex items-center justify-between">
+                                    <span class="text-sm text-slate-700" x-text="item.supported_currency_ids.length > 0 ? item.supported_currency_ids.length + ' {{ __('account.selected') }}' : '{{ __('account.select_supported') }}'"></span>
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                                <div x-show="openMulti" class="absolute z-10 mt-1 w-full bg-white shadow-xl rounded-xl border border-slate-100 max-h-48 overflow-y-auto py-1" style="display:none;">
+                                    @foreach($currencies as $c)
+                                    <label class="flex items-center px-4 py-2 hover:bg-slate-50 cursor-pointer">
+                                        <input type="checkbox" value="{{ $c->id }}" x-model="item.supported_currency_ids" class="rounded text-indigo-600 w-4 h-4 border-slate-300 focus:ring-indigo-500 mr-2">
+                                        <span class="text-sm text-slate-700">{{ $c->currency_type }} ({{ $c->symbol }})</span>
+                                    </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                            <template x-for="id in item.supported_currency_ids" :key="id">
+                                <input type="hidden" name="supported_currency_ids[]" :value="id">
+                            </template>
+                        </div>
+
                         <div class="grid grid-cols-2 gap-4"><div><label class="form-label">{{ __('account.city') }}</label><select name="city_id" x-model="item.city_id" class="form-input bg-white"><option value="">{{ __('account.none') }}</option>@foreach($cities as $c)<option value="{{ $c->id }}">{{ $c->city_name }}</option>@endforeach</select></div><div><label class="form-label">{{ __('account.neighborhood') }}</label><select name="neighborhood_id" x-model="item.neighborhood_id" class="form-input bg-white"><option value="">{{ __('account.none') }}</option>@foreach($neighborhoods as $n)<option value="{{ $n->id }}">{{ $n->neighborhood_name }}</option>@endforeach</select></div></div>
                         <div class="relative"><label class="form-label">{{ __('account.gps_location') }}</label><div class="relative mt-1"><input type="text" name="location" x-model="item.location" class="form-input pl-10" readonly @click="getLocation()"><button type="button" @click="getLocation()" class="absolute inset-y-0 left-0 pl-3 flex items-center text-indigo-500 z-10"><svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></div></div>
                         <div class="grid grid-cols-2 gap-4"><div><label class="form-label">{{ __('account.debt_limit') }}</label><input type="number" step="0.01" name="debt_limit" x-model="item.debt_limit" class="form-input" placeholder="0.00"></div><div><label class="form-label">{{ __('account.due_time') }} ({{ __('account.days') }})</label><input type="number" name="debt_due_time" x-model="item.debt_due_time" class="form-input text-center font-bold text-orange-500" placeholder="0"></div></div>
@@ -310,14 +259,15 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('accountsManager', () => ({
-                data: @json($accounts->items()),
-                pagination: @json($accounts),
-                branches: @json($branches),
+                // ✅ SAFE DATA INJECTION: Prevents crash on special characters/Kurdistan text
+                data: {!! json_encode($accounts->items(), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) !!},
+                pagination: {!! json_encode($accounts, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) !!},
+                branches: {!! json_encode($branches, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) !!},
+                currencies: {!! json_encode($currencies, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) !!},
                 
-                showModal: false, editMode: false, showMapModal: false, mapInstance: null, selectedIds: [], item: {}, zoomedImage: null, openFilter: null, draggingIndex: null, sortCol: 'id', sortAsc: false, fileName: '', filters: {},
+                showModal: false, editMode: false, showMapModal: false, mapInstance: null, selectedIds: [], item: { supported_currency_ids: [] }, zoomedImage: null, openFilter: null, draggingIndex: null, sortCol: 'id', sortAsc: false, fileName: '', filters: {},
                 mapLayers: {}, currentMapStyle: 'road', mapMarker: null,
                 
-                // 🔥 COLUMN CONFIG: Min-width to support scrolling
                 columns: [
                     { field: 'id', label: '#', visible: true, width: 60, searchable: true },
                     { field: 'image', label: "{{ __('account.image') }}", visible: true, width: 80, searchable: false },
@@ -326,7 +276,7 @@
                     { field: 'secondary_name', label: "{{ __('account.secondary_name') }}", visible: true, width: 160, searchable: true },
                     { field: 'branch_id', label: "{{ __('account.branch') }}", visible: true, width: 140, searchable: false }, 
                     { field: 'account_type', label: "{{ __('account.type') }}", visible: true, width: 120, searchable: true },
-                    { field: 'currency_id', label: "{{ __('account.currency') }}", visible: true, width: 100, searchable: false },
+                    { field: 'supported_currencies', label: "{{ __('account.supported_currencies') }}", visible: true, width: 160, searchable: false },
                     { field: 'debt_limit', label: "{{ __('account.debt_limit') }}", visible: true, width: 120, searchable: false },
                     { field: 'debt_due_time', label: "{{ __('account.due_time') }}", visible: true, width: 120, searchable: false },
                     { field: 'created_by', label: "{{ __('account.created_by') }}", visible: true, width: 140, searchable: false },
@@ -343,7 +293,8 @@
                 params: { sort: 'id', direction: 'desc', page: 1 },
 
                 initData() { 
-                    const saved = localStorage.getItem('acc_final_v1003'); 
+                    // ✅ NEW CACHE KEY to prevent blank table due to structure change
+                    const saved = localStorage.getItem('acc_v15');
                     if(saved) {
                         const savedCols = JSON.parse(saved);
                         this.columns = savedCols.map(s => {
@@ -354,8 +305,8 @@
                     this.columns.forEach(c => { this.filters[c.field] = ''; });
                     @if($errors->any()) this.showModal = true; @endif
                 },
-                saveState() { localStorage.setItem('acc_final_v1003', JSON.stringify(this.columns)); },
-                resetLayout() { localStorage.removeItem('acc_final_v1003'); location.reload(); },
+                saveState() { localStorage.setItem('acc_v15', JSON.stringify(this.columns)); },
+                resetLayout() { localStorage.removeItem('acc_v15'); location.reload(); },
 
                 dragStart(e, i) { this.draggingIndex = i; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', i); },
                 dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; },
@@ -364,7 +315,8 @@
                 toggleAllSelection() { this.selectedIds = (this.selectedIds.length === this.data.length) ? [] : this.data.map(a => a.id); },
                 
                 deleteRow(url) {
-                    const form = document.getElementById('delete-form'); form.action = url;
+                    const form = document.getElementById('delete-form');
+                    form.action = url;
                     if (window.confirmAction) { window.confirmAction('delete-form', "{{ __('account.are_you_sure') }}"); } 
                     else { if (confirm("{{ __('account.are_you_sure') }}")) form.submit(); }
                 },
@@ -375,11 +327,9 @@
                     else { if (confirm("{{ __('account.are_you_sure') }}")) document.getElementById('bulk-delete-form').submit(); }
                 },
                 
-                // SAFE FETCH: Won't clear table on error
                 fetchData(url = null) { 
-                    this.loading = true; 
-                    const oldData = [...this.data]; // Backup
-                    
+                    this.loading = true;
+                    const oldData = [...this.data];
                     let targetUrl = url || "{{ route('accounts.index') }}"; 
                     let query = new URLSearchParams(); 
                     for (let key in this.params) { if(this.params[key]) query.append(key, this.params[key]); } 
@@ -387,25 +337,21 @@
                     if (!url) targetUrl += '?' + query.toString(); 
                     
                     fetch(targetUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                        .then(res => {
-                            if(!res.ok) throw new Error('Network response was not ok');
-                            return res.json();
-                        })
-                        .then(response => { 
-                            this.data = response.data; 
-                            this.pagination = response; 
-                            this.loading = false; 
-                        })
-                        .catch(() => { 
-                            this.loading = false; 
-                            this.data = oldData; // Restore data if error
-                        }); 
+                        .then(res => { if(!res.ok) throw new Error('Network response was not ok'); return res.json(); })
+                        .then(response => { this.data = response.data; this.pagination = response; this.loading = false; })
+                        .catch(() => { this.loading = false; this.data = oldData; });
                 },
                 
                 sortBy(field) { if (this.params.sort === field) { this.params.direction = this.params.direction === 'asc' ? 'desc' : 'asc'; } else { this.params.sort = field; this.params.direction = 'asc'; } this.fetchData(); },
                 changePage(url) { if(url) this.fetchData(url); },
                 formatDate(iso) { if(!iso) return '-'; return new Date(iso).toLocaleString(); },
                 
+                // ✅ UPDATED: Returns Currency Name (Type) instead of Symbol
+                getCurrencyName(id) { 
+                    const c = this.currencies.find(cur => cur.id == id); 
+                    return c ? c.currency_type : id; 
+                },
+
                 viewMap(loc, name) {
                     if(!loc) return;
                     this.showMapModal = true;
@@ -437,13 +383,26 @@
                 
                 openCreate() { 
                     this.showModal = true; this.editMode = false; this.fileName = '';
-                    
-                    // 🔥 STRICT: Use value passed from Backend
-                    let baseCode = '{{ $autoCode ?? "" }}'; 
-                    this.item = { code: baseCode, account_type_raw: 'customer', is_active: true, currency_id: '', branch_id: '', city_id: '', neighborhood_id: '', debt_due_time: 0 }; 
+                    let baseCode = {!! json_encode($autoCode ?? '', JSON_HEX_APOS) !!}; 
+                    this.item = { 
+                        code: baseCode, 
+                        account_type_raw: 'customer', 
+                        is_active: true, 
+                        supported_currency_ids: [], 
+                        branch_id: '', 
+                        city_id: '', 
+                        neighborhood_id: '', 
+                        debt_due_time: 0 
+                    }; 
                 },
                 openEdit(acc) { 
-                    this.item = JSON.parse(JSON.stringify(acc)); this.fileName = '';
+                    this.item = JSON.parse(JSON.stringify(acc)); 
+                    this.fileName = '';
+                    
+                    let supp = this.item.supported_currency_ids;
+                    if (typeof supp === 'string') { try { supp = JSON.parse(supp); } catch(e) { supp = []; } }
+                    this.item.supported_currency_ids = Array.isArray(supp) ? supp.map(String) : [];
+
                     this.item.is_active = (acc.is_active == 1 || acc.is_active == true); 
                     this.editMode = true; this.showModal = true; 
                 }

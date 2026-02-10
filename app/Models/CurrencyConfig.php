@@ -24,22 +24,24 @@ class CurrencyConfig extends Model
         'price_total',
         'price_single',
         'price_sell',
-        'branch_id',
+        'branch_id',    // ✅ This is correct
         'is_active',
         'created_by',
-        'deleted_by', // <--- IMPORTANT: Needed for "Deleted By" column
-        'math_operator', // <--- ADD THIS LINE
+        'deleted_by', 
+        'math_operator', 
     ];
 
     /**
      * Type Casting
+     * ⚠️ CRITICAL FIX: Added 'branch_id' => 'integer'
      */
     protected $casts = [
-        'is_active' => 'boolean',
-        'price_total' => 'float',
-        'price_single' => 'float',
-        'price_sell' => 'float',
-        'digit_number' => 'integer',
+        'is_active'     => 'boolean',
+        'price_total'   => 'float',
+        'price_single'  => 'float',
+        'price_sell'    => 'float',
+        'digit_number'  => 'integer',
+        'branch_id'     => 'integer', // 👈 ADDED THIS. Ensures it matches the <option value="5">
     ];
 
     /**

@@ -208,10 +208,11 @@
                                             <div>
                                                 <span x-show="editingId !== row.id" x-text="getBranchName(row.branch_id)" class="px-2 block text-[10px] uppercase text-slate-500 font-normal truncate"></span>
                                                 <template x-if="isSuperAdmin">
+                                                    {{-- FIX: Removed :selected logic, relying on x-model for selection --}}
                                                     <select x-show="editingId === row.id" x-model="row.branch_id" class="sheet-input font-normal text-xs text-slate-700">
-                                                        <option value="" disabled>{{ __('currency.select_branch') }}</option>
+                                                        <option value="">{{ __('currency.select_branch') }}</option>
                                                         <template x-for="branch in branches" :key="branch.id">
-                                                            <option :value="branch.id" x-text="branch.name" :selected="row.branch_id == branch.id"></option>
+                                                            <option :value="branch.id" x-text="branch.name"></option>
                                                         </template>
                                                     </select>
                                                 </template>
@@ -283,6 +284,10 @@
                     $c->price_single = (float)$c->price_single;
                     $c->creator_name = $c->creator?->name ?? __('currency.system'); 
                     $c->formatted_date = $c->created_at ? $c->created_at->format('Y-m-d') : now()->format('Y-m-d');
+                    
+                    // FIX: Force branch_id to be an integer to match dropdown logic
+                    $c->branch_id = $c->branch_id ? (int)$c->branch_id : ''; 
+                    
                     return $c;
                 })),
                 branches: @json($branches),
@@ -365,7 +370,8 @@
                         digit_number: 0, 
                         price_total: 0, 
                         price_single: 0, 
-                        branch_id: this.isSuperAdmin ? '' : this.userBranchId, 
+                        // FIX: Ensure branch_id is int or empty string, handling null userBranchId
+                        branch_id: this.isSuperAdmin ? '' : (this.userBranchId ? parseInt(this.userBranchId) : ''),
                         is_active: 1, 
                         creator_name: '{{ Auth::user()->name }}',
                         formatted_date: new Date().toISOString().split('T')[0],

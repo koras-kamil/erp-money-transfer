@@ -108,4 +108,6 @@ return [
     'city_deleted' => 'شارەکە سڕایەوە',
     'neighborhoods_saved' => 'گەڕەکەکان بە سەرکەوتوویی پاشەکەوت کران',
     'neighborhood_deleted' => 'گەڕەکەکە سڕایەوە',
+    'supported_currencies'=>'دراوی هەڵبژێردراو',
+     'select_supported'=>'دراوەکان هەڵبژێرە '
 ];

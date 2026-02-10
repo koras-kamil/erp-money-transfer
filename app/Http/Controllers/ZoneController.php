@@ -29,18 +29,18 @@ class ZoneController extends Controller
                 $payload = [
                     'code' => $data['code'] ?? null,
                     'city_name' => $data['city_name'],
-                    // ✅ FIXED: Use User's Branch
                     'branch_id' => Auth::user()->branch_id, 
                 ];
 
-                if (isset($data['id']) && $data['id']) {
+                // ✅ FIXED: Check if ID exists AND is a valid number
+                // This prevents "new-123..." strings from crashing the SQL query
+                if (isset($data['id']) && is_numeric($data['id'])) {
                     City::where('id', $data['id'])->update($payload);
                 } else {
                     $payload['created_by'] = Auth::id();
                     City::create($payload);
                 }
             }
-            // ✅ STAY ON PAGE: Redirect back with 'active_tab' session
             return redirect()->route('zones.index')->with(['success' => __('account.cities_saved'), 'active_tab' => 'cities']);
         }
         return back();
@@ -65,18 +65,17 @@ class ZoneController extends Controller
                     'code' => $data['code'] ?? null,
                     'city_id' => $data['city_id'],
                     'neighborhood_name' => $data['neighborhood_name'],
-                    // ✅ FIXED: Use User's Branch
                     'branch_id' => Auth::user()->branch_id, 
                 ];
 
-                if (isset($data['id']) && $data['id']) {
+                // ✅ FIXED: Check if ID exists AND is a valid number
+                if (isset($data['id']) && is_numeric($data['id'])) {
                     Neighborhood::where('id', $data['id'])->update($payload);
                 } else {
                     $payload['created_by'] = Auth::id();
                     Neighborhood::create($payload);
                 }
             }
-            // ✅ STAY ON PAGE: Keep Neighborhood tab active
             return redirect()->route('zones.index')->with(['success' => __('account.neighborhoods_saved'), 'active_tab' => 'neighborhoods']);
         }
         return back();

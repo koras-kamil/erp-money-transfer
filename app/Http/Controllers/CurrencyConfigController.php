@@ -17,14 +17,16 @@ class CurrencyConfigController extends Controller
      */
     public function index()
     {
-        $currencies = CurrencyConfig::orderBy('id')->get();
+        // Eager load creator/branch to prevent N+1 query performance issues
+        $currencies = CurrencyConfig::with(['branch', 'creator'])->orderBy('id')->get();
         $branches = Branch::all(); 
 
         return view('currency.index', compact('currencies', 'branches'));
     }
 
     /**
-     * Handle Bulk Save (Create & Update) with SMART OPERATOR LOGIC
+     * Handle Bulk Save (Create & Update)
+     * FIX: Handles Branch ID type conversion (String "" -> NULL)
      */
    public function store(Request $request)
 {
@@ -44,21 +46,30 @@ class CurrencyConfigController extends Controller
                 $operator = ($priceSingle > 2.0) ? '/' : '*';
             }
 
+            // 3. FIX: Branch ID Logic
+            // HTML forms send "" for empty selects, but DB needs NULL.
+            $branchId = !empty($data['branch_id']) ? $data['branch_id'] : null;
+
+            // SECURITY: If user is NOT Super Admin, force their own branch ID
+            if (!Auth::user()->hasRole('super-admin')) {
+                $branchId = Auth::user()->branch_id;
+            }
+
             $saveData = [
                 'currency_type' => $data['currency_type'],
                 'symbol'        => $data['symbol'],
-                'digit_number'  => $data['digit_number'] ?? 0, // Safety default
+                'digit_number'  => $data['digit_number'] ?? 0, 
                 'price_total'   => $priceTotal,
                 'price_single'  => $priceSingle,
                 'price_sell'    => $data['price_sell'] ?? 0,
-                'branch_id'     => $data['branch_id'] ?? null,
+                'branch_id'     => $branchId, // 👈 Uses the fixed variable
                 'is_active'     => isset($data['is_active']) ? 1 : 0,
                 'math_operator' => $operator,
             ];
 
-            // --- FIX IS HERE ---
-            // Check if ID exists AND is not empty
-            if (!empty($data['id'])) {
+            // 4. Save Logic (Update or Create)
+            // Check if 'id' exists AND is a valid number (not "new-...")
+            if (!empty($data['id']) && is_numeric($data['id'])) {
                 // UPDATE EXISTING
                 $currency = CurrencyConfig::find($data['id']);
                 if ($currency) {
@@ -66,6 +77,7 @@ class CurrencyConfigController extends Controller
                 }
             } else {
                 // CREATE NEW
+                // Ensure we have a currency name before creating
                 if (!empty($data['currency_type'])) {
                     $saveData['created_by'] = Auth::id();
                     CurrencyConfig::create($saveData);
@@ -76,8 +88,9 @@ class CurrencyConfigController extends Controller
 
     return back()->with('success', __('currency.saved') ?? 'Saved Successfully');
 }
+
     /**
-     * Update Rates (Bulk update from Modal) - ALSO UPDATES OPERATOR
+     * Update Rates (Bulk update from Modal)
      */
     public function updateRates(Request $request)
     {
@@ -89,11 +102,8 @@ class CurrencyConfigController extends Controller
             $priceTotal = str_replace(',', '', $priceTotalInput);
             $priceSingle = $priceTotal / 100;
 
-            if ($priceSingle > 2.0) {
-                $op = '/';
-            } else {
-                $op = '*';
-            }
+            // Recalculate Operator based on new price
+            $op = ($priceSingle > 2.0) ? '/' : '*';
 
             CurrencyConfig::where('id', $id)->update([
                 'price_total'   => $priceTotal,
@@ -129,13 +139,10 @@ class CurrencyConfigController extends Controller
         $ids = json_decode($request->input('ids', '[]'), true);
 
         if (!empty($ids) && is_array($ids)) {
-            foreach($ids as $id) {
-                $currency = CurrencyConfig::find($id);
-                if($currency) {
-                    $currency->update(['deleted_by' => Auth::id()]);
-                    $currency->delete();
-                }
-            }
+            // Update deleted_by before soft deleting
+            CurrencyConfig::whereIn('id', $ids)->update(['deleted_by' => Auth::id()]);
+            CurrencyConfig::whereIn('id', $ids)->delete();
+            
             return back()->with('success', __('currency.deleted_selected'));
         }
 
@@ -207,9 +214,11 @@ class CurrencyConfigController extends Controller
 
         if (!empty($ids) && is_array($ids)) {
             try {
-                $items = CurrencyConfig::onlyTrashed()->whereIn('id', $ids)->get();
-                foreach($items as $item) {
-                    $item->forceDelete();
+                // We fetch models to delete individually to trigger potential model events if needed
+                // But for force delete, we can also wrap in try/catch block loop
+                foreach($ids as $id) {
+                     $item = CurrencyConfig::onlyTrashed()->find($id);
+                     if($item) $item->forceDelete();
                 }
                 return back()->with('success', __('currency.permanently_deleted_selected'));
 
@@ -229,7 +238,7 @@ class CurrencyConfigController extends Controller
      */
     public function downloadPdf()
     {
-        $currencies = CurrencyConfig::all();
+        $currencies = CurrencyConfig::with('branch')->get();
 
         $data = [
             'title'      => __('currency.config_title'),
