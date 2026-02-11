@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Accountant; // ✅ Namespace set to Accountant folder
+namespace App\Http\Controllers\Accountant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
@@ -8,89 +8,170 @@ use App\Models\Cashbox;
 use App\Models\CurrencyConfig;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
-class PayingController extends Controller // ✅ Class name matches filename 'PayingController'
+class PayingController extends Controller
 {
     public function index(Request $request)
     {
-        // Fetch Data for the View
-        $accounts = Account::select('id', 'name', 'code', 'currency', 'profile_picture', 'supported_currencies')->get();
-        $cashboxes = Cashbox::select('id', 'name', 'currency_id')->get();
-        $currencies = CurrencyConfig::select('id', 'currency_type', 'code', 'price_sell', 'price_single')->get();
+        // 🟢 Global Pagination
+        $limit = defined('PER_PAGE') ? PER_PAGE : 10;
 
-        // Query Transactions (Only Payments)
-        $query = Transaction::with(['account', 'user', 'cashbox', 'currency'])
-            ->where('type', 'pay'); // 🟢 FILTER ONLY PAYMENTS
+        $query = Transaction::with(['account', 'currency', 'cashbox', 'user'])
+            ->where('type', 'pay') 
+            ->latest();
 
-        // Apply Search Filters
-        if ($request->has('search')) {
+        if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('id', 'like', "%$search%")
-                  ->orWhereHas('account', fn($a) => $a->where('name', 'like', "%$search%"));
+            $query->whereHas('account', function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('manual_code', 'like', "%{$search}%");
             });
         }
 
-        $transactions = $query->latest()->paginate(10);
+        $transactions = $query->paginate($limit);
+        $accounts = Account::all(); // Simplified fetch for consistency
+        $currencies = CurrencyConfig::where('is_active', true)->get();
+        $cashboxes = Cashbox::where('is_active', true)->get();
 
-        // ✅ Pointing to the correct view folder
-        return view('accountant.paying.index', compact('accounts', 'cashboxes', 'currencies', 'transactions'));
+        return view('accountant.paying.index', compact('transactions', 'accounts', 'cashboxes', 'currencies'));
     }
 
     public function store(Request $request)
     {
-        // VALIDATION
-        $request->validate([
-            'account_id' => 'required',
-            'amount' => 'required|numeric|min:0',
-            'currency_id' => 'required',
-            'cashbox_id' => 'required',
-            'type' => 'required|in:pay', // Ensure it's a payment
+        $this->cleanInputs($request);
+
+        $validated = $request->validate([
+            'account_id'    => 'required|exists:accounts,id',
+            'amount'        => 'required|numeric|min:0',
+            'currency_id'   => 'required|exists:currency_configs,id',
+            'cashbox_id'    => 'required|exists:cash_boxes,id',
+            'exchange_rate' => 'nullable|numeric',
+            'discount'      => 'nullable|numeric',
+            'manual_date'   => 'nullable|date',
+            'statement_id'  => 'nullable|string',
+            'note'          => 'nullable|string',
+            'giver_name'    => 'nullable|string',
+            'giver_mobile'  => 'nullable|string',
+            'receiver_name' => 'nullable|string',
+            'receiver_mobile'=> 'nullable|string',
+            'profit_amount' => 'nullable|numeric',
+            'spending_amount'=> 'nullable|numeric',
         ]);
 
-        // LOGIC TO SAVE TRANSACTION
-        Transaction::create([
-            'account_id' => $request->account_id,
-            'amount' => $request->amount,
-            'total' => $request->total ?? $request->amount, // Handle total calculation
-            'currency_id' => $request->currency_id,
-            'cashbox_id' => $request->cashbox_id,
-            'type' => 'pay', // Force type to pay
-            'exchange_rate' => $request->exchange_rate ?? 1,
-            'discount' => $request->discount ?? 0,
-            'note' => $request->note,
-            'manual_date' => $request->manual_date ?? now(),
-            'statement_id' => $request->statement_id,
-            'giver_name' => $request->giver_name,
-            'giver_mobile' => $request->giver_mobile,
-            'receiver_name' => $request->receiver_name,
-            'receiver_mobile' => $request->receiver_mobile,
-            'user_id' => auth()->id(),
+        DB::transaction(function () use ($validated, $request) {
+            Transaction::create([
+                'user_id'       => Auth::id(),
+                'type'          => 'pay',
+                'account_id'    => $validated['account_id'],
+                'currency_id'   => $validated['currency_id'],
+                'cashbox_id'    => $validated['cashbox_id'],
+                'amount'        => $validated['amount'],
+                'total'         => $request->total ?? ($validated['amount'] - ($validated['discount'] ?? 0)),
+                'exchange_rate' => $validated['exchange_rate'] ?? 1,
+                'discount'      => $validated['discount'] ?? 0,
+                'manual_date'   => $validated['manual_date'] ?? now(),
+                'statement_id'  => $validated['statement_id'],
+                'note'          => $validated['note'],
+                'giver_name'    => $validated['giver_name'],
+                'giver_mobile'  => $validated['giver_mobile'],
+                'receiver_name' => $validated['receiver_name'],
+                'receiver_mobile'=> $validated['receiver_mobile'],
+            ]);
+
+            // Update Cashbox (Subtract Money)
+            $cashbox = Cashbox::lockForUpdate()->find($validated['cashbox_id']);
+            if ($cashbox) {
+                $cashbox->balance -= $validated['amount'];
+                $cashbox->save();
+            }
+        });
+
+        return redirect()->route('accountant.paying.index')->with('success', __('Transaction created successfully.'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $transaction = Transaction::findOrFail($id);
+        $this->cleanInputs($request);
+
+        $validated = $request->validate([
+            'account_id'    => 'required|exists:accounts,id',
+            'amount'        => 'required|numeric|min:0',
+            'currency_id'   => 'required|exists:currency_configs,id',
+            'cashbox_id'    => 'required|exists:cash_boxes,id',
+            'exchange_rate' => 'nullable|numeric',
+            'discount'      => 'nullable|numeric',
+            'manual_date'   => 'nullable|date',
+            'statement_id'  => 'nullable|string',
+            'note'          => 'nullable|string',
+            'giver_name'    => 'nullable|string',
+            'giver_mobile'  => 'nullable|string',
+            'receiver_name' => 'nullable|string',
+            'receiver_mobile'=> 'nullable|string',
         ]);
-        
-        return redirect()->back()->with('success', __('accountant.save_success'));
+
+        $transaction->update([
+            'account_id'    => $validated['account_id'],
+            'currency_id'   => $validated['currency_id'],
+            'cashbox_id'    => $validated['cashbox_id'],
+            'amount'        => $validated['amount'],
+            'total'         => $request->total ?? ($validated['amount'] - ($validated['discount'] ?? 0)),
+            'exchange_rate' => $validated['exchange_rate'] ?? 1,
+            'discount'      => $validated['discount'] ?? 0,
+            'manual_date'   => $validated['manual_date'],
+            'statement_id'  => $validated['statement_id'],
+            'note'          => $validated['note'],
+            'giver_name'    => $validated['giver_name'],
+            'giver_mobile'  => $validated['giver_mobile'],
+            'receiver_name' => $validated['receiver_name'],
+            'receiver_mobile'=> $validated['receiver_mobile'],
+        ]);
+
+        return redirect()->route('accountant.paying.index')->with('success', __('Transaction updated successfully.'));
     }
 
     public function destroy($id)
     {
-        Transaction::findOrFail($id)->delete();
-        return redirect()->back()->with('success', __('accountant.delete_success'));
+        DB::transaction(function () use ($id) {
+            $transaction = Transaction::findOrFail($id);
+            // Reverse Cashbox (Add Money Back)
+            $cashbox = Cashbox::lockForUpdate()->find($transaction->cashbox_id);
+            if ($cashbox) {
+                $cashbox->balance += $transaction->amount;
+                $cashbox->save();
+            }
+            $transaction->delete();
+        });
+        return redirect()->back()->with('success', __('Transaction deleted successfully.'));
     }
 
     public function bulkDelete(Request $request)
     {
-        $ids = json_decode($request->ids);
+        $ids = json_decode($request->ids, true);
         if (!empty($ids)) {
             Transaction::whereIn('id', $ids)->delete();
+            return redirect()->back()->with('success', __('Selected transactions deleted successfully.'));
         }
-        return redirect()->back()->with('success', __('accountant.delete_success'));
+        return redirect()->back()->with('error', __('No items selected.'));
     }
-    
-    // Add other methods (edit, update, trash, restore, pdf) as needed...
-    public function edit($id) { /* ... */ }
-    public function update(Request $request, $id) { /* ... */ }
-    public function trash() { /* ... */ }
-    public function restore($id) { /* ... */ }
-    public function forceDelete($id) { /* ... */ }
-    public function pdf() { /* ... */ }
+
+    public function trash()
+    {
+        $transactions = Transaction::onlyTrashed()->with(['account', 'user'])->paginate(20);
+        return view('accountant.paying.trash', compact('transactions'));
+    }
+
+    private function cleanInputs(Request $request)
+    {
+        $cleanData = $request->all();
+        $fields = ['amount', 'discount', 'exchange_rate', 'total', 'profit_amount', 'spending_amount'];
+        foreach ($fields as $field) {
+            if (isset($cleanData[$field])) {
+                $cleanData[$field] = str_replace(',', '', $cleanData[$field]);
+            }
+        }
+        $request->replace($cleanData);
+    }
 }

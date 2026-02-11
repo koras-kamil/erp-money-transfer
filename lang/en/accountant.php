@@ -87,5 +87,7 @@ return [
     'submit' => 'Submit',
     'show' => 'Show Info',
     'hide' => 'Hide Info',
+     'paying_title'=>'Paying',
+     'new_payment'=>'new payment'
 
 ];

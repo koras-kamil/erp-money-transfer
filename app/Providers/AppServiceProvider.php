@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;   
 use Illuminate\Support\Facades\Schema; 
 use App\Models\Branch;          
-use Illuminate\Support\Facades\URL; // Add this at the top       
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,14 +26,24 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // 1. Pagination Styling
+        // 🟢 1. Pagination Styling (Forces Tailwind to fix "ugly list")
         Paginator::useTailwind();
 
-        // 2. Default String Length
+        // 🟢 2. Global Pagination Limit
+        // This allows you to use PER_PAGE in all your controllers
+        if (!defined('PER_PAGE')) {
+            define('PER_PAGE', 20);
+        }
+
+        // 3. Default String Length (Fixes migration errors on some DBs)
         Schema::defaultStringLength(191);
 
-        // 3. Share '$branches' ONLY with the main layout (Fixes Infinite Loading Loop)
-        // We changed '*' to 'layouts.app' so it doesn't try to load on error pages.
+        // 4. Force HTTPS for Local Tunnels (ngrok, serveo, etc.)
+        if (str_contains(request()->getHost(), 'loca.lt') || str_contains(request()->getHost(), 'serveo.net')) {
+            URL::forceScheme('https');
+        }
+
+        // 5. Share '$branches' ONLY with the main layout (Prevents errors on other pages)
         View::composer('layouts.app', function ($view) {
             // Check if table exists to prevent migration errors
             if (Schema::hasTable('branches')) {
@@ -42,7 +52,12 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        // 4. Custom Kurdish Carbon Translations
+        // 6. Super Admin Gate Permission
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole('super-admin') ? true : null;
+        });
+
+        // 7. Custom Kurdish Carbon Translations
         if (app()->getLocale() == 'ku') {
             $sorani = [
                 'year'   => ':count ساڵ',
@@ -66,16 +81,5 @@ class AppServiceProvider extends ServiceProvider
             $translator = Carbon::getTranslator();
             $translator->setMessages('ku', ['translations' => $sorani]);
         }
-
-        // 5. Super Admin Gate Permission
-        Gate::before(function ($user, $ability) {
-            return $user->hasRole('super-admin') ? true : null;
-        });
-
-
-      if (str_contains(request()->getHost(), 'loca.lt') || str_contains(request()->getHost(), 'serveo.net')) {
-        URL::forceScheme('https');
-    
-    }
     }
 }
