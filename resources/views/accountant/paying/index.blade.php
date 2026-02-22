@@ -24,6 +24,7 @@
 
     <div x-data="accountantManager()" x-init="init()" class="bg-white h-[calc(100vh-65px)] flex flex-col font-sans text-slate-800" dir="{{ app()->getLocale() == 'ku' ? 'rtl' : 'ltr' }}">
         
+        {{-- ALERTS --}}
         <div class="px-6 pt-2">
             @if ($errors->any())
                 <div class="bg-rose-50 border-l-4 border-rose-500 text-rose-700 p-2 rounded shadow-sm mb-2 text-sm"><ul class="list-disc list-inside">@foreach ($errors->all() as $error) <li>{{ $error }}</li> @endforeach</ul></div>
@@ -33,6 +34,7 @@
             @endif
         </div>
 
+        {{-- TOOLBAR --}}
         <div class="px-6 py-2 flex-none flex flex-col md:flex-row justify-between items-center gap-4 no-print bg-white border-b border-slate-100 z-10">
             <div class="flex items-center gap-3">
                 <div class="bg-slate-100 p-1 rounded-lg flex items-center shadow-inner">
@@ -42,20 +44,24 @@
             </div>
             
             <div class="flex items-center gap-2">
+                {{-- Bulk Delete --}}
                 <div x-show="selectedIds.length > 0" x-cloak class="flex items-center gap-2">
                     <button type="button" @click="bulkDelete()" class="px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded shadow-sm hover:bg-red-700 transition-colors">
                         {{ __('Delete') }} (<span x-text="selectedIds.length"></span>)
                     </button>
                 </div>
                 
+                {{-- Trash --}}
                 <a href="{{ route('accountant.paying.trash') }}" class="w-10 h-10 flex items-center justify-center rounded-xl bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 shadow-sm transition-all" title="{{ __('accountant.trash') }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 </a>
                 
+                {{-- Print --}}
                 <button type="button" @click.prevent="window.print()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-700 text-white hover:bg-slate-800 shadow-sm transition-all" title="{{ __('accountant.print') }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 </button>
                 
+                {{-- Toggle Columns --}}
                 <div x-data="{ open: false }" class="relative">
                     <button @click="open = !open" @click.outside="open = false" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm transition-all" title="{{ __('Toggle Columns') }}">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
@@ -71,12 +77,14 @@
                     </div>
                 </div>
 
-                <button @click="openModal()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all cursor-pointer">
+                {{-- 🟢 NEW PAYMENT BUTTON --}}
+                <button @click="$dispatch('open-paying-modal')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all cursor-pointer">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                 </button>
             </div>
         </div>
 
+        {{-- TABLE SECTION --}}
         <div class="flex-1 p-4 overflow-hidden flex flex-col min-h-0 bg-white">
             <div class="bg-white rounded-xl shadow-sm border border-slate-100 flex-1 overflow-hidden flex flex-col relative">
                 <div class="overflow-auto custom-scrollbar flex-1 w-full relative">
@@ -143,7 +151,8 @@
                                     </template>
                                     <td class="px-3 py-2 text-center sticky right-0 bg-white group-hover:bg-indigo-50/30 border-b border-slate-100 z-10">
                                         <div class="flex items-center justify-center gap-2">
-                                            <button type="button" @click="editTransaction(trx)" class="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+                                            {{-- 🟢 EDIT BUTTON (Dispatches Event) --}}
+                                            <button type="button" @click="$dispatch('open-paying-modal', trx)" class="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                                             </button>
                                             <form :action="`/accountant/paying/${trx.id}`" method="POST" onsubmit="return confirm('{{ __('accountant.delete_confirm') }}');">
@@ -164,7 +173,7 @@
             </div>
         </div>
 
-        {{-- 🟢 MODAL SECTION --}}
+        {{-- 🟢 INCLUDE MODAL --}}
         @include('accountant.paying.form-modal')
 
         <form id="bulk-delete-form" action="{{ route('accountant.paying.bulk-delete') }}" method="POST" class="hidden">
@@ -174,17 +183,12 @@
 
     </div>
 
-    {{-- SCRIPTS --}}
+    {{-- SCRIPTS (Pure List Logic) --}}
     <script>
         function accountantManager() {
             return {
-                showModal: false, isEditing: false, editingId: null, searchOpen: false, searchQuery: '', selectedAccount: null, target_currency_id: null, isTotalLocked: true, showProfit: false, showSpending: false, showUserConfig: false,
-                userInfoVisible: { code: true, city: true, neighborhood: true, mobile: true },
-                accounts: @json($accounts ?? []), 
                 transactions: @json($transactions->items() ?? []),
-                currencies: @json($currencies ?? []),
-                cashboxes: @json($cashboxes ?? []),
-                transactionType: 'pay', filters: {}, selectedIds: [], sortCol: null, sortAsc: true, openFilter: null,
+                filters: {}, selectedIds: [], sortCol: null, sortAsc: true, openFilter: null,
                 columns: [
                     { field: 'id', label: '#', visible: true, width: 50 },
                     { field: 'account_id', label: '{{ __('accountant.user') }}', visible: true, width: 200 },
@@ -207,113 +211,12 @@
                     { field: 'created_at', label: '{{ __('accountant.date') }}', visible: true, width: 140 },
                     { field: 'updated_at', label: 'Updated At', visible: false, width: 140 },
                 ],
-                form: { amount: '', currency_id: '', cashbox_id: '', rate: 1, discount: 0, total: 0, manual_date: new Date().toISOString().split('T')[0], note: '', statement_id: '', giver_name: '', giver_mobile: '', receiver_name: '', receiver_mobile: '', profit_amount: '', profit_note: '', spending_amount: '', spending_note: '' },
                 
                 init() { 
-                    if (!this.accounts) this.accounts = [];
                     this.columns.forEach(c => this.filters[c.field] = '');
-                    if (this.currencies.length > 0) { this.setCurrency(this.currencies[0].id); }
-                    
-                    this.$watch('form.amount', () => this.calculateTotal());
-                    this.$watch('form.discount', () => this.calculateTotal());
-                    this.$watch('form.rate', () => this.calculateTotal());
-                    this.$watch('form.currency_id', () => { this.updateCashboxSelection(); this.calculateTotal(); });
                 },
 
-                // 🟢 HELPERS inside Alpine
-                formatNumber(field) {
-                    if (!this.form[field]) return;
-                    let value = String(this.form[field]).replace(/[^0-9.]/g, '');
-                    let parts = value.split('.');
-                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                    this.form[field] = parts.join('.');
-                },
-                formatRateInput() {
-                    if (!this.form.rate) return;
-                    this.form.rate = String(this.form.rate).replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
-                },
-
-                editTransaction(trx) {
-                    this.isEditing = true;
-                    this.editingId = trx.id;
-                    
-                    this.form.amount = formatMoney(trx.amount);
-                    this.form.currency_id = trx.currency_id;
-                    this.form.rate = formatMoney(trx.exchange_rate).replace(/,/g, ''); 
-                    this.form.discount = formatMoney(trx.discount);
-                    this.form.total = formatMoney(trx.total);
-                    this.form.manual_date = trx.manual_date ? trx.manual_date.split('T')[0] : '';
-                    this.form.statement_id = trx.statement_id;
-                    this.form.note = trx.note;
-                    this.form.giver_name = trx.giver_name;
-                    this.form.giver_mobile = trx.giver_mobile;
-                    this.form.receiver_name = trx.receiver_name;
-                    this.form.receiver_mobile = trx.receiver_mobile;
-
-                    this.selectedAccount = this.accounts.find(a => a.id == trx.account_id);
-                    if(this.selectedAccount) {
-                        this.searchQuery = this.selectedAccount.name;
-                        if(this.selectedAccount.supported_currencies && this.selectedAccount.supported_currencies.length > 0) {
-                            this.target_currency_id = this.selectedAccount.supported_currencies[0];
-                        }
-                    }
-
-                    this.updateCashboxSelection();
-                    this.$nextTick(() => { 
-                        this.form.cashbox_id = trx.cashbox_id; 
-                        this.calculateTotal();
-                    });
-
-                    this.isTotalLocked = true; 
-                    this.showModal = true;
-                },
-
-                setCurrency(id) { 
-                    this.form.currency_id = id; 
-                    this.updateCashboxSelection(); 
-                    this.$nextTick(() => { this.updateRate(); }); 
-                },
-                get filteredAccounts() { if (this.searchQuery === '') return this.accounts.slice(0, 10); const q = this.searchQuery.toLowerCase(); return this.accounts.filter(acc => acc.name.toLowerCase().includes(q) || String(acc.code).toLowerCase().includes(q)); },
-                selectAccount(account) { this.selectedAccount = account; this.searchQuery = account.name; this.searchOpen = false; this.updateCurrencyForAccount(account); },
-                clearSelection() { this.selectedAccount = null; this.searchQuery = ''; this.target_currency_id = null; },
-                get availableCurrencies() { if (!this.selectedAccount) return []; let supported = this.selectedAccount.supported_currencies || []; if (supported.length === 0) return []; return this.currencies.filter(c => supported.includes(c.id) || supported.includes(String(c.id))); },
-                get availableCashboxes() { 
-                    if (!this.form.currency_id) return []; 
-                    return this.cashboxes.filter(box => box.currency_id == this.form.currency_id); 
-                },
-                updateCashboxSelection() { let validBoxes = this.availableCashboxes; if (!validBoxes.find(b => b.id == this.form.cashbox_id)) { this.form.cashbox_id = validBoxes.length > 0 ? validBoxes[0].id : ''; } },
-                updateCurrencyForAccount(acc) { this.target_currency_id = null; if(acc && acc.supported_currencies && acc.supported_currencies.length > 0) { let firstCurr = acc.supported_currencies[0]; this.target_currency_id = firstCurr; this.form.currency_id = firstCurr; this.setCurrency(firstCurr); } },
-                parseNumber(val) { return (!val) ? 0 : parseFloat(val.toString().replace(/,/g, '')) || 0; },
-                getCurrencyCode(id) { const c = this.currencies.find(x => x.id == id); return c ? c.currency_type : ''; },
-                updateRate() { if (!this.isTotalLocked) return; const s = this.currencies.find(c => c.id == this.form.currency_id); const t = this.currencies.find(c => c.id == this.target_currency_id); if (s && t) { let sRate = parseFloat(s.price_single || 1); let tRate = parseFloat(t.price_single || 1); if (tRate >= sRate) { this.form.rate = parseFloat((tRate / sRate).toFixed(6)); } else { this.form.rate = parseFloat((sRate / tRate).toFixed(6)); } this.calculateTotal(); } },
-                calculateTotal() { 
-                    if (!this.isTotalLocked) return; 
-                    const amt = this.parseNumber(this.form.amount); 
-                    const discount = this.parseNumber(this.form.discount); 
-                    if (!this.form.currency_id || !this.target_currency_id || amt === 0) { this.form.total = 0; return; } 
-                    const s = this.currencies.find(c => c.id == this.form.currency_id); 
-                    const t = this.currencies.find(c => c.id == this.target_currency_id); 
-                    if (!s || !t) return; 
-                    let sPriceUSD = 1 / parseFloat(s.price_single || 1); 
-                    let tPriceUSD = 1 / parseFloat(t.price_single || 1); 
-                    let converted = (amt * sPriceUSD) / tPriceUSD; 
-                    let final = (converted - discount).toFixed(2);
-                    let parts = final.split('.'); 
-                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); 
-                    this.form.total = parts.join('.'); 
-                },
-                recalcRateFromTotal() { const total = this.parseNumber(this.form.total); const amt = this.parseNumber(this.form.amount); const discount = this.parseNumber(this.form.discount); const effectiveTotal = total + discount; if (amt === 0 || effectiveTotal === 0) return; if (effectiveTotal > amt) { this.form.rate = parseFloat((effectiveTotal / amt).toFixed(6)); } else { this.form.rate = parseFloat((amt / effectiveTotal).toFixed(6)); } },
-                resetTotal() { this.isTotalLocked = true; this.calculateTotal(); },
-                openModal() { 
-                    this.isEditing = false;
-                    this.editingId = null;
-                    this.form = { amount: '', currency_id: '', cashbox_id: '', rate: 1, discount: 0, total: 0, manual_date: new Date().toISOString().split('T')[0], note: '', statement_id: '', giver_name: '', giver_mobile: '', receiver_name: '', receiver_mobile: '', profit_amount: '', profit_note: '', spending_amount: '', spending_note: '' };
-                    this.selectedAccount = null;
-                    this.searchQuery = '';
-                    if (this.currencies.length > 0) this.setCurrency(this.currencies[0].id);
-                    this.showModal = true; 
-                }, 
-                closeModal() { this.showModal = false; this.clearSelection(); },
+                // 🟢 HELPERS
                 dragStart(e, index) { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', index); e.target.classList.add('dragging'); },
                 drop(e, targetIndex) { e.target.classList.remove('dragging'); const draggedIndex = e.dataTransfer.getData('text/plain'); if (draggedIndex === '') return; const draggedCol = this.columns[draggedIndex]; this.columns.splice(draggedIndex, 1); this.columns.splice(targetIndex, 0, draggedCol); },
                 initResize(e, index) { const startX = e.clientX; const startWidth = this.columns[index].width; const onMouseMove = (moveEvent) => { this.columns[index].width = Math.max(50, startWidth + (moveEvent.clientX - startX)); }; const onMouseUp = () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); }; window.addEventListener('mousemove', onMouseMove); window.addEventListener('mouseup', onMouseUp); },

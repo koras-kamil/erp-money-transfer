@@ -67,11 +67,15 @@
     </style>
 </head>
 
+{{-- 🟢 ADDED WINDOW EVENT LISTENERS FOR MOBILE MENU --}}
 <body class="font-sans antialiased text-slate-900 h-screen flex bg-[#f8fafc] overflow-hidden"
       x-data="layoutData()"
-      x-init="init()">
+      x-init="init()"
+      @toggle-mobile-menu.window="toggleMobileMenu()"
+      @open-mobile-menu.window="mobileMenuOpen = true"
+      @close-mobile-menu.window="closeMobileMenu()">
 
-    {{-- 🔥 INSTANT PRELOADER (Hides when Alpine/Page is fully ready) --}}
+    {{-- 🔥 INSTANT PRELOADER --}}
     <div id="preloader" x-ref="preloader">
         <div class="loader-circle"></div>
         <p class="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">
@@ -96,6 +100,14 @@
         </button>
     </div>
 
+    {{-- 🟢 ADDED MOBILE DARK OVERLAY (Click outside to close menu) --}}
+    <div x-show="mobileMenuOpen" 
+         x-transition.opacity 
+         class="fixed inset-0 z-[40] bg-slate-900/50 backdrop-blur-sm lg:hidden"
+         @click="closeMobileMenu()" 
+         x-cloak>
+    </div>
+
     <x-notification />
     @include('components.right-menu')
 
@@ -103,32 +115,24 @@
         
         <x-command-bar />
 
-        <main class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
-            <div class="max-w-7xl w-full mx-auto flex flex-col gap-8 pb-10">
-                
-                @if (isset($header))
-                <div class="w-full flex justify-center items-center">
-                    <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] text-center bg-white/50 px-6 py-2 rounded-full border border-slate-200/50 select-none">
-                        {{ $header }}
-                    </h2>
-                </div>
-                @endif
-
-                <div :class="isBlurred ? 'content-blur' : ''" 
-                     class="transition-all duration-300 bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-200/60 shadow-sm p-4 md:p-10 min-h-[500px]">
-                    {{ $slot }}
-                </div>
+        <main class="flex-1 overflow-y-auto p-3 md:p-4 custom-scrollbar flex flex-col">
+            
+            @if (isset($header))
+            <div class="w-full flex justify-center items-center pb-4">
+                <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] text-center bg-white/50 px-6 py-2 rounded-full border border-slate-200/50 select-none">
+                    {{ $header }}
+                </h2>
             </div>
+            @endif
 
-            <footer class="px-10 py-8 text-center mt-auto">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-slate-500 transition-colors">
-                    © {{ date('Y') }} Smart System
-                </p>
-            </footer>
+            <div :class="isBlurred ? 'content-blur' : ''" 
+                 class="transition-all duration-300 bg-white rounded-xl md:rounded-2xl border border-slate-200/60 shadow-sm p-4 flex-1 flex flex-col min-h-0">
+                {{ $slot }}
+            </div>
+            
         </main>
     </div>
     
-
     @include('partials.exchange-modal')
 
     <script>
@@ -136,13 +140,12 @@
             Alpine.data('layoutData', () => ({
                 isLoading: false,
                 isBlurred: false,
-                mobileMenuOpen: false, // 🔥 Mobile state
-                showExchangeModal: false, // 🔥 Financial state
-                exchangeRate: '148,000', // 🔥 Currency price
+                mobileMenuOpen: false, 
+                showExchangeModal: false, 
+                exchangeRate: '148,000', 
                 isCollapsed: Alpine.$persist(false).as('sidebar-collapsed'),
 
                 init() {
-                    // Preloader fade-out
                     window.addEventListener('load', () => {
                         if(this.$refs.preloader) {
                             this.$refs.preloader.style.opacity = '0';
@@ -150,11 +153,9 @@
                         }
                     });
 
-                    // Auto-fetch price from your backend on boot
                     this.fetchCurrencyPrice();
                 },
 
-                // Financial functionality
                 async fetchCurrencyPrice() {
                     try {
                         const response = await fetch('/api/get-currency-price');
@@ -166,11 +167,13 @@
                 },
                 
                 toggleBlur() { this.isBlurred = !this.isBlurred; },
+                
+                // 🟢 ADDED THESE MISSING MENU FUNCTIONS 
+                toggleMobileMenu() { this.mobileMenuOpen = !this.mobileMenuOpen; },
                 closeMobileMenu() { this.mobileMenuOpen = false; }
             }));
         });
 
-        // Global SweetAlert config
         window.confirmAction = function(formId, message = null) {
             Swal.fire({
                 title: "{{ __('messages.confirm_action') }}",
@@ -195,5 +198,45 @@
             });
         }
     </script>
+    <script>
+    // 1. Automatically format numbers with commas while typing
+    document.addEventListener('input', function (e) {
+        if (e.target.classList.contains('format-number')) {
+            // Save cursor position so it doesn't jump to the end
+            let cursorPosition = e.target.selectionStart;
+            let oldLength = e.target.value.length;
+
+            // Remove all existing commas and letters (allow only numbers and dots)
+            let rawValue = e.target.value.replace(/,/g, '').replace(/[^\d.]/g, '');
+
+            // Handle decimals (split integer and decimal parts)
+            let parts = rawValue.split('.');
+            
+            // Add commas to the integer part (every 3 digits)
+            if (parts[0]) {
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+
+            // Put it back in the input
+            e.target.value = parts.join('.');
+
+            // Restore the cursor position smoothly
+            let newLength = e.target.value.length;
+            cursorPosition = cursorPosition + (newLength - oldLength);
+            e.target.setSelectionRange(cursorPosition, cursorPosition);
+        }
+    });
+
+    // 2. Automatically remove commas BEFORE sending to Laravel Database!
+    document.addEventListener('submit', function (e) {
+        // Find all inputs with 'format-number' inside the submitted form
+        let formattedInputs = e.target.querySelectorAll('.format-number');
+        
+        formattedInputs.forEach(input => {
+            // Strip the commas so Laravel receives a clean integer (e.g., 1000)
+            input.value = input.value.replace(/,/g, '');
+        });
+    });
+</script>
 </body>
 </html>

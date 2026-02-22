@@ -43,7 +43,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // --- BRANCHES ---
     Route::resource('branches', BranchController::class);
     Route::post('/switch-branch', [BranchController::class, 'switch'])->name('branch.switch');
-
+    //smart search
+Route::get('/smart-search', [\App\Http\Controllers\GlobalSearchController::class, 'search'])->name('global.search');
     // --- NOTIFICATIONS ---
     
     // 1. Mark All as Read (Linked to the "Mark All Read" button in your bell dropdown)
@@ -62,6 +63,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return back()->with('message', 'Test notification sent!');
     });
 
+    
     // --- ACTIVITY LOGS ---
     Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
     

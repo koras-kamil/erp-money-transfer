@@ -18,7 +18,7 @@
         #map-container { height: 450px; width: 100%; border-radius: 12px; z-index: 1; }
         [x-cloak] { display: none !important; }
         .select-checkbox { width: 1.1rem; height: 1.1rem; border-radius: 4px; border: 1px solid #cbd5e1; color: #6366f1; cursor: pointer; transition: all 0.2s; }
-        .th-container { position: relative; width: 100%; height: 32px; display: flex; align-items: center; justify-content: center; overflow: visible; } /* Centered Header */
+        .th-container { position: relative; width: 100%; height: 32px; display: flex; align-items: center; justify-content: center; overflow: visible; }
         .th-title { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.2s ease; transform: translateY(0); opacity: 1; cursor: grab; z-index: 10; }
         .th-title:active { cursor: grabbing; }
         .search-active .th-title { transform: translateY(-150%); opacity: 0; pointer-events: none; }
@@ -88,7 +88,6 @@
                     <tr>
                         <th class="px-4 py-3 w-[40px] text-center bg-slate-50/95 border-b border-blue-100"><input type="checkbox" @click="toggleAllSelection()" :checked="data.length > 0 && selectedIds.length === data.length" class="select-checkbox bg-white"></th>
                         <template x-for="(col, index) in columns" :key="col.field">
-                            {{-- ✅ Added 'text-center' to TH --}}
                             <th x-show="col.visible" 
                                 class="px-4 py-2 relative h-12 text-center transition-colors duration-200 border-r border-transparent select-none group border-b border-blue-100 bg-slate-50/95" 
                                 :style="'min-width:' + col.width + 'px'"
@@ -112,7 +111,7 @@
                                         <div class="absolute inset-y-0 left-0 flex items-center pl-1.5 pointer-events-none rtl:right-0 rtl:left-auto rtl:pr-1.5">
                                             <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                                         </div>
-                                        <input type="text" :x-ref="'input-'+col.field" x-model="filters[col.field]" @input.debounce.500ms="fetchData()" @keydown.escape="openFilter = null" class="header-search-input w-full" placeholder="{{ __('account.search') }}">
+                                        <input type="text" :x-ref="'input-'+col.field" x-model="filters[col.field]" @input.debounce.400ms="fetchData()" @keydown.escape="openFilter = null; filters[col.field] = ''; fetchData();" class="header-search-input w-full" placeholder="{{ __('account.search') }}">
                                         <button type="button" @click.stop="filters[col.field] = ''; fetchData(); openFilter = null;" class="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 p-0.5 rounded-md rtl:left-1 rtl:right-auto"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
                                     </div>
                                 </div>
@@ -128,7 +127,6 @@
                         <tr class="bg-white hover:bg-slate-50 transition-colors group" :class="selectedIds.includes(acc.id) ? 'bg-indigo-50/10' : ''">
                             <td class="px-4 py-2 text-center align-middle"><input type="checkbox" :value="acc.id" x-model="selectedIds" class="select-checkbox"></td>
                             <template x-for="col in columns" :key="col.field">
-                                {{-- ✅ Added 'text-center' to TD --}}
                                 <td x-show="col.visible" class="p-1 text-center" :class="col.class">
                                     <template x-if="col.field === 'id'"><div class="px-4 py-4 text-center font-mono text-xs text-slate-400" x-text="acc.id"></div></template>
                                     <template x-if="col.field === 'image'">
@@ -139,19 +137,19 @@
                                             </div>
                                         </div>
                                     </template>
-                                    {{-- ✅ Forced Center Alignment for Name & Secondary Name --}}
-                                    <template x-if="col.field === 'name'"><span class="px-3 block text-center text-slate-700 font-bold text-xs truncate" x-text="acc.name"></span></template>
+                                    
+                                    <template x-if="col.field === 'name'">
+                                        <a :href="'{{ url('accountant/statement') }}/' + acc.id" class="px-3 block text-center text-indigo-600 hover:text-indigo-800 hover:underline font-bold text-xs truncate transition-colors cursor-pointer" x-text="acc.name" title="View Account Statement"></a>
+                                    </template>
+                                    
                                     <template x-if="col.field === 'secondary_name'"><span class="px-3 block text-center text-slate-500 font-normal text-xs truncate" x-text="acc.secondary_name || '-'"></span></template>
                                     <template x-if="col.field === 'branch_id'"><span class="px-2 block text-center text-[10px] uppercase text-slate-500 font-normal truncate" x-text="acc.branch_text || '-'"></span></template>
                                     <template x-if="col.field === 'account_type'"><div class="text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border bg-slate-50 text-slate-600" x-text="acc.account_type"></span></div></template>
                                     
-                                    {{-- 🔥 SUPPORTED CURRENCIES (Showing NAME not SYMBOL) --}}
                                     <template x-if="col.field === 'supported_currencies'">
                                         <div class="px-3 flex gap-1 justify-center flex-wrap">
                                             <template x-for="currId in (acc.supported_currency_ids || [])">
-                                                {{-- ✅ UPDATED: getCurrencyName() instead of Symbol --}}
-                                                <span class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-[4px] text-[9px] border border-slate-200 font-bold uppercase" 
-                                                      x-text="getCurrencyName(currId)"></span>
+                                                <span class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-[4px] text-[9px] border border-slate-200 font-bold uppercase" x-text="getCurrencyName(currId)"></span>
                                             </template>
                                         </div>
                                     </template>
@@ -162,7 +160,7 @@
                                     <template x-if="col.field === 'created_at'"><div class="px-4 py-4 text-[10px] text-slate-400 font-normal text-center truncate" x-text="formatDate(acc.created_at)"></div></template>
                                     <template x-if="col.field === 'location'"><div class="text-center"><button @click="viewMap(acc.location, acc.name)" class="p-1.5 rounded-full transition-colors" :class="acc.location ? 'text-indigo-600 hover:bg-indigo-50' : 'text-slate-300 cursor-not-allowed'" :disabled="!acc.location"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></div></template>
                                     <template x-if="col.field === 'is_active'"><div class="flex items-center justify-center"><input type="checkbox" :checked="acc.is_active" disabled class="w-4 h-4 text-indigo-600 rounded border-slate-300"></div></template>
-                                    {{-- Default Fallback Centered --}}
+                                    
                                     <template x-if="!['id','image','name','secondary_name','branch_id','account_type','supported_currencies','debt_limit','debt_due_time','created_by','created_at','location','is_active'].includes(col.field)"><div class="px-3 text-xs text-slate-500 truncate text-center" x-text="acc[col.field.replace('_id', '_text')] || acc[col.field] || '-'"></div></template>
                                 </td>
                             </template>
@@ -202,13 +200,10 @@
                     </div>
                     {{-- Right Col --}}
                     <div class="space-y-5">
-                        
-                        {{-- 🔥 MULTI-SELECT SUPPORTED CURRENCIES ONLY --}}
                         <div x-data="{ openMulti: false }">
                             <label class="form-label">{{ __('account.supported_currencies') }} *</label>
                             <div class="relative">
-                                <button type="button" @click="openMulti = !openMulti" @click.outside="openMulti = false" 
-                                    class="form-input bg-white text-left flex items-center justify-between">
+                                <button type="button" @click="openMulti = !openMulti" @click.outside="openMulti = false" class="form-input bg-white text-left flex items-center justify-between">
                                     <span class="text-sm text-slate-700" x-text="item.supported_currency_ids.length > 0 ? item.supported_currency_ids.length + ' {{ __('account.selected') }}' : '{{ __('account.select_supported') }}'"></span>
                                     <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                 </button>
@@ -258,17 +253,9 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('accountsManager', () => ({
-                // ✅ SAFE DATA INJECTION: Prevents crash on special characters/Kurdistan text
-                data: {!! json_encode($accounts->items(), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) !!},
-                pagination: {!! json_encode($accounts, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) !!},
-                branches: {!! json_encode($branches, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) !!},
-                currencies: {!! json_encode($currencies, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) !!},
+            Alpine.data('accountsManager', () => {
                 
-                showModal: false, editMode: false, showMapModal: false, mapInstance: null, selectedIds: [], item: { supported_currency_ids: [] }, zoomedImage: null, openFilter: null, draggingIndex: null, sortCol: 'id', sortAsc: false, fileName: '', filters: {},
-                mapLayers: {}, currentMapStyle: 'road', mapMarker: null,
-                
-                columns: [
+                const defaultColumns = [
                     { field: 'id', label: '#', visible: true, width: 60, searchable: true },
                     { field: 'image', label: "{{ __('account.image') }}", visible: true, width: 80, searchable: false },
                     { field: 'code', label: "{{ __('account.code') }}", visible: true, width: 100, searchable: true },
@@ -288,125 +275,165 @@
                     { field: 'neighborhood_id', label: "{{ __('account.neighborhood') }}", visible: false, width: 120, searchable: false },
                     { field: 'location', label: "{{ __('account.gps_location') }}", visible: true, width: 80, searchable: false },
                     { field: 'is_active', label: "{{ __('account.status') }}", visible: true, width: 80, searchable: false }
-                ],
-                
-                params: { sort: 'id', direction: 'desc', page: 1 },
+                ];
 
-                initData() { 
-                    // ✅ NEW CACHE KEY to prevent blank table due to structure change
-                    const saved = localStorage.getItem('acc_v15');
-                    if(saved) {
-                        const savedCols = JSON.parse(saved);
-                        this.columns = savedCols.map(s => {
-                            const def = this.columns.find(c => c.field === s.field);
-                            return def ? { ...def, visible: s.visible, width: s.width } : null;
-                        }).filter(c => c !== null);
-                    }
-                    this.columns.forEach(c => { this.filters[c.field] = ''; });
-                    @if($errors->any()) this.showModal = true; @endif
-                },
-                saveState() { localStorage.setItem('acc_v15', JSON.stringify(this.columns)); },
-                resetLayout() { localStorage.removeItem('acc_v15'); location.reload(); },
+                let initialFilters = {};
+                defaultColumns.forEach(c => { initialFilters[c.field] = ''; });
 
-                dragStart(e, i) { this.draggingIndex = i; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', i); },
-                dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; },
-                drop(e, targetIndex) { if (this.draggingIndex === null || this.draggingIndex === targetIndex) return; const element = this.columns.splice(this.draggingIndex, 1)[0]; this.columns.splice(targetIndex, 0, element); this.draggingIndex = null; this.saveState(); },
-                initResize(e, col) { const startX = e.clientX; const startWidth = parseInt(col.width) || 100; const onMouseMove = (ev) => { col.width = Math.max(50, (document.dir === 'rtl' ? startWidth - (ev.clientX - startX) : startWidth + (ev.clientX - startX))); }; const onMouseUp = () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); this.saveState(); }; window.addEventListener('mousemove', onMouseMove); window.addEventListener('mouseup', onMouseUp); },
-                toggleAllSelection() { this.selectedIds = (this.selectedIds.length === this.data.length) ? [] : this.data.map(a => a.id); },
-                
-                deleteRow(url) {
-                    const form = document.getElementById('delete-form');
-                    form.action = url;
-                    if (window.confirmAction) { window.confirmAction('delete-form', "{{ __('account.are_you_sure') }}"); } 
-                    else { if (confirm("{{ __('account.are_you_sure') }}")) form.submit(); }
-                },
-                bulkDelete() {
-                    if (this.selectedIds.length === 0) return;
-                    document.getElementById('bulk-delete-ids').value = JSON.stringify(this.selectedIds);
-                    if (window.confirmAction) { window.confirmAction('bulk-delete-form', "{{ __('account.are_you_sure') }}"); } 
-                    else { if (confirm("{{ __('account.are_you_sure') }}")) document.getElementById('bulk-delete-form').submit(); }
-                },
-                
-                fetchData(url = null) { 
-                    this.loading = true;
-                    const oldData = [...this.data];
-                    let targetUrl = url || "{{ route('accounts.index') }}"; 
-                    let query = new URLSearchParams(); 
-                    for (let key in this.params) { if(this.params[key]) query.append(key, this.params[key]); } 
-                    for (let key in this.filters) { if(this.filters[key]) query.append(key, this.filters[key]); }
-                    if (!url) targetUrl += '?' + query.toString(); 
+                return {
+                    data: {!! json_encode($accounts->items(), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) !!},
+                    pagination: {!! json_encode($accounts, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) !!},
+                    branches: {!! json_encode($branches, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) !!},
+                    currencies: {!! json_encode($currencies, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) !!},
                     
-                    fetch(targetUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                        .then(res => { if(!res.ok) throw new Error('Network response was not ok'); return res.json(); })
-                        .then(response => { this.data = response.data; this.pagination = response; this.loading = false; })
-                        .catch(() => { this.loading = false; this.data = oldData; });
-                },
-                
-                sortBy(field) { if (this.params.sort === field) { this.params.direction = this.params.direction === 'asc' ? 'desc' : 'asc'; } else { this.params.sort = field; this.params.direction = 'asc'; } this.fetchData(); },
-                changePage(url) { if(url) this.fetchData(url); },
-                formatDate(iso) { if(!iso) return '-'; return new Date(iso).toLocaleString(); },
-                
-                // ✅ UPDATED: Returns Currency Name (Type) instead of Symbol
-                getCurrencyName(id) { 
-                    const c = this.currencies.find(cur => cur.id == id); 
-                    return c ? c.currency_type : id; 
-                },
+                    showModal: false, editMode: false, showMapModal: false, mapInstance: null, selectedIds: [], item: { supported_currency_ids: [] }, zoomedImage: null, openFilter: null, draggingIndex: null, sortCol: 'id', sortAsc: false, fileName: '', 
+                    filters: initialFilters,
+                    mapLayers: {}, currentMapStyle: 'road', mapMarker: null,
+                    
+                    columns: defaultColumns,
+                    params: { sort: 'id', direction: 'desc', page: 1 },
 
-                viewMap(loc, name) {
-                    if(!loc) return;
-                    this.showMapModal = true;
-                    this.mapTitle = name;
-                    this.$nextTick(() => {
-                        let c = loc.split(',').map(Number);
-                        if(!this.mapInstance) {
-                            this.mapInstance = L.map('map-container').setView(c, 15);
-                            const road = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
-                            const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
-                            this.mapLayers = { road, satellite: sat };
-                            this.mapLayers[this.currentMapStyle].addTo(this.mapInstance);
-                        } else {
-                            this.mapInstance.setView(c, 15);
-                            this.mapInstance.invalidateSize(); 
+                    initData() { 
+                        const saved = localStorage.getItem('acc_v15');
+                        if(saved) {
+                            const savedCols = JSON.parse(saved);
+                            this.columns = savedCols.map(s => {
+                                const def = this.columns.find(c => c.field === s.field);
+                                return def ? { ...def, visible: s.visible, width: s.width } : null;
+                            }).filter(c => c !== null);
                         }
-                        if (this.mapMarker) this.mapInstance.removeLayer(this.mapMarker);
-                        this.mapMarker = L.marker(c).addTo(this.mapInstance).bindPopup(`<b class="text-lg">${name}</b>`).openPopup();
-                    });
-                },
-                setMapStyle(style) {
-                    if (this.currentMapStyle === style) return;
-                    if (this.mapInstance.hasLayer(this.mapLayers[this.currentMapStyle])) { this.mapInstance.removeLayer(this.mapLayers[this.currentMapStyle]); }
-                    this.mapLayers[style].addTo(this.mapInstance);
-                    this.currentMapStyle = style;
-                },
-                zoomImage(url) { if(url) this.zoomedImage = url; },
-                getLocation() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition( (p) => { this.item.location = p.coords.latitude + ',' + p.coords.longitude; }, (e) => { alert('GPS Error: ' + e.message); } ); } },
-                
-                openCreate() { 
-                    this.showModal = true; this.editMode = false; this.fileName = '';
-                    let baseCode = {!! json_encode($autoCode ?? '', JSON_HEX_APOS) !!}; 
-                    this.item = { 
-                        code: baseCode, 
-                        account_type_raw: 'customer', 
-                        is_active: true, 
-                        supported_currency_ids: [], 
-                        branch_id: '', 
-                        city_id: '', 
-                        neighborhood_id: '', 
-                        debt_due_time: 0 
-                    }; 
-                },
-                openEdit(acc) { 
-                    this.item = JSON.parse(JSON.stringify(acc)); 
-                    this.fileName = '';
-                    
-                    let supp = this.item.supported_currency_ids;
-                    if (typeof supp === 'string') { try { supp = JSON.parse(supp); } catch(e) { supp = []; } }
-                    this.item.supported_currency_ids = Array.isArray(supp) ? supp.map(String) : [];
+                        @if($errors->any()) this.showModal = true; @endif
+                    },
+                    saveState() { localStorage.setItem('acc_v15', JSON.stringify(this.columns)); },
+                    resetLayout() { localStorage.removeItem('acc_v15'); location.reload(); },
 
-                    this.item.is_active = (acc.is_active == 1 || acc.is_active == true); 
-                    this.editMode = true; this.showModal = true; 
-                }
-            }));
+                    dragStart(e, i) { this.draggingIndex = i; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', i); },
+                    dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; },
+                    drop(e, targetIndex) { if (this.draggingIndex === null || this.draggingIndex === targetIndex) return;
+                        const element = this.columns.splice(this.draggingIndex, 1)[0]; this.columns.splice(targetIndex, 0, element); this.draggingIndex = null; this.saveState();
+                    },
+                    initResize(e, col) { const startX = e.clientX;
+                        const startWidth = parseInt(col.width) || 100; const onMouseMove = (ev) => { col.width = Math.max(50, (document.dir === 'rtl' ? startWidth - (ev.clientX - startX) : startWidth + (ev.clientX - startX))); }; const onMouseUp = () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); this.saveState(); }; window.addEventListener('mousemove', onMouseMove); window.addEventListener('mouseup', onMouseUp);
+                    },
+                    toggleAllSelection() { this.selectedIds = (this.selectedIds.length === this.data.length) ? [] : this.data.map(a => a.id); },
+                    
+                    deleteRow(url) {
+                        const form = document.getElementById('delete-form');
+                        form.action = url;
+                        if (window.confirmAction) { window.confirmAction('delete-form', "{{ __('account.are_you_sure') }}"); } 
+                        else { if (confirm("{{ __('account.are_you_sure') }}")) form.submit(); }
+                    },
+                    bulkDelete() {
+                        if (this.selectedIds.length === 0) return;
+                        document.getElementById('bulk-delete-ids').value = JSON.stringify(this.selectedIds);
+                        if (window.confirmAction) { window.confirmAction('bulk-delete-form', "{{ __('account.are_you_sure') }}"); } 
+                        else { if (confirm("{{ __('account.are_you_sure') }}")) document.getElementById('bulk-delete-form').submit(); }
+                    },
+                    
+                    // ✅ TRULY SMART FETCH DATA: Fixes empty search & caching
+                    fetchData(pageUrl = null) { 
+                        this.loading = true;
+                        
+                        let targetUrl = new URL("{{ route('accounts.index') }}", window.location.origin); 
+                        
+                        if (pageUrl) {
+                            let passedUrl = new URL(pageUrl, window.location.origin);
+                            let page = passedUrl.searchParams.get('page');
+                            if (page) targetUrl.searchParams.set('page', page);
+                        } else {
+                            targetUrl.searchParams.set('page', 1);
+                        }
+                        
+                        if (this.params.sort) targetUrl.searchParams.set('sort', this.params.sort);
+                        if (this.params.direction) targetUrl.searchParams.set('direction', this.params.direction);
+                        
+                        // Fix for empty words: We force empty parameters to be appended so Laravel knows to clear them
+                        for (let key in this.filters) { 
+                            let val = this.filters[key];
+                            targetUrl.searchParams.set(key, val !== null && val !== undefined ? val : '');
+                        }
+                        
+                        // Cache-buster: Prevents the browser from showing stuck data when deleting words
+                        targetUrl.searchParams.set('_t', Date.now());
+                        
+                        fetch(targetUrl.toString(), { 
+                            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } 
+                        })
+                        .then(res => { if(!res.ok) throw new Error('Network error'); return res.json(); })
+                        .then(response => { 
+                            this.data = response.data; 
+                            this.pagination = response; 
+                            this.loading = false; 
+                        })
+                        .catch(() => { this.loading = false; });
+                    },
+                    
+                    sortBy(field) { if (this.params.sort === field) { this.params.direction = this.params.direction === 'asc' ? 'desc' : 'asc'; } else { this.params.sort = field; this.params.direction = 'asc'; } this.fetchData(); },
+                    changePage(url) { if(url) this.fetchData(url); },
+                    formatDate(iso) { if(!iso) return '-'; return new Date(iso).toLocaleString(); },
+                    
+                    getCurrencyName(id) { 
+                        const c = this.currencies.find(cur => cur.id == id);
+                        return c ? c.currency_type : id; 
+                    },
+
+                    viewMap(loc, name) {
+                        if(!loc) return;
+                        this.showMapModal = true;
+                        this.mapTitle = name;
+                        this.$nextTick(() => {
+                            let c = loc.split(',').map(Number);
+                            if(!this.mapInstance) {
+                                this.mapInstance = L.map('map-container').setView(c, 15);
+                                const road = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
+                                const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
+                                this.mapLayers = { road, satellite: sat };
+                                this.mapLayers[this.currentMapStyle].addTo(this.mapInstance);
+                            } else {
+                                this.mapInstance.setView(c, 15);
+                                this.mapInstance.invalidateSize(); 
+                            }
+                            if (this.mapMarker) this.mapInstance.removeLayer(this.mapMarker);
+                            this.mapMarker = L.marker(c).addTo(this.mapInstance).bindPopup(`<b class="text-lg">${name}</b>`).openPopup();
+                        });
+                    },
+                    setMapStyle(style) {
+                        if (this.currentMapStyle === style) return;
+                        if (this.mapInstance.hasLayer(this.mapLayers[this.currentMapStyle])) { this.mapInstance.removeLayer(this.mapLayers[this.currentMapStyle]); }
+                        this.mapLayers[style].addTo(this.mapInstance);
+                        this.currentMapStyle = style;
+                    },
+                    zoomImage(url) { if(url) this.zoomedImage = url; },
+                    getLocation() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition( (p) => { this.item.location = p.coords.latitude + ',' + p.coords.longitude; }, (e) => { alert('GPS Error: ' + e.message); } ); } },
+                    
+                    openCreate() { 
+                        this.showModal = true;
+                        this.editMode = false; this.fileName = '';
+                        let baseCode = {!! json_encode($autoCode ?? '', JSON_HEX_APOS) !!};
+                        this.item = { 
+                            code: baseCode, 
+                            account_type_raw: 'customer', 
+                            is_active: true, 
+                            supported_currency_ids: [], 
+                            branch_id: '', 
+                            city_id: '', 
+                            neighborhood_id: '', 
+                            debt_due_time: 0 
+                        };
+                    },
+                    openEdit(acc) { 
+                        this.item = JSON.parse(JSON.stringify(acc));
+                        this.fileName = '';
+                        
+                        let supp = this.item.supported_currency_ids;
+                        if (typeof supp === 'string') { try { supp = JSON.parse(supp); } catch(e) { supp = []; } }
+                        this.item.supported_currency_ids = Array.isArray(supp) ? supp.map(String) : [];
+
+                        this.item.is_active = (acc.is_active == 1 || acc.is_active == true); 
+                        this.editMode = true; this.showModal = true;
+                    }
+                };
+            });
         });
     </script>
 </x-app-layout>

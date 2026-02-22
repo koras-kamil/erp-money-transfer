@@ -18,7 +18,9 @@ class AccountController extends Controller
         $query = Account::with(['currency', 'city', 'neighborhood', 'branch', 'creator']); 
 
         if ($request->ajax()) {
-            $textColumns = ['code', 'name', 'manual_code', 'mobile_number_1', 'secondary_name'];
+            // ✅ FIXED: Added 'id', 'account_type', and 'mobile_number_2' so Alpine search works perfectly
+            $textColumns = ['id', 'code', 'name', 'manual_code', 'mobile_number_1', 'mobile_number_2', 'secondary_name', 'account_type'];
+            
             foreach ($textColumns as $col) {
                 if ($request->filled($col)) {
                     $query->where($col, 'like', '%' . $request->input($col) . '%');
@@ -41,7 +43,7 @@ class AccountController extends Controller
             return [
                 'id' => $acc->id,
                 'image_url' => $acc->profile_picture ? asset('storage/' . $acc->profile_picture) : null,
-                'initial' => substr($acc->name, 0, 1),
+                'initial' => mb_substr($acc->name, 0, 1),
                 'code' => $acc->code,
                 'manual_code' => $acc->manual_code,
                 'name' => $acc->name,
@@ -95,15 +97,15 @@ class AccountController extends Controller
             'name' => 'required|string|max:255',
             'code' => 'required|unique:accounts,code',
             'account_type' => 'required',
-            'supported_currency_ids' => 'required|array|min:1', // ✅ Must select at least one
+            'supported_currency_ids' => 'required|array|min:1', 
         ]);
 
-        $data = $request->except('profile_picture');
+        // ✅ FIXED: Safely ignore _token and _method to prevent SQL Crash
+        $data = $request->except(['profile_picture', '_token', '_method']);
         
-        // ✅ Auto-assign currency_id from the first supported currency
         $supported = $request->input('supported_currency_ids', []);
         $data['supported_currency_ids'] = $supported; 
-        $data['currency_id'] = $supported[0]; 
+        $data['currency_id'] = $supported[0] ?? null; 
 
         $data['debt_limit'] = $request->input('debt_limit') ?? 0;
         $data['debt_due_time'] = $request->input('debt_due_time') ?? 0;
@@ -128,11 +130,12 @@ class AccountController extends Controller
             'supported_currency_ids' => 'required|array|min:1',
         ]);
 
-        $data = $request->except('profile_picture');
+        // ✅ FIXED: Safely ignore _token and _method 
+        $data = $request->except(['profile_picture', '_token', '_method']);
         
         $supported = $request->input('supported_currency_ids', []);
         $data['supported_currency_ids'] = $supported;
-        $data['currency_id'] = $supported[0];
+        $data['currency_id'] = $supported[0] ?? null;
 
         $data['debt_limit'] = $request->input('debt_limit') ?? 0;
         $data['debt_due_time'] = $request->input('debt_due_time') ?? 0;
@@ -171,7 +174,8 @@ class AccountController extends Controller
         $query = Account::onlyTrashed()->with(['currency', 'city', 'neighborhood', 'branch', 'creator']);
 
         if ($request->ajax()) {
-            $textColumns = ['code', 'name', 'manual_code', 'mobile_number_1'];
+            // ✅ FIXED: Matched search columns for Trash as well
+            $textColumns = ['id', 'code', 'name', 'manual_code', 'mobile_number_1', 'mobile_number_2', 'secondary_name', 'account_type'];
             foreach ($textColumns as $col) {
                 if ($request->filled($col)) {
                     $query->where($col, 'like', '%' . $request->input($col) . '%');
@@ -192,7 +196,7 @@ class AccountController extends Controller
             return [
                 'id' => $acc->id,
                 'image_url' => $acc->profile_picture ? asset('storage/' . $acc->profile_picture) : null,
-                'initial' => substr($acc->name, 0, 1),
+                'initial' => mb_substr($acc->name, 0, 1),
                 'code' => $acc->code,
                 'manual_code' => $acc->manual_code,
                 'name' => $acc->name,

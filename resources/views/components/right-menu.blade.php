@@ -1,7 +1,6 @@
 <aside id="sidebar" 
        x-cloak
        x-data="{ 
-           mobileMenuOpen: false, 
            isCollapsed: (window.innerWidth >= 768) ? $persist(false).as('sidebar-collapsed') : false,
            tooltip: { show: false, text: '', top: 0, left: 0 },
            
@@ -35,19 +34,20 @@
 
     {{-- 1. HEADER --}}
     <div class="h-16 flex items-center relative border-b border-slate-800 bg-[#1e293b]/50 whitespace-nowrap overflow-hidden shrink-0 transition-all duration-300 px-3"
-         :class="isCollapsed ? 'justify-center' : 'justify-start'">
+         :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center' : 'justify-start'">
         
-        <button @click="mobileMenuOpen = false" class="md:hidden absolute ltr:right-3 rtl:left-3 text-slate-400 hover:text-white transition-colors p-1">
+        <button @click="closeMobileMenu()" class="md:hidden absolute ltr:right-3 rtl:left-3 text-slate-400 hover:text-white transition-colors p-1">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
 
-        <div class="flex items-center gap-3 w-full">
+        {{-- 🟢 FIXED: Gap is removed when collapsed so the Logo stays perfectly centered --}}
+        <div class="flex items-center w-full" :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center gap-0' : 'gap-3'">
             <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-indigo-600 rounded-xl shadow-lg shadow-indigo-500/40 transition-all duration-300 group-hover:scale-110">
                 <span class="text-white font-black text-lg">S</span>
             </div>
             
             <div class="flex flex-col overflow-hidden transition-all duration-300 ease-in-out origin-left"
-                 :class="isCollapsed && window.innerWidth >= 768 ? 'w-0 opacity-0 scale-x-0' : 'w-auto opacity-100 scale-x-100'">
+                 :class="(isCollapsed && window.innerWidth >= 768) ? 'w-0 opacity-0 scale-x-0' : 'w-auto opacity-100 scale-x-100'">
                 <span class="block text-white font-bold text-sm uppercase tracking-wider delay-75">Smart</span>
                 <span class="block text-[10px] text-indigo-400 uppercase tracking-widest delay-100">System</span>
             </div>
@@ -68,44 +68,44 @@
         
         {{-- === MAIN SECTION === --}}
         <div class="px-1 mb-2 transition-all duration-300 whitespace-nowrap overflow-hidden flex items-center" 
-             :class="isCollapsed ? 'justify-center' : ''">
+             :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center' : 'justify-between'">
             <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] transition-all duration-300 origin-left"
-               :class="isCollapsed && window.innerWidth >= 768 ? 'w-0 opacity-0 hidden' : 'w-full opacity-100 block'">
+               :class="(isCollapsed && window.innerWidth >= 768) ? 'w-0 opacity-0 hidden' : 'w-full opacity-100 block'">
                {{ __('messages.main_menu') }}
             </p>
             <div class="h-1.5 w-1.5 bg-slate-600 rounded-full transition-all duration-300"
-                 :class="isCollapsed && window.innerWidth >= 768 ? 'block opacity-100' : 'hidden opacity-0'">
+                 :class="(isCollapsed && window.innerWidth >= 768) ? 'block opacity-100' : 'hidden opacity-0'">
             </div>
         </div>
 
-        {{-- DASHBOARD --}}
+        {{-- 🟢 FIXED: DASHBOARD (Gap becomes 0 when collapsed to fix icon offset) --}}
         <a href="{{ route('dashboard') }}" 
            @mouseenter="showTooltip($event, '{{ __('messages.dashboard') }}')" @mouseleave="hideTooltip()"
-           class="flex items-center gap-3 px-2 py-2 rounded-xl transition-all group relative overflow-hidden min-h-[40px]
+           class="flex items-center px-2 py-2 rounded-xl transition-all group relative overflow-hidden min-h-[40px]
            {{ request()->routeIs('dashboard') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white' }}"
-           :class="isCollapsed ? 'justify-center' : ''">
+           :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center gap-0' : 'gap-3'">
             
             <div class="w-5 h-5 flex-shrink-0 flex items-center justify-center">
                 <svg class="w-5 h-5 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
             </div>
             
             <span class="text-xs font-bold whitespace-nowrap transition-all duration-300 ease-in-out origin-left"
-                  :class="isCollapsed && window.innerWidth >= 768 ? 'w-0 opacity-0 translate-x-[-10px]' : 'w-auto opacity-100 translate-x-0'">
+                  :class="(isCollapsed && window.innerWidth >= 768) ? 'w-0 opacity-0 translate-x-[-10px]' : 'w-auto opacity-100 translate-x-0'">
                 {{ __('messages.dashboard') }}
             </span>
         </a>
 
-        {{-- ACCOUNTS --}}
+        {{-- 🟢 FIXED: ACCOUNTS (Gap becomes 0 when collapsed) --}}
         <a href="{{ route('accounts.index') }}" 
            @mouseenter="showTooltip($event, '{{ __('menu.account') }}')" @mouseleave="hideTooltip()"
-           class="flex items-center gap-3 px-2 py-2 rounded-xl transition-all group relative overflow-hidden min-h-[40px]
+           class="flex items-center px-2 py-2 rounded-xl transition-all group relative overflow-hidden min-h-[40px]
            {{ request()->routeIs('accounts.*') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white' }}"
-           :class="isCollapsed ? 'justify-center' : ''">
+           :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center gap-0' : 'gap-3'">
             <div class="w-5 h-5 flex-shrink-0 flex items-center justify-center">
                 <svg class="w-5 h-5 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
             </div>
             <span class="text-xs font-bold whitespace-nowrap transition-all duration-300 ease-in-out origin-left"
-                  :class="isCollapsed && window.innerWidth >= 768 ? 'w-0 opacity-0 translate-x-[-10px]' : 'w-auto opacity-100 translate-x-0'">
+                  :class="(isCollapsed && window.innerWidth >= 768) ? 'w-0 opacity-0 translate-x-[-10px]' : 'w-auto opacity-100 translate-x-0'">
                 {{ __('menu.account') }}
             </span>
         </a>
@@ -127,16 +127,15 @@
             </x-nav-group>
         </div>
 
-        {{-- 🔥 NEW ACCOUNTANT SECTION (UPDATED LINK) --}}
+        {{-- ACCOUNTANT SECTION --}}
         <div class="mt-2 pt-2 border-t border-slate-800">
-            {{-- Section Label --}}
-            <div class="px-1 mb-2 transition-all duration-300 flex items-center" :class="isCollapsed ? 'justify-center' : ''">
+            <div class="px-1 mb-2 transition-all duration-300 flex items-center" :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center' : 'justify-between'">
                 <p class="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em] px-1 whitespace-nowrap transition-all duration-300 origin-left"
-                   :class="isCollapsed && window.innerWidth >= 768 ? 'w-0 opacity-0 hidden' : 'w-full opacity-100 block'">
+                   :class="(isCollapsed && window.innerWidth >= 768) ? 'w-0 opacity-0 hidden' : 'w-full opacity-100 block'">
                    {{ __('accountant.menu_title') }}
                 </p>
                 <div class="h-1.5 w-1.5 bg-indigo-500 rounded-full transition-all duration-300"
-                     :class="isCollapsed && window.innerWidth >= 768 ? 'block opacity-100' : 'hidden opacity-0'">
+                     :class="(isCollapsed && window.innerWidth >= 768) ? 'block opacity-100' : 'hidden opacity-0'">
                 </div>
             </div>
 
@@ -144,7 +143,6 @@
                 <x-nav-group label="{{ __('accountant.menu_title') }}" :active="request()->routeIs('accountant.*')">
                     <x-slot:icon>
                         <div class="w-5 h-5 flex-shrink-0 flex items-center justify-center">
-                            {{-- Calculator/Finance Icon --}}
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                         </div>
                     </x-slot:icon>
@@ -152,10 +150,11 @@
                     <a href="{{ route('accountant.receiving.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.receiving.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
                         {{ __('accountant.receiving_money') }}
                     </a>
-                    
-                    {{-- 🟢 UPDATED: Pointing to Paying Index --}}
                     <a href="{{ route('accountant.paying.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.paying.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
                         {{ __('accountant.paying_money') }}
+                    </a>
+                    <a href="{{ route('accountant.statement.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.statement.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                        {{ __('accountant.statement') }}
                     </a>
                 </x-nav-group>
             </div>
@@ -164,13 +163,13 @@
         {{-- ADMIN SECTION --}}
         @role('super-admin')
         <div class="mt-2 pt-2 border-t border-slate-800">
-             <div class="px-1 mb-2 transition-all duration-300 flex items-center" :class="isCollapsed ? 'justify-center' : ''">
+             <div class="px-1 mb-2 transition-all duration-300 flex items-center" :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center' : 'justify-between'">
                 <p class="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em] px-1 whitespace-nowrap transition-all duration-300 origin-left"
-                   :class="isCollapsed && window.innerWidth >= 768 ? 'w-0 opacity-0 hidden' : 'w-full opacity-100 block'">
+                   :class="(isCollapsed && window.innerWidth >= 768) ? 'w-0 opacity-0 hidden' : 'w-full opacity-100 block'">
                    {{ app()->getLocale() == 'ku' ? 'بەڕێوەبردن' : 'ADMIN' }}
                 </p>
                 <div class="h-1.5 w-1.5 bg-slate-600 rounded-full transition-all duration-300"
-                     :class="isCollapsed && window.innerWidth >= 768 ? 'block opacity-100' : 'hidden opacity-0'">
+                     :class="(isCollapsed && window.innerWidth >= 768) ? 'block opacity-100' : 'hidden opacity-0'">
                 </div>
             </div>
             
@@ -220,22 +219,23 @@
             </div>
         </div>
 
-        {{-- USER PROFILE --}}
-        <div class="relative group/user flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-800/50 transition-all duration-300 cursor-pointer border border-transparent hover:border-slate-700/50" :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center' : ''">
+        {{-- 🟢 FIXED: USER PROFILE (Gap becomes 0 when collapsed to keep avatar perfectly centered) --}}
+        <div class="relative group/user flex items-center p-2 rounded-lg hover:bg-slate-800/50 transition-all duration-300 cursor-pointer border border-transparent hover:border-slate-700/50" 
+             :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center gap-0' : 'gap-2.5'">
             <div class="relative w-9 h-9 flex-shrink-0">
                 <div class="w-full h-full rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold shadow-lg ring-2 ring-[#0f172a] group-hover/user:ring-slate-700 transition-all">{{ substr(Auth::user()->name, 0, 1) }}</div>
                 <span class="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border-2 border-[#0f172a]"></span></span>
             </div>
             
             <div class="flex-1 min-w-0 overflow-hidden transition-all duration-300 ease-in-out origin-left"
-                 :class="isCollapsed && window.innerWidth >= 768 ? 'w-0 opacity-0 scale-x-0' : 'w-auto opacity-100 scale-x-100'">
+                 :class="(isCollapsed && window.innerWidth >= 768) ? 'w-0 opacity-0 scale-x-0' : 'w-auto opacity-100 scale-x-100'">
                 <p class="text-xs font-bold text-white truncate leading-tight">{{ Auth::user()->name }}</p>
                 <p class="text-[9px] text-slate-500 uppercase tracking-wider truncate">{{ Auth::user()->hasRole('super-admin') ? 'Super Admin' : 'Staff' }}</p>
             </div>
             
             <form action="{{ route('logout') }}" method="POST" 
                   class="transition-all duration-300"
-                  :class="isCollapsed && window.innerWidth >= 768 ? 'w-0 opacity-0 hidden' : 'w-auto opacity-100 block'">
+                  :class="(isCollapsed && window.innerWidth >= 768) ? 'w-0 opacity-0 hidden' : 'w-auto opacity-100 block'">
                 @csrf
                 <button type="submit" class="text-slate-500 hover:text-red-400 p-1.5 hover:bg-white/5 rounded-lg transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
@@ -244,7 +244,7 @@
         </div>
     </div>
 
-    {{-- 🔥 THE MAGIC TOOLTIP --}}
+    {{-- THE MAGIC TOOLTIP --}}
     <div x-show="tooltip.show"
          x-cloak
          class="fixed z-[9999] px-3 py-1.5 text-[11px] font-bold text-white bg-slate-900 rounded-lg shadow-xl border border-slate-700 pointer-events-none transition-opacity duration-200 whitespace-nowrap"

@@ -29,4 +29,9 @@ class Account extends Model
     {
         return in_array($currencyId, $this->supported_currency_ids ?? []);
     }
+
+    public function balances()
+    {
+        return $this->hasMany(AccountBalance::class);
+    }
 }
