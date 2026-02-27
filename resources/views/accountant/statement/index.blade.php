@@ -74,7 +74,7 @@
                                     <span class="text-xs font-bold text-slate-500">{{ __("statement.{$account->account_type}") ?? 'User' }}</span>
                                 </div>
 
-                                {{-- 🟢 FULL INFORMATION & INLINE EDIT BUTTON --}}
+                                {{-- FULL INFORMATION & INLINE EDIT BUTTON --}}
                                 <div x-data="{ openInfo: false }" class="w-full mt-5">
                                     <div class="flex items-center gap-2">
                                         <button @click="openInfo = !openInfo" class="flex-1 flex items-center justify-between px-4 py-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 transition-colors shadow-sm">
@@ -113,40 +113,39 @@
                                                 <span class="text-[11px] font-bold text-slate-500">{!! addslashes(__('statement.address')) !!}</span>
                                                 <span class="text-xs font-bold text-slate-800">{{ $account->address ?? '-' }}</span>
                                             </div>
-                                            
-                                            <div class="px-4 py-2 bg-slate-100/80 border-y border-slate-200">
-                                                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">{!! addslashes(__('statement.last_movements')) !!}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- 🟢 بەشی دوایین جوڵەکان 🟢 --}}
+                                <div x-data="{ openMovements: false }" class="w-full mt-3">
+                                    <button @click="openMovements = !openMovements" class="w-full flex items-center justify-between px-4 py-2 bg-indigo-50 hover:bg-indigo-100 rounded-xl border border-indigo-100 transition-colors shadow-sm">
+                                        <span class="text-xs font-bold text-indigo-700">{!! addslashes(__('statement.last_movements')) !!}</span>
+                                        <svg class="w-4 h-4 text-indigo-500 transition-transform duration-300" :class="openMovements ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                    </button>
+                                    
+                                    <div x-show="openMovements" x-collapse x-cloak>
+                                        <div class="mt-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100">
+                                            <div class="flex justify-between items-center px-4 py-2.5">
+                                                <span class="text-[11px] font-bold text-slate-500">{!! addslashes(__('statement.last_receive')) !!}</span>
+                                                <span class="text-xs font-mono font-bold text-emerald-600" dir="ltr">{{ $lastMovements['receive'] ?? '-' }}</span>
                                             </div>
-                                            
-                                            <div class="flex justify-between items-center px-4 py-2.5 bg-emerald-50/40">
-                                                <span class="text-[11px] font-bold text-emerald-700">{!! addslashes(__('statement.last_receive')) !!}</span>
-                                                <span class="text-[11px] font-mono font-bold text-slate-800">{{ $lastMovements['receive'] ?? '-' }}</span>
+                                            <div class="flex justify-between items-center px-4 py-2.5 bg-slate-50/50">
+                                                <span class="text-[11px] font-bold text-slate-500">{!! addslashes(__('statement.last_pay')) !!}</span>
+                                                <span class="text-xs font-mono font-bold text-rose-600" dir="ltr">{{ $lastMovements['pay'] ?? '-' }}</span>
                                             </div>
-                                            <div class="flex justify-between items-center px-4 py-2.5 bg-emerald-50/20 border-b border-emerald-100">
-                                                <span class="text-[11px] font-bold text-emerald-700">{!! addslashes(__('statement.last_payment')) !!}</span>
-                                                <span class="text-[11px] font-mono font-bold text-slate-800">{{ $lastMovements['pay'] ?? $lastMovements['payment'] ?? '-' }}</span>
+                                            <div class="flex justify-between items-center px-4 py-2.5">
+                                                <span class="text-[11px] font-bold text-slate-500">{!! addslashes(__('statement.last_sale')) !!}</span>
+                                                <span class="text-xs font-mono font-bold text-indigo-600" dir="ltr">{{ $lastMovements['sale'] ?? '-' }}</span>
                                             </div>
-                                            
-                                            <div class="flex justify-between items-center px-4 py-2.5 bg-rose-50/40">
-                                                <span class="text-[11px] font-bold text-rose-700">{!! addslashes(__('statement.last_sale')) !!}</span>
-                                                <span class="text-[11px] font-mono font-bold text-slate-800">{{ $lastMovements['sale'] ?? '-' }}</span>
-                                            </div>
-                                            <div class="flex justify-between items-center px-4 py-2.5 bg-rose-50/20 border-b border-rose-100">
-                                                <span class="text-[11px] font-bold text-rose-700">{!! addslashes(__('statement.last_sale_return')) !!}</span>
-                                                <span class="text-[11px] font-mono font-bold text-slate-800">{{ $lastMovements['return'] ?? '-' }}</span>
-                                            </div>
-                                            
-                                            <div class="flex justify-between items-center px-4 py-2.5 bg-blue-50/40">
-                                                <span class="text-[11px] font-bold text-blue-700">{!! addslashes(__('statement.last_purchase')) !!}</span>
-                                                <span class="text-[11px] font-mono font-bold text-slate-800">{{ $lastMovements['purchase'] ?? '-' }}</span>
-                                            </div>
-                                            <div class="flex justify-between items-center px-4 py-2.5 bg-blue-50/20">
-                                                <span class="text-[11px] font-bold text-blue-700">{!! addslashes(__('statement.last_purchase_return')) !!}</span>
-                                                <span class="text-[11px] font-mono font-bold text-slate-800">{{ $lastMovements['purchase_return'] ?? '-' }}</span>
+                                            <div class="flex justify-between items-center px-4 py-2.5 bg-slate-50/50">
+                                                <span class="text-[11px] font-bold text-slate-500">{!! addslashes(__('statement.last_purchase')) !!}</span>
+                                                <span class="text-xs font-mono font-bold text-slate-800" dir="ltr">{{ $lastMovements['purchase'] ?? '-' }}</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
 
                             <div class="p-5 border-b border-slate-200 bg-white">
@@ -180,10 +179,10 @@
         {{-- 2. MAIN CONTENT AREA --}}
         {{-- ==================================================================================== --}}
         @if($account)
-            <div class="flex-1 min-w-0 bg-white border border-slate-200 rounded-[1.5rem] shadow-sm flex flex-col overflow-hidden w-full relative">
+            <div class="flex-1 min-w-0 bg-white border border-slate-200 rounded-[1.5rem] shadow-sm flex flex-col overflow-visible w-full relative z-[50]">
                 
                 {{-- Toolbar --}}
-                <div class="bg-slate-50/50 border-b border-slate-200 p-4 flex flex-col xl:flex-row justify-between items-center gap-4 shrink-0">
+                <div class="bg-slate-50/50 border-b border-slate-200 p-4 flex flex-col xl:flex-row justify-between items-center gap-4 shrink-0 relative z-[60] rounded-t-[1.5rem]">
                     <div class="flex items-center gap-3 w-full xl:w-auto">
                         <button @click="showSidebar = !showSidebar" class="flex items-center justify-center w-10 h-10 bg-white border border-slate-200 text-slate-500 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 transition-colors shadow-sm shrink-0"><svg x-show="!showSidebar" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg><svg x-show="showSidebar" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg></button>
                         <div class="w-px h-6 bg-slate-200 mx-1 hidden xl:block"></div>
@@ -193,9 +192,9 @@
                     <div class="flex flex-wrap items-center gap-2.5 w-full xl:w-auto justify-end">
                         
                         {{-- Columns Toggle --}}
-                        <div x-data="{ openCols: false }" class="relative">
+                        <div x-data="{ openCols: false }" class="relative z-[100]">
                             <button @click="openCols = !openCols" @click.outside="openCols = false" title="{!! addslashes(__('statement.columns')) !!}" class="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 text-slate-500 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 transition-colors shadow-sm"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg></button>
-                            <div x-show="openCols" class="absolute top-full mt-3 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 p-3 ltr:right-0 rtl:left-0" style="display:none;"><div class="flex justify-between items-center px-2 py-1 mb-2 border-b border-slate-100 pb-2"><span class="text-[10px] font-bold text-slate-400 uppercase">{!! addslashes(__('statement.columns')) !!}</span><button @click="resetLayout(); openCols = false;" class="text-[10px] text-blue-500 hover:underline cursor-pointer">{!! addslashes(__('statement.reset_layout')) !!}</button></div><div class="max-h-60 overflow-y-auto space-y-1"><template x-for="col in columns" :key="col.field"><label class="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-50 rounded cursor-pointer transition"><input type="checkbox" x-model="col.visible" class="rounded text-indigo-600 w-4 h-4 border-slate-300 focus:ring-indigo-500"><span class="text-xs text-slate-700 font-medium" x-text="col.label"></span></label></template></div></div>
+                            <div x-show="openCols" class="absolute top-full mt-3 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 z-[999] p-3 ltr:right-0 rtl:left-0" style="display:none;"><div class="flex justify-between items-center px-2 py-1 mb-2 border-b border-slate-100 pb-2"><span class="text-[10px] font-bold text-slate-400 uppercase">{!! addslashes(__('statement.columns')) !!}</span><button @click="resetLayout(); openCols = false;" class="text-[10px] text-blue-500 hover:underline cursor-pointer">{!! addslashes(__('statement.reset_layout')) !!}</button></div><div class="max-h-60 overflow-y-auto space-y-1"><template x-for="col in columns" :key="col.field"><label class="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-50 rounded cursor-pointer transition"><input type="checkbox" x-model="col.visible" class="rounded text-indigo-600 w-4 h-4 border-slate-300 focus:ring-indigo-500"><span class="text-xs text-slate-700 font-medium" x-text="col.label"></span></label></template></div></div>
                         </div>
 
                         {{-- DATE FILTER --}}
@@ -226,7 +225,7 @@
                 </div>
 
                 {{-- Table Wrapper --}}
-                <div class="flex-1 overflow-x-auto overflow-y-auto w-full custom-scrollbar relative">
+                <div class="flex-1 overflow-x-auto overflow-y-auto w-full custom-scrollbar relative rounded-b-[1.5rem]">
                     <table class="w-full text-xs text-center rtl:text-center text-slate-600 whitespace-nowrap border-collapse acct-table">
                         
                         <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200 sticky top-0 z-20 shadow-sm font-bold">
@@ -248,8 +247,8 @@
                         
                         <tbody class="divide-y divide-slate-100 bg-white">
                             <template x-for="(trx, index) in filteredTransactions" :key="trx.row_id">
-                                {{-- DYNAMIC BACKGROUND FOR ROWS --}}
-                                <tr :class="trx.is_discount_row ? 'bg-rose-50/50 hover:bg-rose-100/50 text-rose-900' : 'bg-white hover:bg-slate-50'" class="transition-colors group">
+                                {{-- 🟢 DYNAMIC RED LIGHT BACKGROUND FOR DISCOUNT ROWS --}}
+                                <tr :class="trx.is_discount_row ? 'bg-red-50/70 hover:bg-red-100/70 text-red-700' : 'bg-white hover:bg-slate-50'" class="transition-colors group">
                                     <template x-for="col in columns" :key="col.field">
                                         <td x-show="col.visible" class="px-2 py-2.5 text-center align-middle border-l border-slate-50 last:border-0" :class="col.field === 'base_currency' ? (!trx.is_discount_row && (trx.base_currency === 'دینار' || trx.base_currency === 'IQD') ? 'bg-yellow-100/80 text-yellow-800 font-bold' : '') : ''">
                                             
@@ -274,24 +273,27 @@
                                             <template x-if="col.field === 'bill_type'"><span class="font-bold" x-text="getBillType(trx.bill_type)"></span></template>
                                             <template x-if="col.field === 'exchange_rate'"><span class="font-mono font-bold text-[11px]" x-text="formatMoney(trx.exchange_rate)"></span></template>
                                             <template x-if="col.field === 'base_currency'"><span class="font-bold" x-text="trx.base_currency"></span></template>
-                                            <template x-if="col.field === 'note'"><span class="font-medium truncate max-w-[150px] block mx-auto" :class="trx.is_discount_row ? 'font-bold' : ''" x-text="trx.display_note"></span></template>
+                                            <template x-if="col.field === 'note'"><span class="font-medium truncate max-w-[150px] block mx-auto" :class="trx.is_discount_row ? 'font-bold text-red-600' : ''" x-text="trx.display_note"></span></template>
 
-                                            {{-- GENERAL MODE --}}
+                                            {{-- 🟢 GENERAL MODE (Strict Fixes applied here!) --}}
                                             <template x-if="col.field === 'target_currency'"><span class="font-black text-[11px] text-indigo-700 bg-indigo-50 px-2 py-1 rounded-md border border-indigo-200" x-text="trx.target_currency"></span></template>
                                             <template x-if="col.field === 'total_display'"><span class="font-black text-slate-800 bg-slate-100 px-2.5 py-1 rounded" x-text="formatMoney(trx.total_display)"></span></template>
-                                            <template x-if="col.field === 'discount_display'"><span class="font-bold" :class="trx.discount_display > 0 ? 'text-rose-600' : 'text-slate-400'" x-text="trx.discount_display > 0 ? formatMoney(trx.discount_display) : '-'"></span></template>
+                                            <template x-if="col.field === 'discount_display'"><span class="font-bold" :class="trx.discount_display > 0 ? 'text-red-500' : 'text-slate-400'" x-text="trx.discount_display > 0 ? formatMoney(trx.discount_display) : '-'"></span></template>
                                             <template x-if="col.field === 'cash_display'"><span class="font-black text-emerald-600" x-text="formatMoney(trx.cash_display)"></span></template>
                                             <template x-if="col.field === 'loan_display'"><span class="font-bold text-slate-700" x-text="formatMoney(trx.loan_display)"></span></template>
 
-                                            {{-- LEDGER MODE --}}
+                                            {{-- LEDGER MODE (Red Light on Discount) --}}
                                             <template x-if="col.field === 'statement_id'"><span class="font-mono bg-slate-50 px-2 py-0.5 rounded border border-slate-100" x-text="trx.statement_id || '-'"></span></template>
                                             <template x-if="col.field === 'display_amount'"><span class="font-black" x-text="formatMoney(trx.display_amount)"></span></template>
+                                            
                                             <template x-if="col.field === 'debit'">
-                                                <span class="font-black" :class="trx.debit !== 0 ? (trx.is_discount_row ? 'text-rose-700' : 'text-slate-800') : 'text-slate-300'" dir="ltr" x-text="trx.debit !== 0 ? formatMoney(trx.debit) + ' ' + getCurrencySymbol(trx.target_currency) : '-'"></span>
+                                                <span class="font-black" :class="trx.debit !== 0 ? (trx.is_discount_row ? 'text-red-600' : 'text-slate-800') : 'text-slate-300'" dir="ltr" x-text="trx.debit !== 0 ? formatMoney(trx.debit) + ' ' + getCurrencySymbol(trx.target_currency) : '-'"></span>
                                             </template>
+                                            
                                             <template x-if="col.field === 'credit'">
-                                                <span class="font-black" :class="trx.credit !== 0 ? (trx.is_discount_row ? 'text-rose-700' : 'text-slate-800') : 'text-slate-300'" dir="ltr" x-text="trx.credit !== 0 ? formatMoney(trx.credit) + ' ' + getCurrencySymbol(trx.target_currency) : '-'"></span>
+                                                <span class="font-black" :class="trx.credit !== 0 ? (trx.is_discount_row ? 'text-red-600' : 'text-slate-800') : 'text-slate-300'" dir="ltr" x-text="trx.credit !== 0 ? formatMoney(trx.credit) + ' ' + getCurrencySymbol(trx.target_currency) : '-'"></span>
                                             </template>
+                                            
                                             <template x-if="col.field === 'running_balance'">
                                                 <span class="font-black text-indigo-700 bg-indigo-50/50 px-2 py-1 rounded border border-indigo-100/50" dir="ltr" x-text="(trx.running_balance < 0 ? '-' : '+') + formatMoney(Math.abs(trx.running_balance)) + ' ' + getCurrencySymbol(trx.target_currency)"></span>
                                             </template>
@@ -357,7 +359,6 @@
         $edit_branches = class_exists('\App\Models\Branch') ? \App\Models\Branch::all() : collect();
         $edit_cities = class_exists('\App\Models\City') ? \App\Models\City::all() : collect();
         $edit_neighborhoods = class_exists('\App\Models\Neighborhood') ? \App\Models\Neighborhood::all() : collect();
-        
         if (!isset($accounts)) {
             $accounts = class_exists('\App\Models\Account') ? \App\Models\Account::where('is_active', true)->get()->map(function($acc) {
                 $supported = is_string($acc->supported_currency_ids) ? json_decode($acc->supported_currency_ids, true) : (is_array($acc->supported_currency_ids) ? $acc->supported_currency_ids : []);
@@ -536,6 +537,7 @@
             Alpine.data('statementManager', () => ({
                 search: '{{ request('search') }}',
                 accounts: {!! json_encode($search_list ?? []) !!},
+                currencies: {!! json_encode($currencies ?? []) !!},
                 showSidebar: (window.innerWidth >= 1024),
                 datePreset: '',
                 startDate: '{{ request('start_date') }}',
@@ -628,10 +630,10 @@
                 columns: [],
 
                 initData() {
-                    const savedGen = localStorage.getItem('stat_gen_v35');
+                    const savedGen = localStorage.getItem('stat_gen_v51');
                     if(savedGen) { this.columnsGeneral = JSON.parse(savedGen); }
                     
-                    const savedLedg = localStorage.getItem('stat_ledg_v35');
+                    const savedLedg = localStorage.getItem('stat_ledg_v51');
                     if(savedLedg) { this.columnsLedger = JSON.parse(savedLedg); }
                     
                     this.columns = this.filters.target_currency === '' ? this.columnsGeneral : this.columnsLedger;
@@ -642,10 +644,10 @@
                 },
 
                 saveState() { 
-                    if(this.filters.target_currency === '') { localStorage.setItem('stat_gen_v35', JSON.stringify(this.columns)); } 
-                    else { localStorage.setItem('stat_ledg_v35', JSON.stringify(this.columns)); }
+                    if(this.filters.target_currency === '') { localStorage.setItem('stat_gen_v51', JSON.stringify(this.columns)); } 
+                    else { localStorage.setItem('stat_ledg_v51', JSON.stringify(this.columns)); }
                 },
-                resetLayout() { localStorage.removeItem('stat_gen_v35'); localStorage.removeItem('stat_ledg_v35'); location.reload(); },
+                resetLayout() { localStorage.removeItem('stat_gen_v51'); localStorage.removeItem('stat_ledg_v51'); location.reload(); },
 
                 dragStart(e, i) { this.draggingIndex = i; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', i); },
                 dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; },
@@ -677,7 +679,33 @@
                     return `#`;
                 },
 
-                // 🟢 FLAWLESS TRUE BALANCE CALCULATION (Exactly Amount - Discount)
+                convertToTarget(val, trx) {
+                    if (!val) return 0;
+                    let s_curr = trx.base_currency || '';
+                    let t_curr = trx.target_currency || '';
+                    if (s_curr === t_curr) return parseFloat(val);
+
+                    let rate = parseFloat(trx.exchange_rate) || 1;
+                    if (rate === 1) return parseFloat(val);
+
+                    // Safely handle large rates (like 1500 for USD to IQD)
+                    if (rate > 50) {
+                        // If converting FROM IQD/Toman TO USD -> Divide
+                        if (s_curr.includes('دینار') || s_curr.includes('IQD') || s_curr.includes('تومەن') || s_curr.includes('TOMAN')) {
+                            return parseFloat(val) / rate;
+                        }
+                        // If converting FROM USD TO IQD/Toman -> Multiply
+                        if (t_curr.includes('دینار') || t_curr.includes('IQD') || t_curr.includes('تومەن') || t_curr.includes('TOMAN')) {
+                            return parseFloat(val) * rate;
+                        }
+                        // Fallback
+                        return parseFloat(val) / rate;
+                    }
+
+                    return parseFloat(val) * rate;
+                },
+
+                // 🟢 FLAWLESS TRUE BALANCE CALCULATION (DYNAMIC!)
                 get trueBalances() {
                     let bals = {};
                     this.raw_data.forEach(t => bals[t.target_currency] = 0);
@@ -685,40 +713,34 @@
                     
                     sortedData.forEach(trx => {
                         let type = String(trx.bill_type).toLowerCase();
-                        let rate = parseFloat(trx.exchange_rate) || 1;
                         let t_amount = parseFloat(trx.amount) || 0;
                         let t_disc = parseFloat(trx.discount) || 0;
-                        
-                        // 1. Calculate Exact Net Value
-                        let net_amount = t_amount - t_disc;
-                        if(net_amount < 0) net_amount = 0;
-                        
-                        // 2. Intelligent Target Currency Converter
-                        let dbTotal = parseFloat(trx.total) || 1;
-                        const convertToTarget = (val) => {
-                            if (trx.base_currency === trx.target_currency) return val;
-                            if (rate === 1) return val;
-                            
-                            // Check the database's logic to guarantee correct ratio!
-                            let baseCheck = t_amount - t_disc;
-                            if(baseCheck <= 0) baseCheck = 1;
-                            let ratio = dbTotal / baseCheck;
-                            return val * ratio;
-                        };
 
-                        let total_impact = convertToTarget(net_amount);
+                        // Dynamically calculate from base values to Target Currency
+                        let target_cash = this.convertToTarget(t_amount, trx);
+                        let target_disc = this.convertToTarget(t_disc, trx);
+
                         let impact = 0;
+                        if (type === 'receive' || type === 'return') { 
+                            // Receiving reduces debt: Cash + Discount clears the debt!
+                            impact = -(target_cash + target_disc); 
+                        } 
+                        else if (type === 'pay' || type === 'sale' || type === 'purchase') { 
+                            // Paying increases debt: Cash + Discount
+                            impact = target_cash + target_disc;
+                        } else {
+                            // Fallback for unknown types
+                            impact = this.convertToTarget(parseFloat(trx.total) || 0, trx);
+                        }
 
-                        if (type === 'receive' || type === 'return') { impact = -total_impact; } 
-                        else if (type === 'pay' || type === 'sale' || type === 'purchase') { impact = total_impact; }
-
-                        if (bals[trx.target_currency] !== undefined) { bals[trx.target_currency] += impact; } 
-                        else { bals[trx.target_currency] = impact; }
+                        if (bals[trx.target_currency] !== undefined) bals[trx.target_currency] += impact;
+                        else bals[trx.target_currency] = impact;
                     });
                     return bals;
                 },
 
-                // 🟢 FLAWLESS LEDGER SPLIT ENGINE (Same Column, Negative Subtraction)
+                // 🟢 FLAWLESS LEDGER SPLIT ENGINE
+              // 🟢 FLAWLESS LEDGER SPLIT ENGINE
                 get processedTransactions() {
                     let isLedger = this.filters.target_currency !== '';
                     let rows = [];
@@ -730,28 +752,38 @@
                                 let val = String(trx[key] || '').toLowerCase();
                                 let search = this.filters[key].toLowerCase();
                                 if (!val.includes(search)) return false;
-                            }
+                             }
                         }
                         if (isLedger && trx.target_currency !== this.filters.target_currency) return false;
                         return true;
-                    });
+                     });
 
                     if (!isLedger) {
                         filteredData.sort((a, b) => b.timestamp - a.timestamp); // Newest top
                         
                         filteredData.forEach(trx => {
+                            let type = String(trx.bill_type).toLowerCase();
                             let t_amount = parseFloat(trx.amount) || 0;
                             let t_disc = parseFloat(trx.discount) || 0;
-                            let display_total = t_amount - t_disc;
-                            if(display_total < 0) display_total = 0;
+                            
+                            let display_total = 0;
+                            let display_cash = t_amount; // Cash column always exactly what user typed
+
+                            if (type === 'pay' || type === 'sale' || type === 'purchase') {
+                                display_total = t_amount + t_disc; // Paying: 100 + 1 = 101
+                            } else if (type === 'receive' || type === 'return') {
+                                display_total = t_amount + t_disc; // 🟢 FIXED: Receiving now adds the discount (100 + 1 = 101)
+                            } else {
+                                display_total = parseFloat(trx.total) || 0;
+                            }
 
                             rows.push({
                                 ...trx,
                                 row_id: trx.id + '_gen',
                                 row_index: rowIndex++,
-                                total_display: display_total, // E.g. 90
-                                discount_display: t_disc,     // E.g. 10
-                                cash_display: t_amount,       // E.g. 100
+                                total_display: display_total, 
+                                discount_display: t_disc,     
+                                cash_display: display_cash,   
                                 is_discount_row: false,
                                 display_note: trx.note || '-'
                             });
@@ -760,40 +792,30 @@
                     else {
                         filteredData.sort((a, b) => a.timestamp - b.timestamp); // Oldest top
                         let currentBalance = 0;
-                        
+
                         filteredData.forEach(trx => {
                             let type = String(trx.bill_type).toLowerCase();
-                            let rate = parseFloat(trx.exchange_rate) || 1;
                             let t_amount = parseFloat(trx.amount) || 0;
                             let t_disc = parseFloat(trx.discount) || 0;
-                            let dbTotal = parseFloat(trx.total) || 1;
 
-                            const convertToTarget = (val) => {
-                                if (trx.base_currency === trx.target_currency) return val;
-                                if (rate === 1) return val;
-                                let baseCheck = t_amount - t_disc;
-                                if(baseCheck <= 0) baseCheck = 1;
-                                let ratio = dbTotal / baseCheck;
-                                return val * ratio;
-                            };
+                            // Calculate target impact (USD) for Debit/Credit columns
+                            let target_cash = this.convertToTarget(t_amount, trx);
+                            let target_disc = this.convertToTarget(t_disc, trx);
 
-                            let target_cash = convertToTarget(t_amount);
-                            let target_disc = convertToTarget(t_disc);
-
-                            // 1. CASH ROW (Always exact amount from database)
+                            // 1. CASH ROW
                             if (t_amount > 0 || (t_amount === 0 && t_disc === 0)) {
                                 let debit = 0; let credit = 0;
-                                if (type === 'receive' || type === 'return') { credit = target_cash; }
-                                else if (type === 'pay' || type === 'sale' || type === 'purchase') { debit = target_cash; }
+                                if (type === 'receive' || type === 'return') { credit = target_cash; } // Cash clears debt
+                                else if (type === 'pay' || type === 'sale' || type === 'purchase') { debit = target_cash; } // Cash increases debt
                                 
                                 currentBalance += (debit - credit);
                                 rows.push({
                                     ...trx,
                                     row_id: trx.id + '_cash',
                                     row_index: rowIndex++,
-                                    display_amount: target_cash, 
-                                    debit: debit,
-                                    credit: credit,
+                                    display_amount: t_amount, // 🟢 FIXED: Show original typed amount (e.g., 150,000 IQD)
+                                    debit: debit,             // Calculated target amount (e.g., 100 USD)
+                                    credit: credit,           // Calculated target amount (e.g., 100 USD)
                                     running_balance: currentBalance,
                                     display_note: trx.note ? trx.note : "{!! addslashes(__('statement.cash')) !!}",
                                     has_discount: t_disc > 0, 
@@ -802,20 +824,24 @@
                                 });
                             }
 
-                            // 2. DISCOUNT ROW (Appears in the SAME column but as a negative to subtract!)
+                            // 2. DISCOUNT ROW 
                             if (t_disc > 0) {
-                                let debit = 0; let credit = 0;
+                                let debit = 0;
+                                let credit = 0;
                                 
-                                // Placed in exact same column as Cash, but we make it NEGATIVE so it subtracts!
-                                if (type === 'receive' || type === 'return') { credit = -target_disc; } 
-                                else if (type === 'pay' || type === 'sale' || type === 'purchase') { debit = -target_disc; }
+                                if (type === 'pay' || type === 'sale' || type === 'purchase') { 
+                                    debit = target_disc; // Paying Discount increases debt
+                                }
+                                else if (type === 'receive' || type === 'return') { 
+                                    credit = target_disc; // Receiving Discount reduces debt
+                                }
 
                                 currentBalance += (debit - credit);
                                 rows.push({
                                     ...trx,
                                     row_id: trx.id + '_disc',
                                     row_index: rowIndex++,
-                                    display_amount: target_disc, 
+                                    display_amount: t_disc, // 🟢 FIXED: Show original typed discount
                                     debit: debit,
                                     credit: credit,
                                     running_balance: currentBalance,
@@ -835,7 +861,6 @@
 
                 get currentTotals() {
                     if (!this.filters.target_currency) return null;
-
                     let t = { total_debit: 0, total_credit: 0, balance: 0 };
                     this.filteredTransactions.forEach(row => {
                         t.total_debit += row.debit;

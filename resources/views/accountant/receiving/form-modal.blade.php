@@ -3,7 +3,7 @@
      @open-receiving-modal.window="openModal($event.detail)"
      x-show="showModal" 
      x-cloak 
-     class="fixed inset-0 z-50 overflow-hidden" dir="rtl">
+     class="fixed inset-0 z-[100] overflow-hidden" dir="rtl">
     
     <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" @click="closeModal()"></div>
     
@@ -210,7 +210,12 @@
                             <div class="col-span-2 border-l border-emerald-200 p-0 flex items-center justify-center bg-emerald-50/30"><label class="text-[9px] font-bold text-emerald-800 text-center">{!! addslashes(__('accountant.amount')) !!}</label></div>
                             <div class="col-span-4 p-0"><input type="text" name="profit_amount" x-model="form.profit_amount" @input="formatNumber('profit_amount')" class="w-full h-9 text-sm font-black border-0 bg-white text-center text-emerald-600 format-number" placeholder="0"></div>
                             <div class="col-span-2 border-l border-r border-emerald-200 p-0 flex items-center justify-center bg-emerald-50/30"><label class="text-[9px] font-bold text-emerald-800 text-center">{!! addslashes(__('accountant.type')) !!}</label></div>
-                            <div class="col-span-4 p-0"><select name="profit_category_id" x-model="form.profit_category_id" @change="autoSelectProfitCurrency()" class="w-full h-9 text-xs font-bold border-0 bg-white text-center cursor-pointer text-slate-700"><option value="">-- {!! addslashes(__('accountant.type')) !!} --</option><template x-for="cat in profitTypes" :key="cat.id"><option :value="cat.id" x-text="cat.name"></option></template></select></div>
+                            <div class="col-span-4 p-0"><select name="profit_category_id" x-model="form.profit_category_id" @change="autoSelectProfitCurrency()" class="w-full h-9 text-xs font-bold border-0 bg-white text-center cursor-pointer text-slate-700">
+    <option value="">-- {!! addslashes(__('accountant.type')) !!} --</option>
+    <template x-for="cat in profitTypes" :key="cat.id">
+        <option :value="cat.id" x-text="cat.name || cat.type_name || cat.title || cat.type"></option>
+    </template>
+</select></div>
                         </div>
                         <div class="grid grid-cols-12 border-b border-emerald-200">
                             <div class="col-span-2 border-l border-emerald-200 p-0 flex items-center justify-center bg-emerald-50/30"><label class="text-[9px] font-bold text-emerald-800 text-center">{!! addslashes(__('accountant.currency')) !!}</label></div>
@@ -289,7 +294,7 @@
         </div>
     </div>
 
-    {{-- 🟢 THE FULLY UPDATED JAVASCRIPT WITH + MATH FOR UI --}}
+    {{-- 🟢 THE FULLY UPDATED JAVASCRIPT WITH PERFECT SMART MATH --}}
     <script>
         function receivingForm() {
             return {
@@ -340,7 +345,7 @@
                             }
                         }
                         
-                        // 🔥 Run the + math instantly when Edit Modal opens so Total matches UI expectation
+                        // 🔥 Run math instantly when Edit Modal opens
                         this.$nextTick(() => { this.calculateTotal(); });
                         
                     } else {
@@ -371,24 +376,33 @@
                     const q = this.spendingSearchQuery.toLowerCase();
                     return this.accounts.filter(a => a.name.toLowerCase().includes(q) || String(a.code).toLowerCase().includes(q));
                 },
-                selectAccount(acc) { 
+            selectAccount(acc) { 
                     this.selectedAccount = acc;
                     this.searchQuery = acc.name; 
                     this.searchOpen = false;
                     
+                    let supported = acc.supported_currencies || [];
+                    
+                    // Default target currency to the account's actual default currency
                     if (acc.default_currency_id) {
                         this.target_currency_id = acc.default_currency_id;
-                    } else if (acc.supported_currencies && acc.supported_currencies.length > 0) {
-                        this.target_currency_id = acc.supported_currencies[0];
+                    } else if (supported.length > 0) {
+                        this.target_currency_id = supported[0];
                     } else {
                         this.target_currency_id = this.form.currency_id;
                     }
+                    
                     this.updateRate();
                 },
 
                 setCurrency(id) { 
                     this.form.currency_id = id;
                     this.updateMainCashboxes(); 
+                    
+                    // 🟢 FIX: We removed the auto-sync here.
+                    // Now, when you change the dropdown, the Target Currency (left side) 
+                    // will NOT change. It stays exactly on what you selected!
+                    
                     this.updateRate(); 
                 },
                 
@@ -436,13 +450,12 @@
                     return this.currencies.filter(c => supported.includes(c.id) || supported.includes(String(c.id)));
                 },
 
-                // 🟢 FIXED CALCULATION ENGINE
                 parseNumber(val) { 
                     if (!val) return 0;
                     return parseFloat(val.toString().replace(/,/g, '')) || 0; 
                 },
                 
-                // 🟢 HELPER: CONVERTS TO TARGET CURRENCY FOR BADGES
+                // 🟢 NEW SMART ALGORITHM FOR CONVERTING CURRENCY IN UI (Iranian Rial / IQD safe!)
                 convertToTarget(val) {
                     const num = this.parseNumber(val);
                     if (!num || !this.form.currency_id || !this.target_currency_id) return 0;
@@ -456,8 +469,19 @@
                     let sPrice = parseFloat(s.price_single || 1);
                     let tPrice = parseFloat(t.price_single || 1);
                     
-                    if (tPrice >= sPrice) return num / rate;
-                    return num * rate;
+                    // If target currency is WEAKER (e.g. converting 1 USD to 60,000 IRR) -> MULTIPLY
+                    if (tPrice > sPrice) {
+                        return num * rate;
+                    } 
+                    // If target currency is STRONGER (e.g. converting 60,000 IRR to 1 USD) -> DIVIDE
+                    else if (tPrice < sPrice) {
+                        return num / rate;
+                    } 
+                    // Fallback
+                    else {
+                        if (rate > 50) return num * rate;
+                        return num / rate;
+                    }
                 },
 
                 updateRate() {
@@ -477,21 +501,27 @@
                         let sRate = parseFloat(s.price_single || 1);
                         let tRate = parseFloat(t.price_single || 1);
                         if (sRate === 0) sRate = 1; if (tRate === 0) tRate = 1;
-                        if (tRate >= sRate) { this.form.rate = parseFloat((tRate / sRate).toFixed(6)); } 
-                        else { this.form.rate = parseFloat((sRate / tRate).toFixed(6)); } 
+                        
+                        // Ensures Rate is always displayed as a Whole Number multiplier 
+                        if (tRate > sRate) { 
+                            this.form.rate = parseFloat((tRate / sRate).toFixed(6)); 
+                        } else if (tRate < sRate) { 
+                            this.form.rate = parseFloat((sRate / tRate).toFixed(6)); 
+                        } else {
+                            this.form.rate = 1;
+                        }
                         this.calculateTotal();
                     } 
                 },
                 
-                // 🔥 AS REQUESTED: FORM UI SHOWS AMOUNT PLUS DISCOUNT! (100 + 10 = 110)
+                // 🟢 RECEIVING FORM ALWAYS USES (AMOUNT - DISCOUNT)
                 calculateTotal() { 
                     if (!this.isTotalLocked) return;
                     const amt = this.parseNumber(this.form.amount); 
                     const discount = this.parseNumber(this.form.discount); 
-                    const rate = this.parseNumber(this.form.rate) || 1;
                     
-                    // 🟢 STRICTLY PLUS FOR UI DISPLAY
-                    const baseTotal = amt + discount; 
+                    // MINUS (-) FOR RECEIVING FORM
+                    const baseTotal = amt + discount;
                     
                     if (!this.form.currency_id || !this.target_currency_id || baseTotal <= 0) { 
                         this.form.total = ''; return; 
@@ -502,33 +532,19 @@
                         return;
                     }
 
-                    const s = this.currencies.find(c => c.id == this.form.currency_id);
-                    const t = this.currencies.find(c => c.id == this.target_currency_id); 
-                    
-                    let sPrice = s ? parseFloat(s.price_single || 1) : 1;
-                    let tPrice = t ? parseFloat(t.price_single || 1) : 1;
-
-                    let converted = 0;
-                    if (tPrice >= sPrice) { 
-                        // Target=USD, Source=IQD => DIVIDE
-                        converted = baseTotal / rate;
-                    } else { 
-                        // Target=IQD, Source=USD => MULTIPLY
-                        converted = (rate !== 0) ? (baseTotal * rate) : 0; 
-                    }
-                    
+                    let converted = this.convertToTarget(baseTotal);
                     this.form.total = converted.toLocaleString('en-US', { maximumFractionDigits: 2 });
                 },
                 
-                // 🔥 AS REQUESTED: UI PLUS MATH REVERSED
+                // 🟢 REVERSES THE SMART MATH IF TOTAL IS TYPED MANUALLY
                 recalcRateFromTotal() { 
                     if (this.isTotalLocked) return;
                     const total = this.parseNumber(this.form.total); 
                     const amt = this.parseNumber(this.form.amount);
                     const discount = this.parseNumber(this.form.discount);
                     
-                    // 🟢 STRICTLY PLUS FOR UI DISPLAY
-                    const baseTotal = amt + discount; 
+                    // MINUS (-) FOR RECEIVING FORM
+                    const baseTotal = amt + discount;
                     
                     if (baseTotal <= 0 || total === 0) { this.form.rate = 1; return; } 
                     
@@ -537,11 +553,17 @@
                     let sPrice = s ? parseFloat(s.price_single || 1) : 1;
                     let tPrice = t ? parseFloat(t.price_single || 1) : 1;
 
-                    if (tPrice >= sPrice) { 
-                        this.form.rate = parseFloat((baseTotal / total).toFixed(6)); 
-                    } else { 
+                    if (tPrice > sPrice) { 
                         this.form.rate = parseFloat((total / baseTotal).toFixed(6)); 
-                    } 
+                    } else if (tPrice < sPrice) { 
+                        this.form.rate = parseFloat((baseTotal / total).toFixed(6)); 
+                    } else {
+                        if (total > baseTotal) {
+                            this.form.rate = parseFloat((total / baseTotal).toFixed(6));
+                        } else {
+                            this.form.rate = parseFloat((baseTotal / total).toFixed(6));
+                        }
+                    }
                 },
                 
                 getCurrencyCode(id) { 
@@ -550,7 +572,6 @@
                     return c ? c.currency_type : '';
                 },
 
-                // 🟢 SHOWS EXACT LIVE BALANCE ON CURRENCY BUTTONS
                 formatDisplayMoney(val) {
                     if (!val && val !== 0) return '0';
                     return parseFloat(val).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2});

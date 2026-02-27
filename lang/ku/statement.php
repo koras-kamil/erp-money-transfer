@@ -101,4 +101,9 @@ return [
     'sale' => 'فرۆشتن',
     'purchase' => 'کڕین',
     'return' => 'گەڕانەوە',
+    'last_movements' => 'دوایین جوڵەکان',
+'last_receive' => 'دوایین وەرگرتن',
+'last_pay' => 'دوایین پارەدان',
+'last_sale' => 'دوایین فرۆشتن',
+'last_purchase' => 'دوایین کڕین',
 ];
