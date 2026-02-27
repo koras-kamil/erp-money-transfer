@@ -35,39 +35,39 @@
         </div>
 
         {{-- TOOLBAR --}}
-        <div class="px-6 py-2 flex-none flex flex-col md:flex-row justify-between items-center gap-4 no-print bg-white border-b border-slate-100 z-10">
+        <div class="px-6 py-2 flex-none flex flex-col md:flex-row justify-between items-center gap-4 no-print bg-white border-b border-slate-100 z-60">
             <div class="flex items-center gap-3">
                 <div class="bg-slate-100 p-1 rounded-lg flex items-center shadow-inner">
-                    <span class="px-4 py-1.5 text-sm font-bold rounded-md bg-white text-indigo-600 shadow-sm border border-slate-100">{{ __('accountant.paying_title') }}</span>
+                    <span class="px-4 py-1.5 text-sm font-bold rounded-md bg-white text-indigo-600 shadow-sm border border-slate-100">{!! addslashes(__('accountant.paying_title')) !!}</span>
                 </div>
-                <span class="text-xs text-slate-400 font-mono bg-slate-50 px-2 py-1 rounded border border-slate-100"><span x-text="transactions.length"></span> {{ __('accountant.records') }}</span>
+                <span class="text-xs text-slate-400 font-mono bg-slate-50 px-2 py-1 rounded border border-slate-100"><span x-text="transactions.length"></span> {!! addslashes(__('accountant.records')) !!}</span>
             </div>
             
             <div class="flex items-center gap-2">
                 {{-- Bulk Delete --}}
                 <div x-show="selectedIds.length > 0" x-cloak class="flex items-center gap-2">
                     <button type="button" @click="bulkDelete()" class="px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded shadow-sm hover:bg-red-700 transition-colors">
-                        {{ __('Delete') }} (<span x-text="selectedIds.length"></span>)
+                        {!! addslashes(__('Delete')) !!} (<span x-text="selectedIds.length"></span>)
                     </button>
                 </div>
                 
                 {{-- Trash --}}
-                <a href="{{ route('accountant.paying.trash') }}" class="w-10 h-10 flex items-center justify-center rounded-xl bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 shadow-sm transition-all" title="{{ __('accountant.trash') }}">
+                <a href="{{ route('accountant.paying.trash') }}" class="w-10 h-10 flex items-center justify-center rounded-xl bg-red-50 text-red-500 border border-red-100 hover:bg-red-100 shadow-sm transition-all" title="{!! addslashes(__('accountant.trash')) !!}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 </a>
                 
                 {{-- Print --}}
-                <button type="button" @click.prevent="window.print()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-700 text-white hover:bg-slate-800 shadow-sm transition-all" title="{{ __('accountant.print') }}">
+                <button type="button" @click.prevent="window.print()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-700 text-white hover:bg-slate-800 shadow-sm transition-all" title="{!! addslashes(__('accountant.print')) !!}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 </button>
                 
                 {{-- Toggle Columns --}}
                 <div x-data="{ open: false }" class="relative">
-                    <button @click="open = !open" @click.outside="open = false" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm transition-all" title="{{ __('Toggle Columns') }}">
+                    <button @click="open = !open" @click.outside="open = false" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm transition-all" title="{!! addslashes(__('Toggle Columns')) !!}">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
                     </button>
                     <div x-show="open" x-transition x-cloak class="absolute top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 p-2 ltr:right-0 rtl:left-0 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                        <div class="text-xs font-bold text-slate-400 uppercase px-2 py-1 mb-1 border-b border-slate-50">{{ __('accountant.toggle_columns') }}</div>
+                        <div class="text-xs font-bold text-slate-400 uppercase px-2 py-1 mb-1 border-b border-slate-50">{!! addslashes(__('accountant.toggle_columns')) !!}</div>
                         <template x-for="col in columns" :key="col.field">
                             <label class="flex items-center justify-between px-2 py-2 hover:bg-indigo-50 rounded cursor-pointer transition group">
                                 <span class="text-xs text-slate-700 font-bold group-hover:text-indigo-600" x-text="col.label"></span>
@@ -77,14 +77,13 @@
                     </div>
                 </div>
 
-                {{-- 🟢 NEW PAYMENT BUTTON --}}
-                <button @click="$dispatch('open-paying-modal')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all cursor-pointer">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                </button>
+                {{-- 🟢 FIXED ADD BUTTON DISPATCH FOR PAYING --}}
+              <button type="button" @click="window.dispatchEvent(new CustomEvent('open-paying-modal'))" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#2663EB] text-white hover:bg-[#1d4ed8]  transition-all cursor-pointer">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+</button>
             </div>
         </div>
 
-        {{-- TABLE SECTION --}}
         <div class="flex-1 p-4 overflow-hidden flex flex-col min-h-0 bg-white">
             <div class="bg-white rounded-xl shadow-sm border border-slate-100 flex-1 overflow-hidden flex flex-col relative">
                 <div class="overflow-auto custom-scrollbar flex-1 w-full relative">
@@ -116,7 +115,7 @@
                                         <div class="resizer" @mousedown="initResize($event, index)"></div>
                                     </th>
                                 </template>
-                                <th class="px-3 py-2 text-center sticky right-0 bg-white border-b border-slate-100 z-10">{{ __('accountant.actions') }}</th>
+                                <th class="px-3 py-2 text-center sticky right-0 bg-white border-b border-slate-100 z-10">{!! addslashes(__('accountant.actions')) !!}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50 bg-white">
@@ -127,15 +126,45 @@
                                     </td>
                                     <template x-for="col in columns" :key="col.field">
                                         <td x-show="col.visible" class="px-3 py-2 whitespace-nowrap border-r border-transparent rtl:border-l rtl:border-r-0 text-slate-600 bg-white group-hover:bg-indigo-50/30">
+                                            
                                             <template x-if="col.field === 'id'"><span class="font-mono text-slate-400 text-xs" x-text="'#' + trx.id"></span></template>
-                                            <template x-if="col.field === 'account_id'"><div class="flex items-center gap-2"><img :src="trx.account?.profile_picture ? '/storage/'+trx.account.profile_picture : 'https://ui-avatars.com/api/?name='+trx.account?.name" class="w-8 h-8 rounded-full object-cover ring-1 ring-slate-100"><div class="flex flex-col leading-none"><span class="font-bold text-slate-700 text-xs truncate max-w-[140px]" x-text="trx.account?.name"></span><span class="text-[10px] text-slate-400 font-mono" x-text="trx.account?.code"></span></div></div></template>
-                                            <template x-if="col.field === 'amount'"><span class="font-bold text-slate-800 text-xs" x-text="formatMoney(trx.amount) + ' ' + (trx.currency?.currency_type || '')"></span></template>
+                                            
+                                            <template x-if="col.field === 'account_id'">
+                                                <a :href="'/accountant/statement?account_id=' + trx.account_id" class="flex items-center gap-2 group/link hover:bg-indigo-50/80 p-1 -ml-1 rounded-lg transition-colors cursor-pointer w-fit" title="View Statement">
+                                                    <img :src="trx.account?.profile_picture ? '/storage/'+trx.account.profile_picture : 'https://ui-avatars.com/api/?name='+(trx.account?.name || 'User')" class="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200 group-hover/link:ring-indigo-300 transition-all">
+                                                    <div class="flex flex-col leading-none">
+                                                        <span class="font-bold text-indigo-600 text-xs truncate max-w-[140px] group-hover/link:text-indigo-800 transition-colors" x-text="trx.account?.name"></span>
+                                                        <span class="text-[10px] text-slate-400 font-mono group-hover/link:text-indigo-500 transition-colors" x-text="trx.account?.code"></span>
+                                                    </div>
+                                                </a>
+                                            </template>
+
+                                            {{-- 🟢 AMOUNT CONVERSION BADGE --}}
+                                            <template x-if="col.field === 'amount'">
+                                                <div class="flex flex-col">
+                                                    <span class="font-bold text-slate-800 text-xs" x-text="formatMoney(trx.amount) + ' ' + (trx.currency?.currency_type || '')"></span>
+                                                    <span x-show="trx.currency_id != trx.target_currency_id && trx.amount > 0" class="text-[9px] text-slate-400" x-text="'(' + formatMoney(convertTrxAmount(trx.amount, trx)) + ' ' + getCurrencyCode(trx.target_currency_id) + ')'"></span>
+                                                </div>
+                                            </template>
+                                            
                                             <template x-if="col.field === 'currency_id'"><span class="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded" x-text="trx.currency?.currency_type || '-'"></span></template>
-                                            <template x-if="col.field === 'total'"><span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100 font-bold text-xs" x-text="formatMoney(trx.total)"></span></template>
-                                            <template x-if="col.field === 'discount'"><span class="text-rose-500 text-xs font-bold" x-text="trx.discount > 0 ? formatMoney(trx.discount) : '-'"></span></template>
+                                            
+                                            {{-- 🟢 EXACT TOTAL (Amount - Discount) --}}
+                                            <template x-if="col.field === 'total'">
+                                                <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded border border-indigo-100 font-bold text-xs" x-text="formatMoney(trx.display_total)"></span>
+                                            </template>
+                                            
+                                            {{-- 🟢 DISCOUNT CONVERSION BADGE --}}
+                                            <template x-if="col.field === 'discount'">
+                                                <div class="flex flex-col" x-show="trx.discount > 0">
+                                                    <span class="text-rose-500 text-xs font-bold" x-text="formatMoney(trx.discount) + ' ' + (trx.currency?.currency_type || '')"></span>
+                                                    <span x-show="trx.currency_id != trx.target_currency_id" class="text-[9px] text-rose-400" x-text="'(' + formatMoney(convertTrxAmount(trx.discount, trx)) + ' ' + getCurrencyCode(trx.target_currency_id) + ')'"></span>
+                                                </div>
+                                            </template>
+                                            
                                             <template x-if="col.field === 'exchange_rate'"><span class="text-orange-600 text-xs font-mono bg-orange-50 px-2 rounded" x-text="trx.exchange_rate ? formatMoney(trx.exchange_rate) : '-'"></span></template>
                                             <template x-if="col.field === 'type'"><span class="text-[10px] uppercase font-bold text-slate-500" x-text="trx.type || '-'"></span></template>
-                                            <template x-if="col.field === 'invoice_type'"><span class="text-[10px] uppercase font-bold bg-white border border-slate-200 text-slate-500 px-2 py-0.5 rounded" x-text="trx.invoice_type"></span></template>
+                                            <template x-if="col.field === 'invoice_type'"><span class="text-[10px] uppercase font-bold bg-white border border-slate-200 text-slate-500 px-2 py-0.5 rounded" x-text="trx.invoice_type || '-'"></span></template>
                                             <template x-if="col.field === 'statement_id'"><span class="font-mono text-xs bg-slate-50 px-2 py-0.5 rounded text-slate-600" x-text="trx.statement_id || '-'"></span></template>
                                             <template x-if="col.field === 'manual_date'"><span class="text-xs text-slate-700" x-text="formatDate(trx.manual_date)"></span></template>
                                             <template x-if="col.field === 'cashbox_id'"><span class="text-xs text-slate-600" x-text="trx.cashbox?.name"></span></template>
@@ -151,11 +180,11 @@
                                     </template>
                                     <td class="px-3 py-2 text-center sticky right-0 bg-white group-hover:bg-indigo-50/30 border-b border-slate-100 z-10">
                                         <div class="flex items-center justify-center gap-2">
-                                            {{-- 🟢 EDIT BUTTON (Dispatches Event) --}}
-                                            <button type="button" @click="$dispatch('open-paying-modal', trx)" class="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+                                            {{-- 🟢 FIXED EDIT BUTTON DISPATCH FOR PAYING --}}
+                                            <button type="button" @click="window.dispatchEvent(new CustomEvent('open-paying-modal', { detail: JSON.parse(JSON.stringify(trx)) }))" class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                                             </button>
-                                            <form :action="`/accountant/paying/${trx.id}`" method="POST" onsubmit="return confirm('{{ __('accountant.delete_confirm') }}');">
+                                            <form :action="`/accountant/paying/${trx.id}`" method="POST" onsubmit="return confirm('{!! addslashes(__('accountant.delete_confirm')) !!}');">
                                                 @csrf @method('DELETE')
                                                 <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -165,16 +194,13 @@
                                     </td>
                                 </tr>
                             </template>
-                            <tr x-show="filteredTransactions.length === 0"><td colspan="100%" class="text-center py-12 text-slate-400"><div class="flex flex-col items-center"><svg class="w-12 h-12 text-slate-200 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><span class="text-sm">{{ __('accountant.no_data') }}</span></div></td></tr>
+                            <tr x-show="filteredTransactions.length === 0"><td colspan="100%" class="text-center py-12 text-slate-400"><div class="flex flex-col items-center"><svg class="w-12 h-12 text-slate-200 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><span class="text-sm">{!! addslashes(__('accountant.no_data')) !!}</span></div></td></tr>
                         </tbody>
                     </table>
                 </div>
                 <div class="px-4 py-2 border-t border-slate-100 bg-white">{{ $transactions->links() }}</div>
             </div>
         </div>
-
-        {{-- 🟢 INCLUDE MODAL --}}
-        @include('accountant.paying.form-modal')
 
         <form id="bulk-delete-form" action="{{ route('accountant.paying.bulk-delete') }}" method="POST" class="hidden">
             @csrf @method('DELETE')
@@ -183,45 +209,76 @@
 
     </div>
 
-    {{-- SCRIPTS (Pure List Logic) --}}
+    @include('accountant.paying.form-modal')
+
     <script>
         function accountantManager() {
             return {
                 transactions: @json($transactions->items() ?? []),
+                currencies: @json($currencies ?? []),
                 filters: {}, selectedIds: [], sortCol: null, sortAsc: true, openFilter: null,
                 columns: [
                     { field: 'id', label: '#', visible: true, width: 50 },
-                    { field: 'account_id', label: '{{ __('accountant.user') }}', visible: true, width: 200 },
-                    { field: 'amount', label: '{{ __('accountant.amount') }}', visible: true, width: 120 },
-                    { field: 'currency_id', label: '{{ __('accountant.type_money') }}', visible: true, width: 80 },
-                    { field: 'total', label: '{{ __('accountant.total') }}', visible: true, width: 120 },
-                    { field: 'discount', label: '{{ __('accountant.discount') }}', visible: true, width: 100 },
-                    { field: 'exchange_rate', label: '{{ __('accountant.exchange_rate') }}', visible: true, width: 100 },
+                    { field: 'account_id', label: @json(__('accountant.user')), visible: true, width: 200 },
+                    { field: 'amount', label: @json(__('accountant.amount')), visible: true, width: 120 },
+                    { field: 'currency_id', label: @json(__('accountant.type_money')), visible: true, width: 80 },
+                    { field: 'total', label: @json(__('accountant.total')), visible: true, width: 120 },
+                    { field: 'discount', label: @json(__('accountant.discount')), visible: true, width: 100 },
+                    { field: 'exchange_rate', label: @json(__('accountant.exchange_rate')), visible: true, width: 100 },
                     { field: 'type', label: 'Type', visible: false, width: 80 },
-                    { field: 'invoice_type', label: '{{ __('accountant.invoice_type') }}', visible: true, width: 100 },
-                    { field: 'statement_id', label: '{{ __('accountant.statement_id') }}', visible: true, width: 100 },
-                    { field: 'manual_date', label: '{{ __('accountant.manual_date') }}', visible: true, width: 120 },
-                    { field: 'cashbox_id', label: '{{ __('accountant.cashbox') }}', visible: true, width: 120 },
-                    { field: 'note', label: '{{ __('accountant.note') }}', visible: true, width: 200 },
-                    { field: 'giver_name', label: '{{ __('accountant.giver_name') }}', visible: false, width: 150 },
-                    { field: 'giver_mobile', label: '{{ __('accountant.giver_mobile') }}', visible: false, width: 120 },
-                    { field: 'receiver_name', label: '{{ __('accountant.receiver_name') }}', visible: false, width: 150 },
-                    { field: 'receiver_mobile', label: '{{ __('accountant.receiver_mobile') }}', visible: false, width: 120 },
-                    { field: 'user_id', label: '{{ __('accountant.created_by') }}', visible: true, width: 120 },
-                    { field: 'created_at', label: '{{ __('accountant.date') }}', visible: true, width: 140 },
+                    { field: 'invoice_type', label: @json(__('accountant.invoice_type')), visible: true, width: 100 },
+                    { field: 'statement_id', label: @json(__('accountant.statement_id')), visible: true, width: 100 },
+                    { field: 'manual_date', label: @json(__('accountant.manual_date')), visible: true, width: 120 },
+                    { field: 'cashbox_id', label: @json(__('accountant.cashbox')), visible: true, width: 120 },
+                    { field: 'note', label: @json(__('accountant.note')), visible: true, width: 200 },
+                    { field: 'giver_name', label: @json(__('accountant.giver_name')), visible: false, width: 150 },
+                    { field: 'giver_mobile', label: @json(__('accountant.giver_mobile')), visible: false, width: 120 },
+                    { field: 'receiver_name', label: @json(__('accountant.receiver_name')), visible: false, width: 150 },
+                    { field: 'receiver_mobile', label: @json(__('accountant.receiver_mobile')), visible: false, width: 120 },
+                    { field: 'user_id', label: @json(__('accountant.created_by')), visible: true, width: 120 },
+                    { field: 'created_at', label: @json(__('accountant.date')), visible: true, width: 140 },
                     { field: 'updated_at', label: 'Updated At', visible: false, width: 140 },
                 ],
                 
-                init() { 
-                    this.columns.forEach(c => this.filters[c.field] = '');
-                },
-
-                // 🟢 HELPERS
+                init() { this.columns.forEach(c => this.filters[c.field] = ''); },
                 dragStart(e, index) { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', index); e.target.classList.add('dragging'); },
                 drop(e, targetIndex) { e.target.classList.remove('dragging'); const draggedIndex = e.dataTransfer.getData('text/plain'); if (draggedIndex === '') return; const draggedCol = this.columns[draggedIndex]; this.columns.splice(draggedIndex, 1); this.columns.splice(targetIndex, 0, draggedCol); },
                 initResize(e, index) { const startX = e.clientX; const startWidth = this.columns[index].width; const onMouseMove = (moveEvent) => { this.columns[index].width = Math.max(50, startWidth + (moveEvent.clientX - startX)); }; const onMouseUp = () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); }; window.addEventListener('mousemove', onMouseMove); window.addEventListener('mouseup', onMouseUp); },
+
+                getCurrencyCode(id) { 
+                    if(!id) return ''; const c = this.currencies.find(x => x.id == id); return c ? c.currency_type : ''; 
+                },
+                
+                // 🟢 CORRECT MATH FOR BADGE CONVERSION
+                convertTrxAmount(amount, trx) {
+                    if (!amount || trx.currency_id == trx.target_currency_id) return amount;
+                    let rate = parseFloat(trx.exchange_rate) || 1;
+                    const s = this.currencies.find(c => c.id == trx.currency_id);
+                    const t = this.currencies.find(c => c.id == trx.target_currency_id);
+                    if(!s || !t) return amount;
+                    
+                    let sPrice = parseFloat(s.price_single || 1);
+                    let tPrice = parseFloat(t.price_single || 1);
+                    
+                    if (tPrice >= sPrice) return amount / rate;
+                    return amount * rate;
+                },
+
+                get processedTransactions() {
+                    return this.transactions.map(trx => {
+                        let t_amount = parseFloat(trx.amount) || 0;
+                        let t_disc = parseFloat(trx.discount) || 0;
+                        
+                        // 🟢 EXACT LOGIC: Amount - Discount
+                        let display_total = t_amount - t_disc;
+                        if(display_total < 0) display_total = 0;
+
+                        return { ...trx, display_total: display_total };
+                    });
+                },
+
                 get filteredTransactions() { 
-                    let data = this.transactions.filter(trx => {
+                    let data = this.processedTransactions.filter(trx => {
                         for (const col of this.columns) {
                             const filterVal = this.filters[col.field]?.toLowerCase();
                             if (!filterVal) continue;
@@ -248,7 +305,7 @@
                 },
                 get allSelected() { return this.filteredTransactions.length > 0 && this.selectedIds.length === this.filteredTransactions.length; },
                 toggleAllSelection() { this.selectedIds = this.allSelected ? [] : this.filteredTransactions.map(r => r.id); },
-                bulkDelete() { if (confirm('{{ __('accountant.delete_confirm') }}')) { document.getElementById('bulk-delete-ids').value = JSON.stringify(this.selectedIds); document.getElementById('bulk-delete-form').submit(); } },
+                bulkDelete() { if (confirm(@json(__('accountant.delete_confirm')))) { document.getElementById('bulk-delete-ids').value = JSON.stringify(this.selectedIds); document.getElementById('bulk-delete-form').submit(); } },
                 sortBy(field) { if (this.sortCol === field) this.sortAsc = !this.sortAsc; else { this.sortCol = field; this.sortAsc = true; } },
             }
         }

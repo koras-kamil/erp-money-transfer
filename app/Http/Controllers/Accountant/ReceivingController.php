@@ -9,7 +9,7 @@ use App\Models\CurrencyConfig;
 use App\Models\Transaction;
 use App\Models\ProfitType;
 use App\Models\TypeSpending;
-use App\Models\AccountBalance; // 🟢 IMPORTED ACCOUNT BALANCE
+use App\Models\AccountBalance; 
 use App\Traits\ManagesAccountBalances;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -64,7 +64,7 @@ class ReceivingController extends Controller
                 'neighborhood_name' => $acc->neighborhood ? $acc->neighborhood->neighborhood_name : '',
                 'default_currency_id' => $acc->currency_id, 
                 'supported_currencies' => $supported, 
-                'balances' => $accBalances, // 🟢 Passed to frontend!
+                'balances' => $accBalances, 
             ];
         });
 
@@ -85,7 +85,6 @@ class ReceivingController extends Controller
         $validated = $request->validate([
             'account_id'         => 'required|exists:accounts,id',
             'amount'             => 'required|numeric|min:0',
-            'total'              => 'nullable|numeric', 
             'currency_id'        => 'required|exists:currency_configs,id', 
             'target_currency_id' => 'nullable|exists:currency_configs,id', 
             'cashbox_id'         => 'required|exists:cash_boxes,id',
@@ -115,8 +114,17 @@ class ReceivingController extends Controller
         DB::transaction(function () use ($validated, $request) {
             
             $finalTargetCurrency = $validated['target_currency_id'] ?? $validated['currency_id'];
-            $totalAmount = $validated['total'] ?? $validated['amount'];
+            
+            // 🟢 EXACT SERVER MATH (Amount - Discount) + Currency Target Engine
+            $totalAmount = $this->calculateConvertedTotal(
+                $validated['amount'], 
+                $validated['discount'] ?? 0, 
+                $validated['exchange_rate'] ?? 1, 
+                $validated['currency_id'], 
+                $finalTargetCurrency
+            );
 
+            // 1. Create Transaction
             Transaction::create([
                 'user_id'            => Auth::id(),
                 'type'               => 'receive',
@@ -224,7 +232,6 @@ class ReceivingController extends Controller
         $validated = $request->validate([
             'account_id'         => 'required|exists:accounts,id',
             'amount'             => 'required|numeric|min:0',
-            'total'              => 'nullable|numeric', 
             'currency_id'        => 'required|exists:currency_configs,id',
             'target_currency_id' => 'nullable|exists:currency_configs,id', 
             'cashbox_id'         => 'required|exists:cash_boxes,id',
@@ -253,9 +260,16 @@ class ReceivingController extends Controller
             // 2. Reverse OLD Target Balance
             $this->updateBalance($transaction->account_id, $transaction->target_currency_id ?? $transaction->currency_id, $transaction->total, 'pay');
 
-            // 3. Update Transaction
-            $newTotal = $validated['total'] ?? ($validated['amount'] + ($validated['discount'] ?? 0));
+            // 🟢 EXACT SERVER MATH (Amount - Discount)
+            $newTotal = $this->calculateConvertedTotal(
+                $validated['amount'], 
+                $validated['discount'] ?? 0, 
+                $validated['exchange_rate'] ?? 1, 
+                $validated['currency_id'], 
+                $finalTargetCurrency
+            );
             
+            // 3. Update Transaction
             $transaction->update([
                 'account_id'         => $validated['account_id'],
                 'currency_id'        => $validated['currency_id'],
@@ -358,5 +372,37 @@ class ReceivingController extends Controller
             }
         }
         $request->replace($cleanData);
+    }
+
+    /**
+     * 🟢 EXACT MATH: BaseTotal = Amount - Discount
+     */
+    private function calculateConvertedTotal($amount, $discount, $rate, $sourceCurrencyId, $targetCurrencyId)
+    {
+        $baseTotal = $amount - $discount;
+        if ($baseTotal < 0) {
+            $baseTotal = 0; 
+        }
+        
+        if ($sourceCurrencyId == $targetCurrencyId) {
+            return round($baseTotal, 2);
+        }
+
+        $sourceCurr = CurrencyConfig::find($sourceCurrencyId);
+        $targetCurr = CurrencyConfig::find($targetCurrencyId);
+        
+        if (!$sourceCurr || !$targetCurr) {
+            return round($baseTotal, 2);
+        }
+
+        $sPrice = $sourceCurr->price_single ?? 1;
+        $tPrice = $targetCurr->price_single ?? 1;
+        $rate = $rate ?: 1; 
+
+        if ($tPrice >= $sPrice) {
+            return round($baseTotal / $rate, 2);
+        } else {
+            return round($baseTotal * $rate, 2);
+        }
     }
 }

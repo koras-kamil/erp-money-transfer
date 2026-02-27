@@ -8,6 +8,8 @@ use App\Models\CurrencyConfig;
 use App\Models\Transaction;
 use App\Models\AccountBalance;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class StatementController extends Controller
 {
@@ -76,7 +78,7 @@ class StatementController extends Controller
 
         // 🟢 4. PREPARE ACCOUNT-SPECIFIC DATA (Only if an account is selected)
         $supportedCurrencies = collect();
-        $lastMovements = ['sale' => '-', 'payment' => '-', 'purchase' => '-', 'return' => '-'];
+        $lastMovements = [];
 
         if ($account) {
             // A. Currencies & FAST Balances
@@ -95,14 +97,20 @@ class StatementController extends Controller
                 return $currency;
             });
 
-            // B. Last Movements
-            $types = ['sale', 'payment', 'purchase', 'return'];
-            foreach($types as $type) {
-                $lastMovements[$type] = Transaction::where('account_id', $account->id)
-                    ->where('type', $type)
-                    ->latest()
-                    ->value('created_at')?->format('Y/m/d') ?? '-';
-            }
+            // B. 🔥 FAST LAST MOVEMENTS (1 Query instead of 6)
+            $movementData = Transaction::where('account_id', $account->id)
+                ->select('type', DB::raw('MAX(created_at) as last_date'))
+                ->groupBy('type')
+                ->pluck('last_date', 'type');
+
+            $lastMovements = [
+                'receive'         => isset($movementData['receive']) ? Carbon::parse($movementData['receive'])->format('Y-m-d h:i A') : '-',
+                'pay'             => isset($movementData['pay']) ? Carbon::parse($movementData['pay'])->format('Y-m-d h:i A') : '-',
+                'sale'            => isset($movementData['sale']) ? Carbon::parse($movementData['sale'])->format('Y-m-d h:i A') : '-',
+                'return'          => isset($movementData['return']) ? Carbon::parse($movementData['return'])->format('Y-m-d h:i A') : '-',
+                'purchase'        => isset($movementData['purchase']) ? Carbon::parse($movementData['purchase'])->format('Y-m-d h:i A') : '-',
+                'purchase_return' => isset($movementData['purchase_return']) ? Carbon::parse($movementData['purchase_return'])->format('Y-m-d h:i A') : '-',
+            ];
         }
 
         return view('accountant.statement.index', compact('account', 'search_list', 'supportedCurrencies', 'transactions', 'lastMovements'));
