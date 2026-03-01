@@ -54,28 +54,28 @@
             
             {{-- NAVIGATION TABS --}}
             <div class="bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm flex items-center w-fit">
-                <a href="{{ route('profit.groups.index') }}" class="px-4 py-2 text-sm font-bold rounded-lg transition-all text-slate-500 hover:text-indigo-600 hover:bg-slate-50">{{ __('profit.menu_groups') }}</a>
+                <a href="{{ route('group-spending.index') }}" class="px-4 py-2 text-sm font-bold rounded-lg transition-all text-slate-500 hover:text-indigo-600 hover:bg-slate-50">{{ __('spending.group_tab') ?? 'Spending Groups' }}</a>
                 <div class="w-px h-4 bg-slate-200 mx-1"></div>
-                <a href="{{ route('profit.types.index') }}" class="px-4 py-2 text-sm font-bold rounded-lg transition-all bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100">{{ __('profit.menu_types') }}</a>
+                <a href="{{ route('type-spending.index') }}" class="px-4 py-2 text-sm font-bold rounded-lg transition-all bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100">{{ __('spending.type_title') ?? 'Spending Types' }}</a>
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
                 {{-- Bulk Actions --}}
                 <div x-show="selectedIds.length > 0" x-transition class="flex items-center gap-2 bg-red-50 px-2 py-1 rounded-lg border border-red-100 mr-2 ml-2">
-                    <span class="text-xs font-bold text-red-600 px-2"><span x-text="selectedIds.length"></span> {{ __('profit.selected') }}</span>
-                    <x-btn type="bulk-delete" @click="bulkDelete()">{{ __('profit.delete_selected') }}</x-btn>
+                    <span class="text-xs font-bold text-red-600 px-2"><span x-text="selectedIds.length"></span> {{ __('spending.selected') ?? 'Selected' }}</span>
+                    <x-btn type="bulk-delete" @click="bulkDelete()">{{ __('spending.delete_selected') ?? 'Delete Selected' }}</x-btn>
                     <button @click="selectedIds = []" type="button" class="px-2 py-1.5 text-slate-500 hover:text-slate-700"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
                 </div>
 
-                <x-btn type="trash" href="{{ route('profit.types.trash') }}" title="{{ __('profit.trash') }}" />
+                <x-btn type="trash" href="{{ route('type-spending.trash') }}" title="{{ __('spending.trash') ?? 'Trash' }}" />
                 
                 {{-- Column Config --}}
                 <div x-data="{ open: false }" class="relative">
-                    <x-btn type="columns" @click="open = !open" @click.away="open = false" title="{{ __('profit.columns') }}" />
+                    <x-btn type="columns" @click="open = !open" @click.away="open = false" title="{{ __('spending.columns') ?? 'Columns' }}" />
                     <div x-show="open" class="absolute top-full mt-3 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 p-3 ltr:right-0 rtl:left-0" style="display:none;">
                         <div class="flex justify-between items-center px-2 py-1 mb-2 border-b border-slate-100 pb-2">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase">{{ __('profit.columns') }}</span>
-                            <button @click="resetLayout(); open = false;" class="text-[10px] text-blue-500 hover:underline cursor-pointer">{{ __('profit.reset_layout') }}</button>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">{{ __('spending.columns') ?? 'Columns' }}</span>
+                            <button @click="resetLayout(); open = false;" class="text-[10px] text-blue-500 hover:underline cursor-pointer">{{ __('spending.reset_layout') ?? 'Reset' }}</button>
                         </div>
                         <div class="max-h-60 overflow-y-auto space-y-1">
                             <template x-for="col in columns" :key="col.field">
@@ -88,14 +88,14 @@
                     </div>
                 </div>
 
-                <x-btn type="print" href="{{ route('profit.types.pdf') }}" title="{{ __('profit.print') }}" />
-                <x-btn type="add" @click="addNewRow()" title="{{ __('profit.add_new') }}" />
+                <x-btn type="print" href="{{ route('type-spending.print') }}" title="{{ __('spending.print') ?? 'Print' }}" />
+                <x-btn type="add" @click="addNewRow()" title="{{ __('spending.add_new') ?? 'Add New' }}" />
             </div>
         </div>
 
         {{-- TABLE CONTAINER --}}
         <div class="relative w-full overflow-x-auto table-container bg-white shadow-sm rounded-lg border border-slate-200 mx-4 pb-20">
-            <form id="singleRowForm" action="{{ route('profit.types.store') }}" method="POST" class="hidden">@csrf <div id="singleRowInputs"></div></form>
+            <form id="singleRowForm" action="{{ route('type-spending.store') }}" method="POST" class="hidden">@csrf <div id="singleRowInputs"></div></form>
             <table class="w-full text-sm text-left rtl:text-right text-slate-500 whitespace-nowrap border-separate border-spacing-0">
                 <thead class="text-xs text-slate-700 uppercase bg-gray-50 border-b border-gray-200">
                     <tr>
@@ -128,7 +128,7 @@
                                         <div class="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none rtl:right-0 rtl:left-auto rtl:pr-2">
                                             <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                                         </div>
-                                        <input type="text" :x-ref="'input-'+col.field" x-model="filters[col.field]" @input.debounce="filterData()" @keydown.escape="openFilter = null" class="header-search-input" placeholder="{{ __('profit.search') }}">
+                                        <input type="text" :x-ref="'input-'+col.field" x-model="filters[col.field]" @input.debounce="filterData()" @keydown.escape="openFilter = null" class="header-search-input" placeholder="{{ __('spending.search') ?? 'Search' }}">
                                         <button type="button" @click="filters[col.field] = ''; filterData(); openFilter = null;" class="absolute right-0 top-0 h-full px-2 text-gray-400 hover:text-red-500 rtl:left-0 rtl:right-auto transition">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                         </button>
@@ -138,7 +138,7 @@
                             </th>
                         </template>
 
-                        <th class="px-4 py-3 w-[5%] text-center print:hidden bg-gray-50 border-b border-gray-200">{{ __('profit.actions') }}</th>
+                        <th class="px-4 py-3 w-[5%] text-center print:hidden bg-gray-50 border-b border-gray-200">{{ __('spending.actions') ?? 'Actions' }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white">
@@ -164,7 +164,7 @@
                                     <template x-if="col.field === 'name'">
                                         <div>
                                             <span x-show="editingId !== row.id" x-text="row.name" class="px-3 block text-slate-700 font-bold truncate"></span>
-                                            <input x-show="editingId === row.id" :id="'input-name-'+row.id" type="text" x-model="row.name" class="sheet-input font-bold text-slate-700" placeholder="{{ __('profit.name') }}">
+                                            <input x-show="editingId === row.id" :id="'input-name-'+row.id" type="text" x-model="row.name" class="sheet-input font-bold text-slate-700" placeholder="{{ __('spending.name') ?? 'Name' }}">
                                         </div>
                                     </template>
 
@@ -176,9 +176,10 @@
                                     {{-- Group --}}
                                     <template x-if="col.field === 'group'">
                                         <div>
-                                            <span x-show="editingId !== row.id" x-text="getGroupName(row.profit_group_id)" class="px-3 block text-slate-600 font-normal truncate"></span>
-                                            <select x-show="editingId === row.id" x-model="row.profit_group_id" class="sheet-input font-normal text-slate-700">
-                                                <option value="" disabled>{{ __('profit.select_group') }}</option>
+                                            <span x-show="editingId !== row.id" x-text="getGroupName(row.group_spending_id)" class="px-3 block text-slate-600 font-normal truncate"></span>
+                                            <select x-show="editingId === row.id" x-model="row.group_spending_id" class="sheet-input font-normal text-slate-700">
+                                                {{-- 🟢 Removed 'disabled', allowing an empty option --}}
+                                                <option value="">-- {{ __('spending.no_group') ?? 'None' }} --</option>
                                                 <template x-for="g in groups" :key="g.id"><option :value="g.id" x-text="g.name"></option></template>
                                             </select>
                                         </div>
@@ -189,7 +190,7 @@
                                         <div>
                                             <span x-show="editingId !== row.id" x-text="getBranchName(row.branch_id)" class="px-3 block text-slate-600 font-normal truncate"></span>
                                             <select x-show="editingId === row.id" x-model="row.branch_id" class="sheet-input font-normal text-slate-700">
-                                                <option value="" disabled>{{ __('profit.select_branch') }}</option>
+                                                <option value="" disabled>{{ __('spending.select_branch') ?? 'Select Branch' }}</option>
                                                 <template x-for="branch in branches" :key="branch.id"><option :value="branch.id" x-text="branch.name"></option></template>
                                             </select>
                                         </div>
@@ -227,14 +228,14 @@
                                 <div class="flex items-center justify-center gap-2">
                                     <template x-if="editingId === row.id">
                                         <div class="flex items-center gap-1">
-                                            <x-btn type="cancel" @click="cancelEdit(row)" title="{{ __('profit.cancel') }}" />
-                                            <x-btn type="save" @click="saveRow(row)" title="{{ __('profit.save') }}" />
+                                            <x-btn type="cancel" @click="cancelEdit(row)" title="{{ __('spending.cancel') ?? 'Cancel' }}" />
+                                            <x-btn type="save" @click="saveRow(row)" title="{{ __('spending.save') ?? 'Save' }}" />
                                         </div>
                                     </template>
                                     <template x-if="editingId !== row.id">
                                         <div class="flex items-center gap-2">
-                                            <x-btn type="delete" @click="deleteRow(row.id)" title="{{ __('profit.delete') }}" />
-                                            <x-btn type="edit" @click="startEdit(row.id)" title="{{ __('profit.edit') }}" />
+                                            <x-btn type="delete" @click="deleteRow(row.id)" title="{{ __('spending.delete') ?? 'Delete' }}" />
+                                            <x-btn type="edit" @click="startEdit(row.id)" title="{{ __('spending.edit') ?? 'Edit' }}" />
                                         </div>
                                     </template>
                                 </div>
@@ -249,16 +250,16 @@
             </table>
         </div>
         <form id="delete-form" action="" method="POST" class="hidden">@csrf @method('DELETE')</form>
-        <form id="bulk-delete-form" action="{{ route('profit.types.bulk-delete') }}" method="POST" class="hidden">@csrf @method('DELETE')<input type="hidden" name="ids" id="bulk-delete-ids"></form>
+        <form id="bulk-delete-form" action="{{ route('type-spending.bulk-delete') }}" method="POST" class="hidden">@csrf @method('DELETE')<input type="hidden" name="ids" id="bulk-delete-ids"></form>
     </div>
 
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('tableManager', () => ({
                 // DATA
-                originalRows: @json($types), 
-                groups: @json($groups),
-                branches: @json($branches),
+                originalRows: @json($types ?? []), 
+                groups: @json($groups ?? []),
+                branches: @json($branches ?? []),
                 filteredRows: [],
                 editingId: null,
                 selectedIds: [],
@@ -271,26 +272,26 @@
                 // COLUMNS Config
                 defaultColumns: [
                     { field: 'id', label: '#', visible: true, width: 50 },
-                    { field: 'code', label: '{{ __('profit.code') }}', visible: true, width: 80 },
-                    { field: 'name', label: '{{ __('profit.name') }}', visible: true, width: 200 },
-                    { field: 'group', label: '{{ __('profit.group_title') }}', visible: true, width: 150 },
-                    { field: 'branch', label: '{{ __('profit.branch') }}', visible: true, width: 150 },
-                    { field: 'creator', label: '{{ __('profit.created_by') }}', visible: true, width: 120 },
-                    { field: 'desc', label: '{{ __('profit.description') }}', visible: true, width: 200 },
-                    { field: 'created_at', label: '{{ __('profit.created_at') }}', visible: true, width: 150 },
-                    { field: 'active', label: '{{ __('profit.active') }}', visible: true, width: 80 },
+                    { field: 'code', label: '{{ __('spending.code') ?? 'Code' }}', visible: true, width: 80 },
+                    { field: 'name', label: '{{ __('spending.name') ?? 'Name' }}', visible: true, width: 200 },
+                    { field: 'group', label: '{{ __('spending.group_title') ?? 'Group' }}', visible: true, width: 150 },
+                    { field: 'branch', label: '{{ __('spending.branch') ?? 'Branch' }}', visible: true, width: 150 },
+                    { field: 'creator', label: '{{ __('spending.created_by') ?? 'Created By' }}', visible: true, width: 120 },
+                    { field: 'desc', label: '{{ __('spending.note') ?? 'Description' }}', visible: true, width: 200 },
+                    { field: 'created_at', label: '{{ __('spending.created_at') ?? 'Created At' }}', visible: true, width: 150 },
+                    { field: 'active', label: '{{ __('spending.active') ?? 'Active' }}', visible: true, width: 80 },
                 ],
                 columns: [],
 
                 initData() {
                     this.filteredRows = JSON.parse(JSON.stringify(this.originalRows));
-                    const savedCols = localStorage.getItem('profit_types_cols_v1');
+                    const savedCols = localStorage.getItem('spending_types_cols_v1');
                     this.columns = savedCols ? JSON.parse(savedCols) : JSON.parse(JSON.stringify(this.defaultColumns));
                     this.columns.forEach(col => { this.filters[col.field] = ''; });
                 },
 
                 resetLayout() {
-                    localStorage.removeItem('profit_types_cols_v1');
+                    localStorage.removeItem('spending_types_cols_v1');
                     this.columns = JSON.parse(JSON.stringify(this.defaultColumns));
                     this.columns.forEach(col => { this.filters[col.field] = ''; });
                 },
@@ -323,7 +324,7 @@
                     window.addEventListener('mouseup', onMouseUp);
                 },
 
-                saveState() { localStorage.setItem('profit_types_cols_v1', JSON.stringify(this.columns)); },
+                saveState() { localStorage.setItem('spending_types_cols_v1', JSON.stringify(this.columns)); },
 
                 // Helpers
                 getGroupName(id) { const g = this.groups.find(x => x.id == id); return g ? g.name : '-'; },
@@ -344,7 +345,6 @@
                 
                 addNewRow() {
                     const newId = 'new-' + Date.now();
-                    // --- FIX: Auto-Select User Branch ---
                     const userBranchId = "{{ Auth::user()->branch_id }}";
                     const defaultBranch = userBranchId || (this.branches.length > 0 ? this.branches[0].id : '');
                     
@@ -352,7 +352,7 @@
                         id: newId, 
                         code: 'NEW', 
                         name: '', 
-                        profit_group_id: '',
+                        group_spending_id: '',
                         branch_id: defaultBranch, 
                         description: '', 
                         user_id: {{ Auth::id() }}, 
@@ -371,9 +371,8 @@
                     if (!row.name || row.name.trim() === '') {
                         alert('Error: Name is required.'); return;
                     }
-                    if (!row.profit_group_id) {
-                        alert('Error: Profit Group is required.'); return;
-                    }
+                    
+                    // 🟢 REMOVED The Group Required Validation Error! 🟢
 
                     const formContainer = document.getElementById('singleRowInputs'); formContainer.innerHTML = '';
                     const createInput = (name, value) => { const i = document.createElement('input'); i.type = 'hidden'; i.name = `types[0][${name}]`; i.value = value || ''; formContainer.appendChild(i); };
@@ -381,7 +380,7 @@
                     const idToSend = String(row.id).startsWith('new-') ? '' : row.id;
                     createInput('id', idToSend);
                     createInput('name', row.name);
-                    createInput('profit_group_id', row.profit_group_id);
+                    createInput('group_spending_id', row.group_spending_id);
                     createInput('branch_id', row.branch_id);
                     createInput('description', row.description);
                     createInput('is_active', row.is_active ? 1 : 0);
@@ -396,7 +395,7 @@
                             const filterVal = this.filters[col.field]?.toLowerCase() || '';
                             if (!filterVal) return true;
                             let cellVal = String(row[col.field] || '');
-                            if (col.field === 'group') cellVal = this.getGroupName(row.profit_group_id);
+                            if (col.field === 'group') cellVal = this.getGroupName(row.group_spending_id);
                             if (col.field === 'branch') cellVal = this.getBranchName(row.branch_id);
                             return cellVal.toLowerCase().includes(filterVal);
                         });
@@ -423,15 +422,15 @@
                     });
                 },
                 deleteRow(id) {
-                    const form = document.getElementById('delete-form'); form.action = "{{ route('profit.types.destroy', ':id') }}".replace(':id', id);
-                    if (window.confirmAction) { window.confirmAction('delete-form', "{{ __('profit.delete_confirm') }}"); } 
-                    else { if(confirm("{{ __('profit.delete_confirm') }}")) form.submit(); }
+                    const form = document.getElementById('delete-form'); form.action = "{{ route('type-spending.destroy', ':id') }}".replace(':id', id);
+                    if (window.confirmAction) { window.confirmAction('delete-form', "{{ __('spending.delete_confirm') ?? 'Are you sure?' }}"); } 
+                    else { if(confirm("{{ __('spending.delete_confirm') ?? 'Are you sure?' }}")) form.submit(); }
                 },
                 bulkDelete() {
                     if (this.selectedIds.length === 0) return;
                     document.getElementById('bulk-delete-ids').value = JSON.stringify(this.selectedIds);
-                    if (window.confirmAction) { window.confirmAction('bulk-delete-form', '{{ __('profit.bulk_delete_confirm') }}'); } 
-                    else { if(confirm('{{ __('profit.bulk_delete_confirm') }}')) document.getElementById('bulk-delete-form').submit(); }
+                    if (window.confirmAction) { window.confirmAction('bulk-delete-form', '{{ __('spending.bulk_delete_confirm') ?? 'Are you sure?' }}'); } 
+                    else { if(confirm('{{ __('spending.bulk_delete_confirm') ?? 'Are you sure?' }}')) document.getElementById('bulk-delete-form').submit(); }
                 }
             }));
         });

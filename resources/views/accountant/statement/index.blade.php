@@ -273,16 +273,21 @@
                                             <template x-if="col.field === 'bill_type'"><span class="font-bold" x-text="getBillType(trx.bill_type)"></span></template>
                                             <template x-if="col.field === 'exchange_rate'"><span class="font-mono font-bold text-[11px]" x-text="formatMoney(trx.exchange_rate)"></span></template>
                                             <template x-if="col.field === 'base_currency'"><span class="font-bold" x-text="trx.base_currency"></span></template>
-                                            <template x-if="col.field === 'note'"><span class="font-medium truncate max-w-[150px] block mx-auto" :class="trx.is_discount_row ? 'font-bold text-red-600' : ''" x-text="trx.display_note"></span></template>
+                                            
+                                            {{-- 🟢 NEW EXPLANATION COLUMN (Ledger Mode) --}}
+                                            <template x-if="col.field === 'row_explanation'"><span class="font-bold text-slate-700 bg-slate-100 px-2 py-1 rounded border border-slate-200" x-text="trx.row_explanation"></span></template>
+                                            
+                                            {{-- 🟢 STRICT MANUAL NOTE COLUMN --}}
+                                            <template x-if="col.field === 'note'"><span class="font-medium truncate max-w-[150px] block mx-auto text-slate-600" x-text="trx.display_note"></span></template>
 
-                                            {{-- 🟢 GENERAL MODE (Strict Fixes applied here!) --}}
+                                            {{-- 🟢 GENERAL MODE --}}
                                             <template x-if="col.field === 'target_currency'"><span class="font-black text-[11px] text-indigo-700 bg-indigo-50 px-2 py-1 rounded-md border border-indigo-200" x-text="trx.target_currency"></span></template>
                                             <template x-if="col.field === 'total_display'"><span class="font-black text-slate-800 bg-slate-100 px-2.5 py-1 rounded" x-text="formatMoney(trx.total_display)"></span></template>
                                             <template x-if="col.field === 'discount_display'"><span class="font-bold" :class="trx.discount_display > 0 ? 'text-red-500' : 'text-slate-400'" x-text="trx.discount_display > 0 ? formatMoney(trx.discount_display) : '-'"></span></template>
                                             <template x-if="col.field === 'cash_display'"><span class="font-black text-emerald-600" x-text="formatMoney(trx.cash_display)"></span></template>
                                             <template x-if="col.field === 'loan_display'"><span class="font-bold text-slate-700" x-text="formatMoney(trx.loan_display)"></span></template>
 
-                                            {{-- LEDGER MODE (Red Light on Discount) --}}
+                                            {{-- 🟢 LEDGER MODE --}}
                                             <template x-if="col.field === 'statement_id'"><span class="font-mono bg-slate-50 px-2 py-0.5 rounded border border-slate-100" x-text="trx.statement_id || '-'"></span></template>
                                             <template x-if="col.field === 'display_amount'"><span class="font-black" x-text="formatMoney(trx.display_amount)"></span></template>
                                             
@@ -539,9 +544,11 @@
                 accounts: {!! json_encode($search_list ?? []) !!},
                 currencies: {!! json_encode($currencies ?? []) !!},
                 showSidebar: (window.innerWidth >= 1024),
+                
+                // 🟢 DEFAULT TO THE CURRENT MONTH & TODAY 🟢
                 datePreset: '',
-                startDate: '{{ request('start_date') }}',
-                endDate: '{{ request('end_date') }}',
+                startDate: '{{ request('start_date') }}' || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
+                endDate: '{{ request('end_date') }}' || new Date().toISOString().split('T')[0],
                 
                 applyDatePreset() {
                     if(!this.datePreset) return;
@@ -623,6 +630,10 @@
                     { field: 'debit', label: "{!! addslashes(__('statement.debit')) !!}", visible: true, width: 90, searchable: true },
                     { field: 'credit', label: "{!! addslashes(__('statement.credit')) !!}", visible: true, width: 90, searchable: true },
                     { field: 'running_balance', label: "{!! addslashes(__('statement.balance')) !!}", visible: true, width: 100, searchable: true },
+                    
+                    {{-- 🟢 THE NEW EXPLANATION COLUMN 🟢 --}}
+                    { field: 'row_explanation', label: "ڕوونکردنەوەی پسووڵە", visible: true, width: 140, searchable: true }, 
+                    
                     { field: 'note', label: "{!! addslashes(__('statement.note')) !!}", visible: true, width: 150, searchable: true },
                     { field: 'actions', label: "{!! addslashes(__('statement.actions')) !!}", visible: true, width: 70, searchable: false },
                 ],
@@ -688,24 +699,17 @@
                     let rate = parseFloat(trx.exchange_rate) || 1;
                     if (rate === 1) return parseFloat(val);
 
-                    // Safely handle large rates (like 1500 for USD to IQD)
+                    // Safely handle large rates
                     if (rate > 50) {
-                        // If converting FROM IQD/Toman TO USD -> Divide
-                        if (s_curr.includes('دینار') || s_curr.includes('IQD') || s_curr.includes('تومەن') || s_curr.includes('TOMAN')) {
-                            return parseFloat(val) / rate;
-                        }
-                        // If converting FROM USD TO IQD/Toman -> Multiply
-                        if (t_curr.includes('دینار') || t_curr.includes('IQD') || t_curr.includes('تومەن') || t_curr.includes('TOMAN')) {
-                            return parseFloat(val) * rate;
-                        }
-                        // Fallback
+                        if (s_curr.includes('دینار') || s_curr.includes('IQD') || s_curr.includes('تومەن') || s_curr.includes('TOMAN')) { return parseFloat(val) / rate; }
+                        if (t_curr.includes('دینار') || t_curr.includes('IQD') || t_curr.includes('تومەن') || t_curr.includes('TOMAN')) { return parseFloat(val) * rate; }
                         return parseFloat(val) / rate;
                     }
 
                     return parseFloat(val) * rate;
                 },
 
-                // 🟢 FLAWLESS TRUE BALANCE CALCULATION (DYNAMIC!)
+                // 🟢 TRUE BALANCE CALCULATION (DYNAMIC WITH PROFIT/SPENDING)
                 get trueBalances() {
                     let bals = {};
                     this.raw_data.forEach(t => bals[t.target_currency] = 0);
@@ -716,20 +720,17 @@
                         let t_amount = parseFloat(trx.amount) || 0;
                         let t_disc = parseFloat(trx.discount) || 0;
 
-                        // Dynamically calculate from base values to Target Currency
                         let target_cash = this.convertToTarget(t_amount, trx);
                         let target_disc = this.convertToTarget(t_disc, trx);
 
                         let impact = 0;
                         if (type === 'receive' || type === 'return') { 
-                            // Receiving reduces debt: Cash + Discount clears the debt!
                             impact = -(target_cash + target_disc); 
                         } 
-                        else if (type === 'pay' || type === 'sale' || type === 'purchase') { 
-                            // Paying increases debt: Cash + Discount
+                        // 🟢 PROFIT AND SPENDING ADDED HERE
+                        else if (type === 'pay' || type === 'sale' || type === 'purchase' || type === 'profit' || type === 'spending') { 
                             impact = target_cash + target_disc;
                         } else {
-                            // Fallback for unknown types
                             impact = this.convertToTarget(parseFloat(trx.total) || 0, trx);
                         }
 
@@ -739,8 +740,8 @@
                     return bals;
                 },
 
-                // 🟢 FLAWLESS LEDGER SPLIT ENGINE
-              // 🟢 FLAWLESS LEDGER SPLIT ENGINE
+                // 🟢 LEDGER SPLIT ENGINE (OLDEST->NEWEST + SEPARATED NOTES)
+               // 🟢 LEDGER SPLIT ENGINE (OLDEST->NEWEST + SEPARATED NOTES)
                 get processedTransactions() {
                     let isLedger = this.filters.target_currency !== '';
                     let rows = [];
@@ -759,7 +760,7 @@
                      });
 
                     if (!isLedger) {
-                        filteredData.sort((a, b) => b.timestamp - a.timestamp); // Newest top
+                        filteredData.sort((a, b) => a.timestamp - b.timestamp); // 🟢 FIXED: OLDEST TO NEWEST
                         
                         filteredData.forEach(trx => {
                             let type = String(trx.bill_type).toLowerCase();
@@ -767,12 +768,11 @@
                             let t_disc = parseFloat(trx.discount) || 0;
                             
                             let display_total = 0;
-                            let display_cash = t_amount; // Cash column always exactly what user typed
+                            let display_cash = t_amount;
 
-                            if (type === 'pay' || type === 'sale' || type === 'purchase') {
-                                display_total = t_amount + t_disc; // Paying: 100 + 1 = 101
-                            } else if (type === 'receive' || type === 'return') {
-                                display_total = t_amount + t_disc; // 🟢 FIXED: Receiving now adds the discount (100 + 1 = 101)
+                            // 🟢 FIXED: ALL types (Pay, Receive, Profit, Spending, etc.) now ADD the discount to the amount for the General Mode display.
+                            if (type === 'pay' || type === 'sale' || type === 'purchase' || type === 'profit' || type === 'spending' || type === 'receive' || type === 'return') {
+                                display_total = t_amount + t_disc;
                             } else {
                                 display_total = parseFloat(trx.total) || 0;
                             }
@@ -785,7 +785,7 @@
                                 discount_display: t_disc,     
                                 cash_display: display_cash,   
                                 is_discount_row: false,
-                                display_note: trx.note || '-'
+                                display_note: trx.note || '-' // Your manual note
                             });
                         });
                     } 
@@ -798,26 +798,27 @@
                             let t_amount = parseFloat(trx.amount) || 0;
                             let t_disc = parseFloat(trx.discount) || 0;
 
-                            // Calculate target impact (USD) for Debit/Credit columns
                             let target_cash = this.convertToTarget(t_amount, trx);
                             let target_disc = this.convertToTarget(t_disc, trx);
 
                             // 1. CASH ROW
                             if (t_amount > 0 || (t_amount === 0 && t_disc === 0)) {
                                 let debit = 0; let credit = 0;
-                                if (type === 'receive' || type === 'return') { credit = target_cash; } // Cash clears debt
-                                else if (type === 'pay' || type === 'sale' || type === 'purchase') { debit = target_cash; } // Cash increases debt
+                                if (type === 'receive' || type === 'return') { credit = target_cash; } 
+                                // 🟢 PROFIT & SPENDING INCLUDED
+                                else if (type === 'pay' || type === 'sale' || type === 'purchase' || type === 'profit' || type === 'spending') { debit = target_cash; } 
                                 
                                 currentBalance += (debit - credit);
                                 rows.push({
                                     ...trx,
                                     row_id: trx.id + '_cash',
                                     row_index: rowIndex++,
-                                    display_amount: t_amount, // 🟢 FIXED: Show original typed amount (e.g., 150,000 IQD)
-                                    debit: debit,             // Calculated target amount (e.g., 100 USD)
-                                    credit: credit,           // Calculated target amount (e.g., 100 USD)
+                                    display_amount: t_amount,
+                                    debit: debit,             
+                                    credit: credit,           
                                     running_balance: currentBalance,
-                                    display_note: trx.note ? trx.note : "{!! addslashes(__('statement.cash')) !!}",
+                                    row_explanation: this.getBillType(type) + " - {!! addslashes(__('statement.cash')) !!}",
+                                    display_note: trx.note || '-', // 🟢 STRICTLY YOUR MANUAL NOTE
                                     has_discount: t_disc > 0, 
                                     is_cash_row: true,
                                     is_discount_row: false
@@ -826,14 +827,14 @@
 
                             // 2. DISCOUNT ROW 
                             if (t_disc > 0) {
-                                let debit = 0;
-                                let credit = 0;
+                                let debit = 0; let credit = 0;
                                 
-                                if (type === 'pay' || type === 'sale' || type === 'purchase') { 
-                                    debit = target_disc; // Paying Discount increases debt
+                                // 🟢 PROFIT & SPENDING INCLUDED
+                                if (type === 'pay' || type === 'sale' || type === 'purchase' || type === 'profit' || type === 'spending') { 
+                                    debit = target_disc;
                                 }
                                 else if (type === 'receive' || type === 'return') { 
-                                    credit = target_disc; // Receiving Discount reduces debt
+                                    credit = target_disc; 
                                 }
 
                                 currentBalance += (debit - credit);
@@ -841,11 +842,12 @@
                                     ...trx,
                                     row_id: trx.id + '_disc',
                                     row_index: rowIndex++,
-                                    display_amount: t_disc, // 🟢 FIXED: Show original typed discount
+                                    display_amount: t_disc, 
                                     debit: debit,
                                     credit: credit,
                                     running_balance: currentBalance,
-                                    display_note: "{!! addslashes(__('statement.invoice_discount')) !!}",
+                                     row_explanation: this.getBillType(type) + " - {!! addslashes(__('statement.invoice_discount')) !!}",// 🟢 AUTO EXPLANATION (Discount)
+                                    display_note: trx.note || '-', // 🟢 STRICTLY YOUR MANUAL NOTE
                                     has_discount: true,
                                     is_cash_row: false,
                                     is_discount_row: true
@@ -875,6 +877,7 @@
                     return parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); 
                 },
 
+                // 🟢 BILL TYPE TRANSLATIONS ADDED HERE 🟢
                 getBillType(type) {
                     if (!type) return '-';
                     let t = type.toLowerCase();
@@ -883,6 +886,8 @@
                     if (t === 'sale') return "{!! addslashes(__('statement.sale')) !!}";
                     if (t === 'purchase') return "{!! addslashes(__('statement.purchase')) !!}";
                     if (t === 'return') return "{!! addslashes(__('statement.return')) !!}";
+                    if (t === 'profit') return "{!! addslashes(__('statement.profit')) !!}"; // 🟢 Added
+                    if (t === 'spending') return "{!! addslashes(__('statement.spending')) !!}"; // 🟢 Added
                     return type;
                 }
             }));
