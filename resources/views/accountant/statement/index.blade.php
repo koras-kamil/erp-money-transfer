@@ -742,6 +742,7 @@
 
                 // 🟢 LEDGER SPLIT ENGINE (OLDEST->NEWEST + SEPARATED NOTES)
                // 🟢 LEDGER SPLIT ENGINE (OLDEST->NEWEST + SEPARATED NOTES)
+              // 🟢 LEDGER SPLIT ENGINE (OLDEST->NEWEST + SEPARATED NOTES)
                 get processedTransactions() {
                     let isLedger = this.filters.target_currency !== '';
                     let rows = [];
@@ -760,7 +761,7 @@
                      });
 
                     if (!isLedger) {
-                        filteredData.sort((a, b) => a.timestamp - b.timestamp); // 🟢 FIXED: OLDEST TO NEWEST
+                        filteredData.sort((a, b) => a.timestamp - b.timestamp); // OLDEST TO NEWEST
                         
                         filteredData.forEach(trx => {
                             let type = String(trx.bill_type).toLowerCase();
@@ -770,7 +771,7 @@
                             let display_total = 0;
                             let display_cash = t_amount;
 
-                            // 🟢 FIXED: ALL types (Pay, Receive, Profit, Spending, etc.) now ADD the discount to the amount for the General Mode display.
+                            // GENERAL MODE TOTAL: Amount + Discount for everything
                             if (type === 'pay' || type === 'sale' || type === 'purchase' || type === 'profit' || type === 'spending' || type === 'receive' || type === 'return') {
                                 display_total = t_amount + t_disc;
                             } else {
@@ -785,7 +786,8 @@
                                 discount_display: t_disc,     
                                 cash_display: display_cash,   
                                 is_discount_row: false,
-                                display_note: trx.note || '-' // Your manual note
+                                row_explanation: this.getBillType(type), 
+                                display_note: this.translateNote(trx.note) // 🟢 TRANSLATION APPLIED HERE
                             });
                         });
                     } 
@@ -805,7 +807,6 @@
                             if (t_amount > 0 || (t_amount === 0 && t_disc === 0)) {
                                 let debit = 0; let credit = 0;
                                 if (type === 'receive' || type === 'return') { credit = target_cash; } 
-                                // 🟢 PROFIT & SPENDING INCLUDED
                                 else if (type === 'pay' || type === 'sale' || type === 'purchase' || type === 'profit' || type === 'spending') { debit = target_cash; } 
                                 
                                 currentBalance += (debit - credit);
@@ -817,8 +818,8 @@
                                     debit: debit,             
                                     credit: credit,           
                                     running_balance: currentBalance,
-                                    row_explanation: this.getBillType(type) + " - {!! addslashes(__('statement.cash')) !!}",
-                                    display_note: trx.note || '-', // 🟢 STRICTLY YOUR MANUAL NOTE
+                                    row_explanation: this.getBillType(type) + " - {!! addslashes(__('statement.cash')) !!}", 
+                                    display_note: this.translateNote(trx.note), // 🟢 TRANSLATION APPLIED HERE
                                     has_discount: t_disc > 0, 
                                     is_cash_row: true,
                                     is_discount_row: false
@@ -829,7 +830,6 @@
                             if (t_disc > 0) {
                                 let debit = 0; let credit = 0;
                                 
-                                // 🟢 PROFIT & SPENDING INCLUDED
                                 if (type === 'pay' || type === 'sale' || type === 'purchase' || type === 'profit' || type === 'spending') { 
                                     debit = target_disc;
                                 }
@@ -846,8 +846,8 @@
                                     debit: debit,
                                     credit: credit,
                                     running_balance: currentBalance,
-                                     row_explanation: this.getBillType(type) + " - {!! addslashes(__('statement.invoice_discount')) !!}",// 🟢 AUTO EXPLANATION (Discount)
-                                    display_note: trx.note || '-', // 🟢 STRICTLY YOUR MANUAL NOTE
+                                    row_explanation: this.getBillType(type) + " - {!! addslashes(__('statement.invoice_discount')) !!}", 
+                                    display_note: this.translateNote(trx.note), // 🟢 TRANSLATION APPLIED HERE
                                     has_discount: true,
                                     is_cash_row: false,
                                     is_discount_row: true
@@ -858,6 +858,7 @@
 
                     return rows;
                 },
+                
 
                 get filteredTransactions() { return this.processedTransactions; },
 
@@ -877,8 +878,7 @@
                     return parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); 
                 },
 
-                // 🟢 BILL TYPE TRANSLATIONS ADDED HERE 🟢
-                getBillType(type) {
+               getBillType(type) {
                     if (!type) return '-';
                     let t = type.toLowerCase();
                     if (t === 'receive') return "{!! addslashes(__('statement.receive')) !!}";
@@ -886,10 +886,39 @@
                     if (t === 'sale') return "{!! addslashes(__('statement.sale')) !!}";
                     if (t === 'purchase') return "{!! addslashes(__('statement.purchase')) !!}";
                     if (t === 'return') return "{!! addslashes(__('statement.return')) !!}";
-                    if (t === 'profit') return "{!! addslashes(__('statement.profit')) !!}"; // 🟢 Added
-                    if (t === 'spending') return "{!! addslashes(__('statement.spending')) !!}"; // 🟢 Added
+                    if (t === 'profit') return "{!! addslashes(__('statement.profit')) !!}"; 
+                    if (t === 'spending') return "{!! addslashes(__('statement.spending')) !!}"; 
                     return type;
+                },
+
+                // 🟢 INTERCEPTS SYSTEM NOTES AND TRANSLATES THEM
+               // 🟢 BULLETPROOF TRANSLATION (Ignores capitals and extra spaces)
+                translateNote(note) {
+                    if (!note || String(note).trim() === '') return '-';
+                    
+                    // 1. Get the original note, and make a lowercase version for safe checking
+                    let originalNote = String(note).trim();
+                    let safeCheck = originalNote.toLowerCase(); 
+                    
+                    // 2. Safely check using the lowercase version
+                    if (safeCheck === 'profit entry') {
+                        return "{!! addslashes(__('statement.profit_entry')) !!}";
+                    }
+                    if (safeCheck.includes('profit entry from paying')) {
+                        return "{!! addslashes(__('statement.profit_entry_from_paying')) !!}";
+                    }
+                    if (safeCheck === 'spending entry') {
+                        return "{!! addslashes(__('statement.spending_entry')) !!}";
+                    }
+                    if (safeCheck.includes('spending entry from paying')) {
+                        return "{!! addslashes(__('statement.spending_entry_from_paying')) !!}";
+                    }
+                    
+                    // 3. If it doesn't match any system note, return exactly what the user typed
+                    return originalNote; 
                 }
+           
+                
             }));
         });
     </script>

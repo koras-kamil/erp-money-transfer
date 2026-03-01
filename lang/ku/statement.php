@@ -106,4 +106,12 @@ return [
 'last_pay' => 'دوایین پارەدان',
 'last_sale' => 'دوایین فرۆشتن',
 'last_purchase' => 'دوایین کڕین',
+'spending' => 'خەرجی',
+    'last_spending' => 'دوایین خەرج',
+'profit' => 'قازانج',
+    'last_profit' => 'دوایین قازانج',
+    'profit_entry' => 'تۆماری قازانج',
+    'profit_entry_from_paying' => 'قازانج لە کاتی پارەدان',
+    'spending_entry' => 'تۆماری خەرجی',
+    'spending_entry_from_paying' => 'خەرجی لە کاتی پارەدان',
 ];
