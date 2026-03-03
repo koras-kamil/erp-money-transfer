@@ -75,8 +75,74 @@ class CashboxReportController extends Controller
         return view('accountant.cashbox_reports.index', compact('cashBoxes', 'currencies', 'baseCurrency'));
     }
 
-    public function show($id)
+public function show($id, Request $request)
     {
-        return "This will be the detailed ledger for Cashbox #" . $id;
+        $cashbox = Cashbox::with(['branch', 'balances'])->findOrFail($id);
+        $currencies = CurrencyConfig::where('is_active', true)->get();
+
+        // 1. Calculate TRUE live balances for the Toolbar Cards (Always shows total money)
+        $transactionSums = Transaction::selectRaw('currency_id, type, SUM(amount) as total_amount')
+            ->where('cashbox_id', $id)
+            ->groupBy('currency_id', 'type')
+            ->get();
+
+        $liveBalances = [];
+        foreach ($currencies as $curr) {
+            $bRecord = $cashbox->balances->where('currency_id', $curr->id)->first();
+            $balance = $bRecord ? floatval($bRecord->balance) : 0;
+
+            $sums = $transactionSums->where('currency_id', $curr->id);
+            foreach ($sums as $trx) {
+                if (in_array($trx->type, ['receive', 'profit'])) {
+                    $balance += floatval($trx->total_amount);
+                } elseif (in_array($trx->type, ['pay', 'spending'])) {
+                    $balance -= floatval($trx->total_amount);
+                }
+            }
+
+            $liveBalances[] = (object) [
+                'currency_id' => $curr->id,
+                'currency_type' => $curr->currency_type,
+                'amount' => $balance
+            ];
+        }
+
+        // 2. 🟢 Calculate "Brought Forward" Balance (If user selects a Start Date)
+        $broughtForward = [];
+        foreach ($currencies as $c) { $broughtForward[$c->id] = 0; }
+
+        if ($request->filled('start_date')) {
+            $pastSums = Transaction::selectRaw('currency_id, type, SUM(amount) as total_amount')
+                ->where('cashbox_id', $id)
+                ->whereDate('manual_date', '<', $request->start_date)
+                ->groupBy('currency_id', 'type')
+                ->get();
+                
+            foreach ($pastSums as $trx) {
+                if (in_array($trx->type, ['receive', 'profit'])) {
+                    $broughtForward[$trx->currency_id] += floatval($trx->total_amount);
+                } elseif (in_array($trx->type, ['pay', 'spending'])) {
+                    $broughtForward[$trx->currency_id] -= floatval($trx->total_amount);
+                }
+            }
+        }
+
+        // 3. Fetch the Ledger Transactions
+        $query = Transaction::where('cashbox_id', $id)->with(['account', 'user', 'currency']);
+
+        if ($request->filled('currency_id')) {
+            $query->where('currency_id', $request->currency_id);
+        }
+        if ($request->filled('start_date')) {
+            $query->whereDate('manual_date', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->whereDate('manual_date', '<=', $request->end_date);
+        }
+
+        $transactions = $query->orderBy('manual_date', 'asc')->orderBy('id', 'asc')->paginate(100);
+
+        return view('accountant.cashbox_reports.show', compact('cashbox', 'transactions', 'liveBalances', 'currencies', 'broughtForward'));
     }
+
 }
