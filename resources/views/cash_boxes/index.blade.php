@@ -13,7 +13,7 @@
             -webkit-appearance: none; appearance: none;
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
             background-position: right 0.25rem center; background-repeat: no-repeat; background-size: 1em 1em;
-            padding-right: 1.5rem; padding-left: 0.5rem; cursor: pointer; white-space: nowrap; 
+            padding-right: 1.5rem; padding-left: 0.5rem; cursor: pointer; white-space: nowrap;
         }
         [dir="rtl"] select.sheet-input { background-position: left 0.25rem center; padding-right: 0.5rem; padding-left: 1.5rem; }
         
@@ -120,13 +120,13 @@
                                 @dragstart="dragStart($event, index)"
                                 @dragover.prevent="dragOver($event)"
                                 @drop="drop($event, index)"
-                                :class="[{'dragging-col': draggingIndex === index}, col.class]">
+                                :class="[{'dragging-col': draggingIndex === index}, col.field.startsWith('curr_') ? 'bg-indigo-50/50' : '']">
                                 
                                 <div class="th-container" :class="{ 'search-active': openFilter === col.field }">
                                     {{-- Title --}}
                                     <div class="th-title">
                                         <div @click="sortBy(col.field)" class="flex items-center justify-center gap-1 cursor-pointer flex-1 h-full hover:text-indigo-600 transition-colors">
-                                            <span x-text="col.label"></span>
+                                            <span x-text="col.label" :class="col.field.startsWith('curr_') ? 'text-indigo-700 font-black' : ''"></span>
                                             <svg class="w-3 h-3 text-indigo-500 transition-transform" :class="sortCol === col.field && !sortAsc ? 'rotate-180' : ''" x-show="sortCol === col.field" fill="currentColor" viewBox="0 0 20 20"><path d="M5 10l5-5 5 5H5z"/></svg>
                                         </div>
                                         <button type="button" @click="openFilter = col.field; setTimeout(() => $refs['input-'+col.field].focus(), 100)" class="p-1 rounded-md text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition" :class="filters[col.field] ? 'text-indigo-600' : ''">
@@ -168,7 +168,7 @@
                                         </div>
                                     </template>
 
-                                    {{-- Name (UPDATED: Regular Font + Red Text Placeholder) --}}
+                                    {{-- Name --}}
                                     <template x-if="col.field === 'name'">
                                         <div>
                                             <span x-show="editingId !== row.id" x-text="row.name" class="px-3 block text-slate-700 font-bold text-xs truncate"></span>
@@ -189,21 +189,11 @@
                                         </div>
                                     </template>
 
-                                    {{-- Currency --}}
-                                    <template x-if="col.field === 'currency'">
-                                        <div>
-                                            <div x-show="editingId !== row.id" class="text-center"><span x-text="getCurrencyName(row.currency_id)" class="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span></div>
-                                            <select x-show="editingId === row.id" x-model="row.currency_id" class="sheet-input text-center text-xs uppercase font-normal text-indigo-600">
-                                                <template x-for="curr in currencies" :key="curr.id"><option :value="curr.id" x-text="curr.currency_type"></option></template>
-                                            </select>
-                                        </div>
-                                    </template>
-
-                                    {{-- Balance --}}
-                                    <template x-if="col.field === 'balance'">
-                                        <div>
-                                            <div x-show="editingId !== row.id" x-text="formatNumberDisplay(row.balance)" class="text-center font-bold text-xs text-emerald-600"></div>
-                                            <input x-show="editingId === row.id" type="text" :value="formatNumberDisplay(row.balance)" @input="handleNumberInput($event, row)" class="sheet-input text-center font-normal text-xs text-emerald-600">
+                                    {{-- 🟢 DYNAMIC CURRENCY BALANCES --}}
+                                    <template x-if="col.field.startsWith('curr_')">
+                                        <div class="h-full w-full" :class="editingId !== row.id ? 'bg-emerald-50/10' : ''">
+                                            <span x-show="editingId !== row.id" x-text="formatNumberDisplay(row.balances ? row.balances[col.field] : 0)" class="py-3 block font-black font-mono text-emerald-600 text-center truncate text-xs"></span>
+                                            <input x-show="editingId === row.id" type="text" :value="formatNumberDisplay(row.balances ? row.balances[col.field] : 0)" @input="handleNumberInput($event, row, col.field)" class="sheet-input text-center font-normal text-xs text-emerald-600 h-full">
                                         </div>
                                     </template>
 
@@ -290,13 +280,16 @@
                 filters: {},
                 draggingIndex: null,
                 
-                // UPDATED COLUMN ORDER
+                // 🟢 DYNAMIC COLUMNS (Using your exact headers + dynamic currencies)
                 defaultColumns: [
                     { field: 'id', label: '#', visible: true, width: 50 },
                     { field: 'name', label: '{{ __('cash_box.name') }}', visible: true, width: 200 },
                     { field: 'type', label: '{{ __('cash_box.type') }}', visible: true, width: 120 },
-                    { field: 'currency', label: '{{ __('cash_box.currency') }}', visible: true, width: 100 },
-                    { field: 'balance', label: '{{ __('cash_box.balance') }}', visible: true, width: 120 },
+                    
+                    @foreach($currencies as $curr)
+                        { field: 'curr_{{ $curr->id }}', label: '{{ $curr->currency_type }}', visible: true, width: 120 },
+                    @endforeach
+
                     { field: 'branch', label: '{{ __('cash_box.branch') }}', visible: true, width: 150 },
                     { field: 'desc', label: '{{ __('cash_box.desc') }}', visible: true, width: 250 },
                     { field: 'user', label: '{{ __('cash_box.user') }}', visible: true, width: 100 },
@@ -307,13 +300,14 @@
 
                 initData() {
                     this.filteredRows = JSON.parse(JSON.stringify(this.originalRows));
-                    const savedCols = localStorage.getItem('cashbox_columns_v3');
+                    // 🟢 Changed key to clear cache automatically
+                    const savedCols = localStorage.getItem('cashbox_columns_v5');
                     this.columns = savedCols ? JSON.parse(savedCols) : JSON.parse(JSON.stringify(this.defaultColumns));
                     this.columns.forEach(col => { this.filters[col.field] = ''; });
                 },
 
                 resetLayout() {
-                    localStorage.removeItem('cashbox_columns_v3');
+                    localStorage.removeItem('cashbox_columns_v5');
                     this.columns = JSON.parse(JSON.stringify(this.defaultColumns));
                     this.columns.forEach(col => { this.filters[col.field] = ''; });
                 },
@@ -331,8 +325,7 @@
 
                 // Resizing
                 initResize(e, col) {
-                    const startX = e.clientX; 
-                    const startWidth = parseInt(col.width) || 100;
+                    const startX = e.clientX; const startWidth = parseInt(col.width) || 100;
                     const onMouseMove = (moveEvent) => {
                         const diff = moveEvent.clientX - startX;
                         const isRtl = document.dir === 'rtl';
@@ -347,17 +340,26 @@
                     window.addEventListener('mouseup', onMouseUp);
                 },
 
-                saveState() { localStorage.setItem('cashbox_columns_v3', JSON.stringify(this.columns)); },
+                saveState() { localStorage.setItem('cashbox_columns_v5', JSON.stringify(this.columns)); },
 
                 // Data Helpers
-                getCurrencyName(id) { const c = this.currencies.find(c => c.id == id); return c ? c.currency_type : '-'; },
                 getBranchName(id) { const b = this.branches.find(b => b.id == id); return b ? b.name : '-'; },
                 getUserName(id) { return id ? '{{ Auth::user()->name }}' : 'SYSTEM'; },
                 formatDate(date) { return date ? new Date(date).toISOString().slice(0,16).replace('T',' ') : '-'; },
-                formatNumberDisplay(num) { return num ? num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ''; },
-                handleNumberInput(e, row) { 
+                formatNumberDisplay(num) { return num ? num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '0'; },
+                
+                // 🟢 UPDATED: Routes input data to dynamic balance array
+                handleNumberInput(e, row, field) { 
                     let val = e.target.value.replace(/,/g, '');
-                    if (!isNaN(val)) { row.balance = val; e.target.value = this.formatNumberDisplay(val); }
+                    if (!isNaN(val)) { 
+                        if(field.startsWith('curr_')) {
+                            if(!row.balances) row.balances = {};
+                            row.balances[field] = val;
+                        } else {
+                            row[field] = val;
+                        }
+                        e.target.value = this.formatNumberDisplay(val); 
+                    }
                 },
                 
                 // Get Next ID
@@ -371,11 +373,28 @@
                 get allSelected() { return this.filteredRows.length > 0 && this.selectedIds.length === this.filteredRows.length; },
                 toggleAllSelection() { this.selectedIds = this.allSelected ? [] : this.filteredRows.map(r => r.id); },
                 
+                // 🟢 ADD NEW: Prepends 0 for all currencies
                 addNewRow() {
                     const newId = 'new-' + Date.now();
                     const defaultBranch = this.branches.length > 0 ? this.branches[0].id : '';
-                    const defaultCurrency = this.currencies.length > 0 ? this.currencies[0].id : '';
-                    this.filteredRows.unshift({ id: newId, name: '', type: '', currency_id: defaultCurrency, balance: 0, branch_id: defaultBranch, description: '', user_id: {{ Auth::id() }}, created_at: new Date(), is_active: 1, isNew: true });
+                    
+                    let initialBalances = {};
+                    @foreach($currencies as $curr)
+                        initialBalances['curr_{{ $curr->id }}'] = 0;
+                    @endforeach
+
+                    this.filteredRows.unshift({ 
+                        id: newId, 
+                        name: '', 
+                        type: '', 
+                        branch_id: defaultBranch, 
+                        description: '', 
+                        user_id: {{ Auth::id() }}, 
+                        created_at: new Date(), 
+                        is_active: 1, 
+                        isNew: true,
+                        balances: initialBalances 
+                    });
                     this.startEdit(newId);
                 },
                 startEdit(id) { 
@@ -387,9 +406,8 @@
                     this.editingId = null;
                 },
                 
-                // SAVE LOGIC WITH NICE NOTIFICATION
+                // 🟢 SAVE LOGIC
                 saveRow(row) {
-                    // Client-Side Validation with SweetAlert
                     if (!row.name || row.name.trim() === '') {
                         Swal.fire({
                             icon: 'error',
@@ -408,15 +426,6 @@
                         });
                         return;
                     }
-                    if (!row.currency_id) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: '{{ __("messages.error") }}',
-                            text: '{{ __("cash_box.currency_required") }}',
-                            confirmButtonColor: '#4f46e5'
-                        });
-                        return;
-                    }
 
                     const formContainer = document.getElementById('singleRowInputs');
                     formContainer.innerHTML = '';
@@ -427,37 +436,58 @@
                     createInput('id', idToSend);
                     createInput('name', row.name);
                     createInput('type', row.type); 
-                    createInput('currency_id', row.currency_id);
-                    createInput('balance', row.balance); 
                     createInput('branch_id', row.branch_id); 
                     createInput('description', row.description);
                     createInput('is_active', row.is_active ? 1 : 0);
                     
+                    // Add the dynamic balances to the form
+                    if (row.balances) {
+                        Object.keys(row.balances).forEach(key => {
+                            if (key.startsWith('curr_')) {
+                                let currId = key.replace('curr_', '');
+                                createInput(`balances[${currId}]`, row.balances[key] || 0);
+                            }
+                        });
+                    }
+
                     document.getElementById('singleRowForm').submit();
                 },
                 
-                // Sorting & Filtering
+                // 🟢 Filter for dynamic columns
                 filterData() {
                     this.filteredRows = this.originalRows.filter(row => {
                         return this.columns.every(col => {
                             const filterVal = this.filters[col.field]?.toLowerCase() || '';
                             if (!filterVal) return true;
-                            let cellVal = String(row[col.field] || '');
-                            if (col.field === 'branch') cellVal = this.getBranchName(row.branch_id);
-                            if (col.field === 'currency') cellVal = this.getCurrencyName(row.currency_id);
+                            
+                            let cellVal = '';
+                            if (col.field.startsWith('curr_')) {
+                                cellVal = String(row.balances ? (row.balances[col.field] || 0) : 0);
+                            } else if (col.field === 'branch') {
+                                cellVal = this.getBranchName(row.branch_id);
+                            } else if (col.field === 'user') {
+                                cellVal = this.getUserName(row.user_id);
+                            } else {
+                                cellVal = String(row[col.field] || '');
+                            }
+
                             return cellVal.toLowerCase().includes(filterVal);
                         });
                     });
                     this.sortData();
                 },
+                // 🟢 Sort for dynamic columns
                 sortBy(field) {
-                    if (this.sortCol === field) this.sortAsc = !this.sortAsc; else { this.sortCol = field; this.sortAsc = true; }
+                    if (this.sortCol === field) this.sortAsc = !this.sortAsc;
+                    else { this.sortCol = field; this.sortAsc = true; }
                     this.sortData();
                 },
                 sortData() {
                     if (!this.sortCol) return;
                     this.filteredRows.sort((a, b) => {
-                        let valA = a[this.sortCol]; let valB = b[this.sortCol];
+                        let valA = this.sortCol.startsWith('curr_') ? (a.balances ? a.balances[this.sortCol] || 0 : 0) : a[this.sortCol];
+                        let valB = this.sortCol.startsWith('curr_') ? (b.balances ? b.balances[this.sortCol] || 0 : 0) : b[this.sortCol];
+
                         if (this.sortCol === 'id' || (!isNaN(parseFloat(valA)) && isFinite(valA))) {
                             if(String(valA).startsWith('new-')) valA = this.sortAsc ? 99999999 : -99999999;
                             if(String(valB).startsWith('new-')) valB = this.sortAsc ? 99999999 : -99999999;
@@ -472,7 +502,8 @@
                     });
                 },
                 deleteRow(id) {
-                    const form = document.getElementById('delete-form'); form.action = "{{ route('cash-boxes.destroy', ':id') }}".replace(':id', id);
+                    const form = document.getElementById('delete-form');
+                    form.action = "{{ route('cash-boxes.destroy', ':id') }}".replace(':id', id);
                     if (window.confirmAction) { window.confirmAction('delete-form', "{{ __('cash_box.delete_confirm') }}"); } 
                     else { if(confirm("{{ __('cash_box.delete_confirm') }}")) form.submit(); }
                 },

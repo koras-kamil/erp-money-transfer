@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CashBox;
+use App\Models\CashBoxBalance; // 🟢 NEW MODEL IMPORTED
 use App\Models\Branch;
 use App\Models\CurrencyConfig;
 use Illuminate\Http\Request;
@@ -15,9 +16,36 @@ class CashBoxController extends Controller
 {
     public function index()
     {
-        $cashBoxes = CashBox::with(['currency', 'branch', 'user'])->latest()->paginate(50);
         $branches = Branch::where('is_active', true)->get();
         $currencies = CurrencyConfig::where('is_active', true)->get();
+        
+        // Fetch Cash Boxes with their new dynamic balances
+        $cashBoxesRaw = CashBox::with(['balances.currency', 'branch', 'user'])->latest()->get();
+
+        // Format the data perfectly for AlpineJS to build dynamic columns
+        $cashBoxes = $cashBoxesRaw->map(function($box) use ($currencies) {
+            $balances = [];
+            // Initialize all active currencies to 0
+            foreach($currencies as $curr) {
+                $balances['curr_' . $curr->id] = 0;
+            }
+            // Override with actual balances from database
+            foreach($box->balances as $b) {
+                $balances['curr_' . $b->currency_id] = floatval($b->balance);
+            }
+
+            return [
+                'id'          => $box->id,
+                'code'        => $box->code ?? '-',
+                'name'        => $box->name,
+                'branch_id'   => $box->branch_id,
+                'description' => $box->description,
+                'is_active'   => $box->is_active,
+                'user_id'     => $box->user_id,
+                'created_at'  => $box->created_at,
+                'balances'    => $balances // 🟢 Dynamic balances payload
+            ];
+        });
 
         return view('cash_boxes.index', compact('cashBoxes', 'branches', 'currencies'));
     }
@@ -30,47 +58,46 @@ class CashBoxController extends Controller
         $request->validate([
             'boxes' => 'required|array',
             'boxes.*.name' => 'required|string|max:255',
-            'boxes.*.currency_id' => 'required|exists:currency_configs,id',
-            'boxes.*.branch_id' => 'required|exists:branches,id',
-            'boxes.*.balance' => 'required|numeric',
+            'boxes.*.branch_id' => 'nullable|exists:branches,id',
             'boxes.*.description' => 'nullable|string|max:1000',
-            'boxes.*.is_active' => 'nullable', // Allow 0, 1, true, false
+            'boxes.*.is_active' => 'nullable',
+            // 🟢 Removed balance & currency_id validation
         ]);
 
         foreach ($request->boxes as $data) {
-            // FIX: Robust boolean check. Handles "1", "0", "true", "false", 1, 0 correctly.
-            // isset() alone is dangerous because isset("0") returns true.
             $isActive = filter_var($data['is_active'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-            // FIX: Check if ID exists AND is numeric. 
-            // This prevents errors if JS sends "new-123" as an ID.
             if (!empty($data['id']) && is_numeric($data['id'])) {
                 // --- UPDATE EXISTING ---
                 $box = CashBox::find($data['id']);
                 if ($box) {
                     $box->update([
                         'name'        => $data['name'],
-                        'type'        => $data['type'] ?? null,
-                        'currency_id' => $data['currency_id'],
-                        'branch_id'   => $data['branch_id'],
-                        'balance'     => $data['balance'],
+                        'branch_id'   => $data['branch_id'] ?? null,
                         'description' => $data['description'] ?? null,
                         'is_active'   => $isActive,
                     ]);
                 }
             } else {
                 // --- CREATE NEW ---
-                CashBox::create([
+                $box = CashBox::create([
                     'name'        => $data['name'],
-                    'type'        => $data['type'] ?? null,
-                    'currency_id' => $data['currency_id'],
-                    'branch_id'   => $data['branch_id'],
-                    'balance'     => $data['balance'],
+                    'branch_id'   => $data['branch_id'] ?? null,
                     'description' => $data['description'] ?? null,
                     'date_opened' => now(),
                     'user_id'     => Auth::id(),
                     'is_active'   => $isActive,
                 ]);
+            }
+
+            // 🟢 SYNC MULTI-CURRENCY BALANCES
+            if (isset($data['balances']) && is_array($data['balances'])) {
+                foreach ($data['balances'] as $currId => $amount) {
+                    CashBoxBalance::updateOrCreate(
+                        ['cash_box_id' => $box->id, 'currency_id' => $currId],
+                        ['balance' => $amount ?? 0]
+                    );
+                }
             }
         }
 
@@ -79,24 +106,58 @@ class CashBoxController extends Controller
 
     public function store(Request $request)
     {
+        // 🟢 Check if it's the AlpineJS single row submission format
+        if ($request->has('types') && is_array($request->types)) {
+            $data = $request->types[0];
+            
+            $box = CashBox::updateOrCreate(
+                ['id' => (!empty($data['id']) && is_numeric($data['id'])) ? $data['id'] : null],
+                [
+                    'name'        => $data['name'],
+                    'branch_id'   => $data['branch_id'] ?? null,
+                    'description' => $data['description'] ?? null,
+                    'is_active'   => filter_var($data['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                    'user_id'     => Auth::id(),
+                ]
+            );
+
+            // Sync Balances
+            if (isset($data['balances']) && is_array($data['balances'])) {
+                foreach ($data['balances'] as $currency_id => $amount) {
+                    CashBoxBalance::updateOrCreate(
+                        ['cash_box_id' => $box->id, 'currency_id' => $currency_id],
+                        ['balance' => $amount ?? 0]
+                    );
+                }
+            }
+
+            return back()->with('success', __('cash_box.saved_successfully'));
+        }
+
+        // --- Standard Form Fallback ---
         $request->validate([
             'name' => 'required|string|max:255',
-            'currency_id' => 'required|exists:currency_configs,id',
-            'branch_id' => 'required|exists:branches,id',
-            'balance' => 'required|numeric',
+            'balances' => 'array',
         ]);
 
-        CashBox::create([
+        $box = CashBox::create([
             'name'        => $request->name,
-            'type'        => $request->type,
-            'currency_id' => $request->currency_id,
             'branch_id'   => $request->branch_id,
-            'balance'     => $request->balance,
             'description' => $request->description,
             'date_opened' => now(),
             'user_id'     => Auth::id(),
             'is_active'   => true,
         ]);
+
+        if ($request->has('balances')) {
+            foreach ($request->balances as $currency_id => $amount) {
+                CashBoxBalance::create([
+                    'cash_box_id' => $box->id,
+                    'currency_id' => $currency_id,
+                    'balance'     => $amount ?? 0,
+                ]);
+            }
+        }
 
         return back()->with('success', __('cash_box.created'));
     }
@@ -107,7 +168,7 @@ class CashBoxController extends Controller
 
         if ($cashBox) {
             $cashBox->update(['deleted_by' => Auth::id()]);
-            $cashBox->delete();
+            $cashBox->delete(); // CashBoxBalance rows will auto-delete if DB has cascading setup
             return back()->with('success', __('cash_box.deleted'));
         }
 
@@ -125,27 +186,32 @@ class CashBoxController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'currency_id' => 'required',
-            'branch_id' => 'required',
-            'balance' => 'required|numeric',
+            'balances' => 'array',
         ]);
 
         $cashBox->update([
             'name'        => $request->name,
-            'type'        => $request->type,
-            'currency_id' => $request->currency_id,
             'branch_id'   => $request->branch_id,
-            'balance'     => $request->balance,
             'description' => $request->description,
             'is_active'   => $request->has('is_active'),
         ]);
+
+        if ($request->has('balances')) {
+            foreach ($request->balances as $currency_id => $amount) {
+                CashBoxBalance::updateOrCreate(
+                    ['cash_box_id' => $cashBox->id, 'currency_id' => $currency_id],
+                    ['balance' => $amount ?? 0]
+                );
+            }
+        }
 
         return redirect()->route('cash-boxes.index')->with('success', __('cash_box.updated'));
     }
 
     public function trash()
     {
-        $cashBoxes = CashBox::onlyTrashed()->with(['currency', 'branch', 'user'])->latest()->paginate(20);
+        // 🟢 Replaced 'currency' with 'balances'
+        $cashBoxes = CashBox::onlyTrashed()->with(['balances.currency', 'branch', 'user'])->latest()->paginate(20);
         return view('cash_boxes.trash', compact('cashBoxes'));
     }
 
@@ -173,20 +239,32 @@ class CashBoxController extends Controller
 
         $callback = function() {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['ID', 'Name', 'Type', 'Currency', 'Balance', 'Branch', 'Description', 'Status']);
+            
+            // 🟢 Build Headers dynamically based on active currencies
+            $currencies = CurrencyConfig::where('is_active', true)->get();
+            $csvHeaders = ['ID', 'Name', 'Branch', 'Description', 'Status'];
+            foreach($currencies as $curr) {
+                $csvHeaders[] = 'Balance (' . $curr->currency_type . ')';
+            }
+            fputcsv($file, $csvHeaders);
 
-            $items = CashBox::with(['currency', 'branch'])->get();
+            $items = CashBox::with(['balances', 'branch'])->get();
             foreach ($items as $item) {
-                fputcsv($file, [
+                $row = [
                     $item->id,
                     $item->name,
-                    $item->type,
-                    $item->currency->currency_type ?? 'N/A',
-                    $item->balance,
                     $item->branch->name ?? 'N/A',
                     $item->description,
                     $item->is_active ? 'Active' : 'Inactive'
-                ]);
+                ];
+                
+                // Add balance columns for each currency
+                foreach($currencies as $curr) {
+                    $balance = $item->balances->where('currency_id', $curr->id)->first();
+                    $row[] = $balance ? floatval($balance->balance) : 0;
+                }
+                
+                fputcsv($file, $row);
             }
             fclose($file);
         };
@@ -196,13 +274,16 @@ class CashBoxController extends Controller
 
     public function downloadPdf()
     {
-        $cashBoxes = CashBox::with(['currency', 'branch', 'user'])->get();
+        // 🟢 Replaced 'currency' with 'balances.currency'
+        $cashBoxes = CashBox::with(['balances.currency', 'branch', 'user'])->get();
+        $currencies = CurrencyConfig::where('is_active', true)->get();
 
         $data = [
-            'title'     => 'راپۆرتی سندوقەکان', 
-            'date'      => date('Y-m-d H:i'),
-            'user'      => Auth::user()->name,
-            'cashBoxes' => $cashBoxes
+            'title'      => 'راپۆرتی سندوقەکان', 
+            'date'       => date('Y-m-d H:i'),
+            'user'       => Auth::user()->name,
+            'cashBoxes'  => $cashBoxes,
+            'currencies' => $currencies // Pass currencies to PDF to build headers
         ];
 
         $pdf = PDF::loadView('cash_boxes.pdf', $data, [], [
@@ -211,7 +292,7 @@ class CashBoxController extends Controller
             'default_font'   => 'nrt', 
             'margin_header'  => 10,
             'margin_footer'  => 10,
-            'orientation'    => 'P', 
+            'orientation'    => 'L', // Switched to Landscape to fit multiple currencies
         ]);
 
         return $pdf->stream('cash_box_report.pdf');
@@ -259,7 +340,6 @@ class CashBoxController extends Controller
                 }
                 return back()->with('success', __('cash_box.permanently_deleted_selected'));
             } catch (QueryException $e) {
-                // Foreign Key Constraint Error (Postgres/MySQL)
                 if ($e->getCode() == "23503") {
                     return back()->with('error', __('cash_box.cannot_delete_used_bulk'));
                 }

@@ -85,4 +85,9 @@ class CashBox extends Model
     {
         return $this->belongsTo(User::class, 'deleted_by');
     }
+
+    public function balances()
+    {
+        return $this->hasMany(CashBoxBalance::class);
+    }
 }

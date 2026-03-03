@@ -40,7 +40,6 @@
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
 
-        {{-- 🟢 FIXED: Gap is removed when collapsed so the Logo stays perfectly centered --}}
         <div class="flex items-center w-full" :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center gap-0' : 'gap-3'">
             <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-indigo-600 rounded-xl shadow-lg shadow-indigo-500/40 transition-all duration-300 group-hover:scale-110">
                 <span class="text-white font-black text-lg">S</span>
@@ -78,7 +77,7 @@
             </div>
         </div>
 
-        {{-- 🟢 FIXED: DASHBOARD (Gap becomes 0 when collapsed to fix icon offset) --}}
+        {{-- DASHBOARD --}}
         <a href="{{ route('dashboard') }}" 
            @mouseenter="showTooltip($event, '{{ __('messages.dashboard') }}')" @mouseleave="hideTooltip()"
            class="flex items-center px-2 py-2 rounded-xl transition-all group relative overflow-hidden min-h-[40px]
@@ -95,7 +94,7 @@
             </span>
         </a>
 
-        {{-- 🟢 FIXED: ACCOUNTS (Gap becomes 0 when collapsed) --}}
+        {{-- ACCOUNTS --}}
         <a href="{{ route('accounts.index') }}" 
            @mouseenter="showTooltip($event, '{{ __('menu.account') }}')" @mouseleave="hideTooltip()"
            class="flex items-center px-2 py-2 rounded-xl transition-all group relative overflow-hidden min-h-[40px]
@@ -150,11 +149,18 @@
                     <a href="{{ route('accountant.receiving.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.receiving.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
                         {{ __('accountant.receiving_money') }}
                     </a>
+                    
                     <a href="{{ route('accountant.paying.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.paying.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
                         {{ __('accountant.paying_money') }}
                     </a>
+                    
                     <a href="{{ route('accountant.statement.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.statement.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
                         {{ __('accountant.statement') }}
+                    </a>
+
+                    {{-- 🟢 NEW: CASHBOX REPORT (قاسەکان) --}}
+                    <a href="{{ route('accountant.cashbox_reports.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.cashbox_reports.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                        {{ app()->getLocale() == 'ku' ? 'ڕاپۆرتی قاسەکان' : 'Cashbox Report' }}
                     </a>
                 </x-nav-group>
             </div>
@@ -219,26 +225,45 @@
             </div>
         </div>
 
-        {{-- 🟢 FIXED: USER PROFILE (Gap becomes 0 when collapsed to keep avatar perfectly centered) --}}
-        <div class="relative group/user flex items-center p-2 rounded-lg hover:bg-slate-800/50 transition-all duration-300 cursor-pointer border border-transparent hover:border-slate-700/50" 
+        {{-- USER PROFILE & HOVER POP-OUT LOGOUT --}}
+        <div x-data="{ showLogout: false }" 
+             @click.outside="showLogout = false"
+             class="relative flex items-center p-2 rounded-lg hover:bg-slate-800/50 transition-all duration-300 border border-transparent hover:border-slate-700/50 select-none" 
              :class="(isCollapsed && window.innerWidth >= 768) ? 'justify-center gap-0' : 'gap-2.5'">
-            <div class="relative w-9 h-9 flex-shrink-0">
-                <div class="w-full h-full rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold shadow-lg ring-2 ring-[#0f172a] group-hover/user:ring-slate-700 transition-all">{{ substr(Auth::user()->name, 0, 1) }}</div>
+            
+            {{-- Profile Avatar --}}
+            <div class="relative w-9 h-9 flex-shrink-0 cursor-pointer"
+                 @click="(isCollapsed && window.innerWidth >= 768) ? showLogout = !showLogout : null">
+                <div class="w-full h-full rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold shadow-lg ring-2 ring-[#0f172a] hover:ring-slate-500 transition-all">{{ substr(Auth::user()->name, 0, 1) }}</div>
                 <span class="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border-2 border-[#0f172a]"></span></span>
             </div>
             
+            {{-- Name & Role --}}
             <div class="flex-1 min-w-0 overflow-hidden transition-all duration-300 ease-in-out origin-left"
-                 :class="(isCollapsed && window.innerWidth >= 768) ? 'w-0 opacity-0 scale-x-0' : 'w-auto opacity-100 scale-x-100'">
+                 :class="(isCollapsed && window.innerWidth >= 768) ? 'w-0 opacity-0 scale-x-0 hidden' : 'w-auto opacity-100 scale-x-100 block'">
                 <p class="text-xs font-bold text-white truncate leading-tight">{{ Auth::user()->name }}</p>
                 <p class="text-[9px] text-slate-500 uppercase tracking-wider truncate">{{ Auth::user()->hasRole('super-admin') ? 'Super Admin' : 'Staff' }}</p>
             </div>
             
+            {{-- POP-OUT LOGOUT BUTTON --}}
             <form action="{{ route('logout') }}" method="POST" 
-                  class="transition-all duration-300"
-                  :class="(isCollapsed && window.innerWidth >= 768) ? 'w-0 opacity-0 hidden' : 'w-auto opacity-100 block'">
+                  class="transition-all duration-300 z-[100]"
+                  :class="(isCollapsed && window.innerWidth >= 768) 
+                        ? (showLogout 
+                            ? 'absolute top-1/2 -translate-y-1/2 ltr:left-full rtl:right-full ltr:ml-3 rtl:mr-3 opacity-100 visible scale-100 bg-[#1e293b] border border-slate-700 shadow-2xl rounded-xl p-1.5 flex pointer-events-auto' 
+                            : 'absolute top-1/2 -translate-y-1/2 ltr:left-full rtl:right-full ltr:ml-3 rtl:mr-3 opacity-0 invisible scale-95 pointer-events-none flex')
+                        : 'w-auto opacity-100 visible relative block scale-100 bg-transparent border-transparent p-0'">
                 @csrf
-                <button type="submit" class="text-slate-500 hover:text-red-400 p-1.5 hover:bg-white/5 rounded-lg transition-colors">
+                <button type="submit" 
+                        @mouseenter="!isCollapsed ? showTooltip($event, '{{ __('Log Out') ?? 'Log Out' }}') : null" 
+                        @mouseleave="hideTooltip()"
+                        class="flex items-center justify-center text-slate-500 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors"
+                        :class="(isCollapsed && window.innerWidth >= 768) ? 'p-2 gap-2 w-full' : 'p-1.5'">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    
+                    <span x-show="isCollapsed && window.innerWidth >= 768" class="text-[10px] font-black uppercase tracking-widest pr-1 ltr:pl-1 whitespace-nowrap">
+                        {{ __('Log Out') ?? 'Log Out' }}
+                    </span>
                 </button>
             </form>
         </div>

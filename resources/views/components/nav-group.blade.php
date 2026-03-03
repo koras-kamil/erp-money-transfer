@@ -12,6 +12,8 @@
             clearTimeout(this.timer);
             
             const button = this.$refs.button;
+            if (!button) return;
+
             const rect = button.getBoundingClientRect();
             const isRtl = document.documentElement.dir === 'rtl';
             
@@ -26,10 +28,15 @@
         },
         hide() {
             if(this.isMobile) return;
-            this.timer = setTimeout(() => { this.open = false }, 150);
+            this.timer = setTimeout(() => { this.open = false }, 200);
         },
         toggle() {
-            if(this.isMobile) this.open = !this.open;
+            if(this.isMobile) {
+                this.open = !this.open;
+            } else {
+                // 🟢 FIXED: If clicked on Desktop/Tablet, force it to show!
+                this.show();
+            }
         },
         handleResize() {
             this.isMobile = window.innerWidth < 768;
@@ -71,7 +78,6 @@
     </button>
 
     {{-- MOBILE CONTENT (Accordion - Inside Sidebar) --}}
-    {{-- This will now look good because Sidebar is 16rem wide on mobile --}}
     <div x-show="open && isMobile" 
          x-collapse
          class="mt-1 space-y-1 pl-3 bg-slate-800/30 rounded-lg border border-slate-700/30 overflow-hidden"
@@ -86,6 +92,7 @@
         <div x-show="open && !isMobile"
              @mouseenter="show()" 
              @mouseleave="hide()"
+             @click.outside="if(!isMobile && $refs.button && !$refs.button.contains($event.target)) open = false"
              :style="`top: ${position.top}px; left: ${position.left}px`"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 translate-y-1 scale-95"

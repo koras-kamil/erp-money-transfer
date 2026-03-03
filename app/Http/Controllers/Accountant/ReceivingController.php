@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Accountant;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\Cashbox;
+use App\Models\CashBoxBalance;
 use App\Models\CurrencyConfig;
 use App\Models\Transaction;
 use App\Models\ProfitType;
@@ -66,7 +67,8 @@ class ReceivingController extends Controller
         });
 
         $currencies = CurrencyConfig::where('is_active', true)->get();
-        $cashboxes = Cashbox::where('is_active', true)->get(); 
+        $cashboxes = Cashbox::with('balances')->where('is_active', true)->get(); 
+        
         $profitTypes = ProfitType::all(); 
         $spendingTypes = TypeSpending::all();
 
@@ -82,7 +84,7 @@ class ReceivingController extends Controller
         $validated = $request->validate([
             'account_id'         => 'required|exists:accounts,id',
             'amount'             => 'required|numeric|min:0',
-            'total'              => 'required|numeric', // 🟢 REQUIRE THE FRONTEND TOTAL
+            'total'              => 'required|numeric', 
             'currency_id'        => 'required|exists:currency_configs,id', 
             'target_currency_id' => 'nullable|exists:currency_configs,id', 
             'cashbox_id'         => 'required|exists:cash_boxes,id',
@@ -112,10 +114,9 @@ class ReceivingController extends Controller
         DB::transaction(function () use ($validated, $request) {
             
             $finalTargetCurrency = $validated['target_currency_id'] ?? $validated['currency_id'];
-            
-            // 🟢 STRICT FIX: Do NO math. Force the database to use EXACTLY what the UI calculated.
             $totalAmount = (float) $validated['total'];
 
+            // 1. Record the Receiving Transaction
             Transaction::create([
                 'user_id'            => Auth::id(),
                 'type'               => 'receive',
@@ -124,7 +125,7 @@ class ReceivingController extends Controller
                 'target_currency_id' => $finalTargetCurrency, 
                 'cashbox_id'         => $validated['cashbox_id'],
                 'amount'             => $validated['amount'],
-                'total'              => $totalAmount,  // Saves exactly "100"
+                'total'              => $totalAmount, 
                 'exchange_rate'      => $validated['exchange_rate'] ?? 1,
                 'discount'           => $validated['discount'] ?? 0,
                 'manual_date'        => $validated['manual_date'] ?? now(),
@@ -136,12 +137,7 @@ class ReceivingController extends Controller
                 'receiver_mobile'    => $validated['receiver_mobile'],
             ]);
             
-            $mainBox = Cashbox::lockForUpdate()->find($validated['cashbox_id']);
-            if ($mainBox) { 
-                $mainBox->balance += $validated['amount']; 
-                $mainBox->save(); 
-            }
-
+            // 🟢 Update Account Balance ONLY (User's debt/credit)
             $this->updateBalance(
                 $validated['account_id'], 
                 $finalTargetCurrency, 
@@ -149,7 +145,7 @@ class ReceivingController extends Controller
                 'receive'
             );
 
-            // ... (Profit logic stays exactly the same)
+            // --- PROFIT ---
             if ($request->filled('profit_amount') && $request->profit_amount > 0) {
                 $isDebt = $request->has('profit_is_debt');
                 $targetUser = $isDebt ? $request->profit_account_id : null; 
@@ -168,17 +164,12 @@ class ReceivingController extends Controller
                     'manual_date'   => $validated['manual_date'] ?? now(),
                 ]);
 
-                if (!$isDebt && $request->profit_cashbox_id) {
-                    $box = Cashbox::lockForUpdate()->find($request->profit_cashbox_id);
-                    if ($box) { $box->balance += $request->profit_amount; $box->save(); }
-                }
-
                 if ($isDebt && $targetUser) {
                     $this->updateBalance($targetUser, $request->profit_currency_id, $request->profit_amount, 'pay');
                 }
             }
 
-            // ... (Spending logic stays exactly the same)
+            // --- SPENDING ---
             if ($request->filled('spending_amount') && $request->spending_amount > 0) {
                 $isDebt = $request->has('spending_is_debt');
                 $targetUser = $isDebt ? $request->spending_account_id : null;
@@ -197,11 +188,6 @@ class ReceivingController extends Controller
                     'manual_date'   => $validated['manual_date'] ?? now(),
                 ]);
 
-                if (!$isDebt && $request->spending_cashbox_id) {
-                    $box = Cashbox::lockForUpdate()->find($request->spending_cashbox_id);
-                    if ($box) { $box->balance -= $request->spending_amount; $box->save(); }
-                }
-
                 if ($isDebt && $targetUser) {
                     $this->updateBalance($targetUser, $request->spending_currency_id, $request->spending_amount, 'pay');
                 }
@@ -219,7 +205,7 @@ class ReceivingController extends Controller
         $validated = $request->validate([
             'account_id'         => 'required|exists:accounts,id',
             'amount'             => 'required|numeric|min:0',
-            'total'              => 'required|numeric', // 🟢 REQUIRE THE FRONTEND TOTAL
+            'total'              => 'required|numeric', 
             'currency_id'        => 'required|exists:currency_configs,id',
             'target_currency_id' => 'nullable|exists:currency_configs,id', 
             'cashbox_id'         => 'required|exists:cash_boxes,id',
@@ -237,28 +223,20 @@ class ReceivingController extends Controller
         DB::transaction(function () use ($validated, $request, $transaction) {
             
             $finalTargetCurrency = $validated['target_currency_id'] ?? $validated['currency_id'];
-
-            // 1. Reverse old cashbox
-            $oldBox = Cashbox::lockForUpdate()->find($transaction->cashbox_id);
-            if ($oldBox) {
-                $oldBox->balance -= $transaction->amount;
-                $oldBox->save();
-            }
             
-            // 2. Reverse OLD Target Balance
+            // 1. Reverse OLD Target Balance for the User
             $this->updateBalance($transaction->account_id, $transaction->target_currency_id ?? $transaction->currency_id, $transaction->total, 'pay');
 
-            // 🟢 STRICT FIX: Force exact frontend total
             $newTotal = (float) $validated['total'];
             
-            // 3. Update Transaction
+            // 2. Update Transaction
             $transaction->update([
                 'account_id'         => $validated['account_id'],
                 'currency_id'        => $validated['currency_id'],
                 'target_currency_id' => $finalTargetCurrency,
                 'cashbox_id'         => $validated['cashbox_id'],
                 'amount'             => $validated['amount'],
-                'total'              => $newTotal, // Saves exactly "100"
+                'total'              => $newTotal, 
                 'exchange_rate'      => $validated['exchange_rate'] ?? 1,
                 'discount'           => $validated['discount'] ?? 0,
                 'manual_date'        => $validated['manual_date'],
@@ -270,14 +248,7 @@ class ReceivingController extends Controller
                 'receiver_mobile'    => $validated['receiver_mobile'],
             ]);
 
-            // 4. Apply New Cashbox
-            $newBox = Cashbox::lockForUpdate()->find($validated['cashbox_id']);
-            if ($newBox) {
-                $newBox->balance += $validated['amount'];
-                $newBox->save();
-            }
-
-            // 5. Apply NEW Target Balance
+            // 3. Apply NEW Target Balance for the User
             $this->updateBalance($validated['account_id'], $finalTargetCurrency, $newTotal, 'receive');
 
         });
@@ -290,19 +261,9 @@ class ReceivingController extends Controller
         DB::transaction(function () use ($id) {
             $transaction = Transaction::findOrFail($id);
             
-            $cashbox = Cashbox::lockForUpdate()->find($transaction->cashbox_id);
-            if ($cashbox) {
-                if ($transaction->type === 'spending') {
-                    $cashbox->balance += $transaction->amount;
-                } else {
-                    $cashbox->balance -= $transaction->amount; 
-                }
-                $cashbox->save();
-            }
-
+            // Revert Account Balance ONLY
             if ($transaction->account_id) {
-                $reverseAction = $transaction->type === 'receive' ? 'pay' : 'receive';
-                $this->updateBalance($transaction->account_id, $transaction->target_currency_id ?? $transaction->currency_id, $transaction->total, $reverseAction);
+                $this->updateBalance($transaction->account_id, $transaction->target_currency_id ?? $transaction->currency_id, $transaction->total, 'pay');
             }
 
             $transaction->delete();
@@ -318,16 +279,10 @@ class ReceivingController extends Controller
             DB::transaction(function() use ($ids) {
                 $transactions = Transaction::whereIn('id', $ids)->get();
                 foreach($transactions as $transaction) {
-                    
-                    $cashbox = Cashbox::lockForUpdate()->find($transaction->cashbox_id);
-                    if ($cashbox) {
-                        $cashbox->balance += ($transaction->type === 'spending') ? $transaction->amount : -$transaction->amount;
-                        $cashbox->save();
-                    }
 
+                    // Reverse Account Balance ONLY
                     if ($transaction->account_id) {
-                        $reverseAction = $transaction->type === 'receive' ? 'pay' : 'receive';
-                        $this->updateBalance($transaction->account_id, $transaction->target_currency_id ?? $transaction->currency_id, $transaction->total, $reverseAction);
+                        $this->updateBalance($transaction->account_id, $transaction->target_currency_id ?? $transaction->currency_id, $transaction->total, 'pay');
                     }
 
                     $transaction->delete();
@@ -338,11 +293,74 @@ class ReceivingController extends Controller
         return redirect()->back()->with('error', __('No items selected.'));
     }
 
+    // ==========================================
+    // 🟢 TRASH / RESTORE / FORCE DELETE METHODS
+    // ==========================================
+
     public function trash()
     {
         $transactions = Transaction::onlyTrashed()->with(['account', 'user'])->paginate(20);
         return view('accountant.receiving.trash', compact('transactions'));
     }
+
+    public function restore($id)
+    {
+        DB::transaction(function () use ($id) {
+            $transaction = Transaction::onlyTrashed()->findOrFail($id);
+
+            // Re-apply Account Balance ONLY
+            if ($transaction->account_id) {
+                $this->updateBalance($transaction->account_id, $transaction->target_currency_id ?? $transaction->currency_id, $transaction->total, 'receive');
+            }
+
+            $transaction->restore();
+        });
+
+        return redirect()->back()->with('success', app()->getLocale() == 'ku' ? 'بە سەرکەوتوویی گەڕێندرایەوە.' : 'Transaction restored successfully.');
+    }
+
+    public function forceDelete($id)
+    {
+        $transaction = Transaction::onlyTrashed()->findOrFail($id);
+        $transaction->forceDelete();
+        
+        return redirect()->back()->with('success', app()->getLocale() == 'ku' ? 'بە یەکجاری سڕدرایەوە.' : 'Transaction permanently deleted.');
+    }
+
+    public function bulkRestore(Request $request)
+    {
+        $ids = json_decode($request->ids, true);
+        if (!empty($ids)) {
+            DB::transaction(function() use ($ids) {
+                $transactions = Transaction::onlyTrashed()->whereIn('id', $ids)->get();
+                foreach($transactions as $transaction) {
+
+                    // Re-apply Account Balance ONLY
+                    if ($transaction->account_id) {
+                        $this->updateBalance($transaction->account_id, $transaction->target_currency_id ?? $transaction->currency_id, $transaction->total, 'receive');
+                    }
+
+                    $transaction->restore();
+                }
+            });
+            return redirect()->back()->with('success', app()->getLocale() == 'ku' ? 'زانیارییە دیاریکراوەکان گەڕێندرانەوە.' : 'Selected transactions restored successfully.');
+        }
+        return redirect()->back()->with('error', __('No items selected.'));
+    }
+
+    public function bulkForceDelete(Request $request)
+    {
+        $ids = json_decode($request->ids, true);
+        if (!empty($ids)) {
+            Transaction::onlyTrashed()->whereIn('id', $ids)->forceDelete();
+            return redirect()->back()->with('success', app()->getLocale() == 'ku' ? 'زانیارییە دیاریکراوەکان بە یەکجاری سڕدرانەوە.' : 'Selected transactions permanently deleted.');
+        }
+        return redirect()->back()->with('error', __('No items selected.'));
+    }
+
+    // ==========================================
+    // HELPERS
+    // ==========================================
 
     private function cleanInputs(Request $request)
     {

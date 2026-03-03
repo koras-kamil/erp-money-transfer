@@ -9,7 +9,7 @@
     
     <div class="flex h-screen w-full items-center justify-center p-2">
         <div class="relative w-full max-w-2xl transform overflow-hidden rounded-xl bg-white shadow-2xl transition-all border border-slate-100 flex flex-col max-h-[95vh]">
-            
+             
             {{-- HEADER --}}
             <div class="bg-slate-50 px-4 py-2 flex justify-between items-center border-b border-slate-100 flex-shrink-0">
                 <div class="flex items-center gap-2">
@@ -86,7 +86,7 @@
                                         </div>
                                         <span class="text-slate-400 font-mono text-xs flex-shrink-0 bg-slate-50 px-1.5 py-0.5 rounded" x-text="acc.code"></span>
                                     </div>
-                                 </template>
+                                </template>
                             </div>
                         </div>
                         
@@ -174,7 +174,8 @@
                         <div class="col-span-12 p-1 flex items-center"><label class="w-28 text-xs font-bold text-indigo-700 uppercase text-center">{!! addslashes(__('accountant.cashbox')) !!}</label>
                             <select name="cashbox_id" x-model="form.cashbox_id" class="flex-1 h-9 text-base font-bold border-0 bg-white focus:ring-0 text-center text-indigo-800 cursor-pointer">
                                 <option value="" disabled selected>-- {!! addslashes(__('accountant.select')) !!} --</option>
-                                <template x-for="box in mainFilteredCashboxes" :key="box.id"><option :value="box.id" x-text="box.name"></option></template>
+                                {{-- 🟢 FIX: NOW SHOWS ALL CASHBOXES --}}
+                                <template x-for="box in cashboxes" :key="box.id"><option :value="box.id" x-text="box.name"></option></template>
                             </select>
                         </div>
                     </div>
@@ -225,7 +226,8 @@
                                 <select name="profit_cashbox_id" x-model="form.profit_cashbox_id" :disabled="form.profit_is_debt" :class="form.profit_is_debt ? 'bg-slate-100 text-slate-400' : 'bg-white text-emerald-700'" class="w-full h-9 text-xs font-bold border-0 text-center cursor-pointer text-emerald-700">
                                     <option value="" x-show="form.profit_is_debt" disabled>{!! addslashes(__('accountant.disabled')) !!}</option>
                                     <option value="" x-show="!form.profit_is_debt" selected>-- {!! addslashes(__('accountant.select')) !!} --</option>
-                                    <template x-for="box in profitFilteredCashboxes" :key="box.id"><option :value="box.id" x-text="box.name"></option></template>
+                                    {{-- 🟢 FIX: NOW SHOWS ALL CASHBOXES --}}
+                                    <template x-for="box in cashboxes" :key="box.id"><option :value="box.id" x-text="box.name"></option></template>
                                 </select>
                             </div>
                         </div>
@@ -257,7 +259,8 @@
                                 <select name="spending_cashbox_id" x-model="form.spending_cashbox_id" :disabled="form.spending_is_debt" :class="form.spending_is_debt ? 'bg-slate-100 text-slate-400' : 'bg-white text-rose-700'" class="w-full h-9 text-xs font-bold border-0 text-center cursor-pointer text-rose-700">
                                     <option value="" x-show="form.spending_is_debt" disabled>{!! addslashes(__('accountant.disabled')) !!}</option>
                                     <option value="" x-show="!form.spending_is_debt" selected>-- {!! addslashes(__('accountant.select')) !!} --</option>
-                                    <template x-for="box in spendingFilteredCashboxes" :key="box.id"><option :value="box.id" x-text="box.name"></option></template>
+                                    {{-- 🟢 FIX: NOW SHOWS ALL CASHBOXES --}}
+                                    <template x-for="box in cashboxes" :key="box.id"><option :value="box.id" x-text="box.name"></option></template>
                                 </select>
                             </div>
                         </div>
@@ -317,10 +320,6 @@
                 userInfoVisible: { code: true, city: true, neighborhood: true, mobile: true },
                 isTotalLocked: true, target_currency_id: null,
 
-                mainFilteredCashboxes: [],
-                profitFilteredCashboxes: [],
-                spendingFilteredCashboxes: [],
-
                 form: {
                     amount: '', discount: '', currency_id: '', cashbox_id: '', rate: 1, total: 0, 
                     manual_date: new Date().toISOString().split('T')[0], note: '', statement_id: '', 
@@ -347,7 +346,6 @@
                         
                         // 🔥 Run math instantly when Edit Modal opens
                         this.$nextTick(() => { this.calculateTotal(); });
-                        
                     } else {
                         this.isEditing = false;
                         this.form = { amount: '', discount: '', currency_id: '', cashbox_id: '', rate: 1, total: 0, profit_is_debt: false, spending_is_debt: false, manual_date: new Date().toISOString().split('T')[0], note: '', statement_id: '' };
@@ -355,8 +353,6 @@
                         this.profitAccount = null; this.profitSearchQuery = '';
                         this.spendingAccount = null; this.spendingSearchQuery = '';
                         if (this.currencies.length > 0) this.setCurrency(this.currencies[0].id);
-                        this.profitFilteredCashboxes = [];
-                        this.spendingFilteredCashboxes = [];
                     }
                 },
                 closeModal() { this.showModal = false; },
@@ -376,13 +372,12 @@
                     const q = this.spendingSearchQuery.toLowerCase();
                     return this.accounts.filter(a => a.name.toLowerCase().includes(q) || String(a.code).toLowerCase().includes(q));
                 },
-            selectAccount(acc) { 
+                selectAccount(acc) { 
                     this.selectedAccount = acc;
                     this.searchQuery = acc.name; 
                     this.searchOpen = false;
                     
                     let supported = acc.supported_currencies || [];
-                    
                     // 🟢 AUTO-SYNC: If the form is on a currency the user supports, make the target match!
                     if (this.form.currency_id && (supported.includes(this.form.currency_id) || supported.includes(String(this.form.currency_id)))) {
                         this.target_currency_id = this.form.currency_id;
@@ -409,12 +404,12 @@
                         }
                     }
                     
-                    this.updateRate(); 
+                    this.updateRate();
                 },
                 
+                // 🟢 NO MORE FILTERING!
                 updateMainCashboxes() {
-                    this.mainFilteredCashboxes = this.cashboxes.filter(b => b.currency_id == this.form.currency_id);
-                    if(this.mainFilteredCashboxes.length > 0) this.form.cashbox_id = this.mainFilteredCashboxes[0].id;
+                    if(this.cashboxes.length > 0 && !this.form.cashbox_id) this.form.cashbox_id = this.cashboxes[0].id;
                 },
 
                 autoSelectProfitCurrency() {
@@ -424,13 +419,9 @@
                         this.updateProfitCashboxes(); 
                     }
                 },
+                // 🟢 NO MORE FILTERING!
                 updateProfitCashboxes() {
-                    if (!this.form.profit_currency_id) {
-                        this.profitFilteredCashboxes = [];
-                    } else {
-                        this.profitFilteredCashboxes = this.cashboxes.filter(b => b.currency_id == this.form.profit_currency_id);
-                    }
-                    if(this.profitFilteredCashboxes.length > 0) this.form.profit_cashbox_id = this.profitFilteredCashboxes[0].id;
+                    if(this.cashboxes.length > 0 && !this.form.profit_cashbox_id) this.form.profit_cashbox_id = this.cashboxes[0].id;
                 },
 
                 autoSelectSpendingCurrency() {
@@ -440,13 +431,9 @@
                         this.updateSpendingCashboxes(); 
                     }
                 },
+                // 🟢 NO MORE FILTERING!
                 updateSpendingCashboxes() {
-                    if (!this.form.spending_currency_id) {
-                        this.spendingFilteredCashboxes = [];
-                    } else {
-                        this.spendingFilteredCashboxes = this.cashboxes.filter(b => b.currency_id == this.form.spending_currency_id);
-                    }
-                    if(this.spendingFilteredCashboxes.length > 0) this.form.spending_cashbox_id = this.spendingFilteredCashboxes[0].id;
+                    if(this.cashboxes.length > 0 && !this.form.spending_cashbox_id) this.form.spending_cashbox_id = this.cashboxes[0].id;
                 },
 
                 get availableCurrencies() { 
@@ -474,7 +461,6 @@
                     
                     let sPrice = parseFloat(s.price_single || 1);
                     let tPrice = parseFloat(t.price_single || 1);
-                    
                     // If target currency is WEAKER (e.g. converting 1 USD to 60,000 IRR) -> MULTIPLY
                     if (tPrice > sPrice) {
                         return num * rate;
@@ -491,7 +477,8 @@
                 },
 
                 updateRate() {
-                    if (!this.target_currency_id) { this.form.rate = 1; this.calculateTotal(); return; }
+                    if (!this.target_currency_id) { this.form.rate = 1;
+                        this.calculateTotal(); return; }
                     
                     if (this.form.currency_id == this.target_currency_id) {
                         this.isTotalLocked = true;
@@ -507,12 +494,11 @@
                         let sRate = parseFloat(s.price_single || 1);
                         let tRate = parseFloat(t.price_single || 1);
                         if (sRate === 0) sRate = 1; if (tRate === 0) tRate = 1;
-                        
                         // Ensures Rate is always displayed as a Whole Number multiplier 
                         if (tRate > sRate) { 
-                            this.form.rate = parseFloat((tRate / sRate).toFixed(6)); 
+                            this.form.rate = parseFloat((tRate / sRate).toFixed(6));
                         } else if (tRate < sRate) { 
-                            this.form.rate = parseFloat((sRate / tRate).toFixed(6)); 
+                            this.form.rate = parseFloat((sRate / tRate).toFixed(6));
                         } else {
                             this.form.rate = 1;
                         }
@@ -527,10 +513,10 @@
                     const discount = this.parseNumber(this.form.discount); 
                     
                     // PLUS (+) FOR PAYING FORM
-                    const baseTotal = amt + discount; 
-                    
+                    const baseTotal = amt + discount;
                     if (!this.form.currency_id || !this.target_currency_id || baseTotal <= 0) { 
-                        this.form.total = ''; return; 
+                        this.form.total = '';
+                        return; 
                     }
 
                     if (this.form.currency_id == this.target_currency_id) {
@@ -548,21 +534,19 @@
                     const total = this.parseNumber(this.form.total); 
                     const amt = this.parseNumber(this.form.amount);
                     const discount = this.parseNumber(this.form.discount);
-                    
                     // PLUS (+) FOR PAYING FORM
-                    const baseTotal = amt + discount; 
-                    
-                    if (baseTotal <= 0 || total === 0) { this.form.rate = 1; return; } 
+                    const baseTotal = amt + discount;
+                    if (baseTotal <= 0 || total === 0) { this.form.rate = 1; return;
+                    } 
                     
                     const s = this.currencies.find(c => c.id == this.form.currency_id);
                     const t = this.currencies.find(c => c.id == this.target_currency_id); 
                     let sPrice = s ? parseFloat(s.price_single || 1) : 1;
                     let tPrice = t ? parseFloat(t.price_single || 1) : 1;
-
                     if (tPrice > sPrice) { 
-                        this.form.rate = parseFloat((total / baseTotal).toFixed(6)); 
+                        this.form.rate = parseFloat((total / baseTotal).toFixed(6));
                     } else if (tPrice < sPrice) { 
-                        this.form.rate = parseFloat((baseTotal / total).toFixed(6)); 
+                        this.form.rate = parseFloat((baseTotal / total).toFixed(6));
                     } else {
                         if (total > baseTotal) {
                             this.form.rate = parseFloat((total / baseTotal).toFixed(6));

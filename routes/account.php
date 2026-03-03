@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ZoneController;
+use App\Http\Controllers\Accountant\CashboxReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,3 +46,5 @@ Route::controller(ZoneController::class)->prefix('zones')->name('zones.')->group
     Route::post('/neighborhoods', 'storeNeighborhoods')->name('neighborhoods.store');
     Route::delete('/neighborhoods/{id}', 'destroyNeighborhood')->name('neighborhoods.destroy');
 });
+
+
