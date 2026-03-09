@@ -8,20 +8,35 @@
 
     <div x-data="reportManager()" class="py-6 w-full min-w-0 bg-white min-h-screen" dir="{{ app()->getLocale() == 'ku' ? 'rtl' : 'ltr' }}">
         
-        {{-- TOOLBAR --}}
+        {{-- TOOLBAR WITH TABS --}}
         <div class="mx-4 mb-6 flex flex-col md:flex-row justify-between items-center gap-4 no-print">
-            <div class="flex items-center gap-3">
-                <div class="bg-slate-100 p-1 rounded-lg flex items-center shadow-inner">
-                    <span class="px-5 py-2 text-sm font-bold rounded-md bg-white text-indigo-600 shadow-sm transition">
+            <div class="flex flex-wrap items-center gap-3">
+                
+                {{-- 🟢 NAVIGATION TABS --}}
+                <div class="bg-slate-100 p-1 rounded-lg flex items-center shadow-inner gap-1">
+                    {{-- Active Tab (Current Page) --}}
+                    <span class="px-5 py-2 text-sm font-bold rounded-md bg-white text-indigo-600 shadow-sm transition cursor-default">
                         {{ app()->getLocale() == 'ku' ? 'ڕاپۆرتی قاصەکان (ڕاستەوخۆ)' : 'Live Cashbox Report' }}
                     </span>
+                    {{-- Inactive Tab (Link to Transfers) --}}
+                    <a href="{{ route('accountant.transfers.index') }}" class="px-5 py-2 text-sm font-bold rounded-md text-slate-500 hover:text-indigo-600 hover:bg-slate-200/50 transition">
+                        {{ app()->getLocale() == 'ku' ? 'مێژووی گواستنەوەکان' : 'Transfers History' }}
+                    </a>
                 </div>
+
+                {{-- Base Currency Badge --}}
                 <span class="text-xs text-slate-400 font-mono bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
                     {{ app()->getLocale() == 'ku' ? 'پارەی سەرەکی' : 'Base Currency' }}: <span class="font-bold text-indigo-500">{{ $baseCurrency->currency_type ?? 'N/A' }}</span>
                 </span>
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
+                {{-- 🟢 QUICK "NEW TRANSFER" BUTTON --}}
+                <a href="{{ route('accountant.transfers.create') }}" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow-sm transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    {{ app()->getLocale() == 'ku' ? 'گواستنەوەی نوێ' : 'New Transfer' }}
+                </a>
+
                 <button onclick="window.print()" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-bold shadow-sm hover:bg-slate-50 hover:text-indigo-600 transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                     {{ app()->getLocale() == 'ku' ? 'چاپکردن' : 'Print' }}
@@ -31,7 +46,6 @@
 
         {{-- TABLE CONTAINER --}}
         <div class="relative w-full overflow-x-auto table-container bg-white shadow-sm rounded-lg border border-slate-200 mx-4 pb-10">
-            {{-- 🟢 FIXED: Removed rtl:text-right and enforced strictly text-center on the entire table --}}
             <table class="w-full text-sm text-center text-slate-500 whitespace-nowrap border-separate border-spacing-0">
                 
                 {{-- HEADERS --}}

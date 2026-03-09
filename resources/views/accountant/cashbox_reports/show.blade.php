@@ -33,36 +33,36 @@
                 </div>
                 <div class="flex flex-col">
                     <h2 class="text-lg font-black text-slate-800 tracking-tight">
-                        {{ app()->getLocale() == 'ku' ? 'جوڵەی قاصە' : 'Cashbox Statement' }} : <span class="text-indigo-600">{{ $cashbox->name }}</span>
+                        {{ __('cashboxreport.cashbox_statement') }} : <span class="text-indigo-600">{{ $cashbox->name }}</span>
                     </h2>
-                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{{ app()->getLocale() == 'ku' ? 'لق' : 'Branch' }}: {{ $cashbox->branch->name ?? '-' }}</p>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{{ __('cashboxreport.branch') }}: {{ $cashbox->branch->name ?? '-' }}</p>
                 </div>
             </div>
 
             <div class="flex flex-wrap items-center gap-2 xl:gap-3 w-full xl:w-auto justify-end">
                 
-                {{-- 🟢 COMPACT DATE FILTER (Moved next to buttons) --}}
+                {{-- 🟢 COMPACT DATE FILTER --}}
                 <form method="GET" action="{{ route('accountant.cashbox_reports.show', $cashbox->id) }}" class="flex flex-wrap items-center gap-1.5 ltr:mr-2 rtl:ml-2 border-r border-slate-200 ltr:pr-3 rtl:pl-3">
                     @if(request('currency_id'))
                         <input type="hidden" name="currency_id" value="{{ request('currency_id') }}">
                     @endif
                     
                     <div class="flex items-center bg-slate-50 border border-slate-200 rounded-lg px-2 h-9 focus-within:ring-1 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all">
-                        <span class="text-[10px] font-bold text-slate-400 ltr:mr-1 rtl:ml-1">{{ app()->getLocale() == 'ku' ? 'لە' : 'From' }}:</span>
+                        <span class="text-[10px] font-bold text-slate-400 ltr:mr-1 rtl:ml-1">{{ __('cashboxreport.from') }}:</span>
                         <input type="date" name="start_date" value="{{ request('start_date') }}" class="bg-transparent border-none text-xs p-0 h-full w-24 font-bold text-slate-700 focus:ring-0 cursor-pointer">
                     </div>
                     
                     <div class="flex items-center bg-slate-50 border border-slate-200 rounded-lg px-2 h-9 focus-within:ring-1 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all">
-                        <span class="text-[10px] font-bold text-slate-400 ltr:mr-1 rtl:ml-1">{{ app()->getLocale() == 'ku' ? 'تا' : 'To' }}:</span>
+                        <span class="text-[10px] font-bold text-slate-400 ltr:mr-1 rtl:ml-1">{{ __('cashboxreport.to') }}:</span>
                         <input type="date" name="end_date" value="{{ request('end_date') }}" class="bg-transparent border-none text-xs p-0 h-full w-24 font-bold text-slate-700 focus:ring-0 cursor-pointer">
                     </div>
 
-                    <button type="submit" class="h-9 w-9 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm transition-all flex items-center justify-center" title="{{ app()->getLocale() == 'ku' ? 'فلتەرکردن' : 'Filter' }}">
+                    <button type="submit" class="h-9 w-9 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm transition-all flex items-center justify-center" title="{{ __('cashboxreport.filter') }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
                     </button>
 
                     @if(request('start_date') || request('end_date'))
-                        <a href="?currency_id={{ request('currency_id') }}" class="h-9 w-9 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg shadow-sm transition-colors flex items-center justify-center" title="{{ app()->getLocale() == 'ku' ? 'لابردنی بەروار' : 'Clear Dates' }}">
+                        <a href="?currency_id={{ request('currency_id') }}" class="h-9 w-9 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg shadow-sm transition-colors flex items-center justify-center" title="{{ __('cashboxreport.clear_dates') }}">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                         </a>
                     @endif
@@ -72,10 +72,10 @@
                 <div x-data="{ open: false }" class="relative">
                     <button @click="open = !open" @click.outside="open = false" class="h-9 px-3 flex items-center gap-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 shadow-sm transition-all border border-slate-200">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
-                        <span class="text-xs font-bold hidden sm:block">{{ app()->getLocale() == 'ku' ? 'ستوونەکان' : 'Columns' }}</span>
+                        <span class="text-xs font-bold hidden sm:block">{{ __('cashboxreport.columns') }}</span>
                     </button>
                     <div x-show="open" x-transition x-cloak class="absolute top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 p-2 ltr:right-0 rtl:left-0 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                        <div class="text-[10px] font-black text-slate-400 uppercase px-2 py-1 mb-1 border-b border-slate-100">{{ app()->getLocale() == 'ku' ? 'ستوونەکان' : 'Columns' }}</div>
+                        <div class="text-[10px] font-black text-slate-400 uppercase px-2 py-1 mb-1 border-b border-slate-100">{{ __('cashboxreport.columns') }}</div>
                         <template x-for="col in columns" :key="col.field">
                             <label class="flex items-center justify-between px-2 py-1.5 hover:bg-slate-50 rounded-lg cursor-pointer transition group">
                                 <span class="text-[11px] text-slate-700 font-bold group-hover:text-indigo-600" x-text="col.label"></span>
@@ -87,26 +87,26 @@
 
                 <a href="{{ route('accountant.cashbox_reports.index') }}" class="flex items-center gap-1.5 px-3 h-9 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold shadow-sm hover:bg-slate-50 hover:text-indigo-600 transition">
                     <svg class="w-3.5 h-3.5 rtl:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                    <span class="hidden sm:block">{{ app()->getLocale() == 'ku' ? 'گەڕانەوە' : 'Back' }}</span>
+                    <span class="hidden sm:block">{{ __('cashboxreport.back') }}</span>
                 </a>
                 
                 <button onclick="window.print()" class="flex items-center gap-1.5 px-3 h-9 bg-slate-800 text-white rounded-lg text-xs font-bold shadow-sm hover:bg-slate-700 transition">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                    <span class="hidden sm:block">{{ app()->getLocale() == 'ku' ? 'چاپ' : 'Print' }}</span>
+                    <span class="hidden sm:block">{{ __('cashboxreport.print') }}</span>
                 </button>
             </div>
         </div>
 
-        {{-- 🟢 SLIGHTLY LARGER BALANCE CARDS (MAWE) --}}
+        {{-- 🟢 BALANCE CARDS (MAWE) --}}
         <div class="mx-4 mb-4 flex flex-wrap items-center gap-3 no-print">
             
             {{-- "All Currencies" Pill --}}
             <a href="?currency_id=&start_date={{ request('start_date') }}&end_date={{ request('end_date') }}" class="group px-4 py-2.5 rounded-xl border transition-all duration-300 shadow-sm flex items-center gap-2
                 {{ !request('currency_id') ? 'bg-indigo-600 border-indigo-700 shadow-indigo-500/30 text-white' : 'bg-white border-slate-200 hover:border-indigo-300 hover:bg-slate-50' }}">
-                <span class="text-xs font-black uppercase tracking-widest opacity-90 {{ !request('currency_id') ? 'text-indigo-50' : 'text-slate-500' }}">{{ app()->getLocale() == 'ku' ? 'گشتی' : 'All' }}</span>
+                <span class="text-xs font-black uppercase tracking-widest opacity-90 {{ !request('currency_id') ? 'text-indigo-50' : 'text-slate-500' }}">{{ __('cashboxreport.all') }}</span>
             </a>
 
-            {{-- Dynamic Currency Pills (Preserves Date Filter) --}}
+            {{-- Dynamic Currency Pills --}}
             @foreach($liveBalances as $bal)
                 <a href="?currency_id={{ $bal->currency_id }}&start_date={{ request('start_date') }}&end_date={{ request('end_date') }}" class="group px-4 py-2.5 rounded-xl border transition-all duration-300 shadow-sm flex items-center gap-2
                     {{ request('currency_id') == $bal->currency_id ? 'bg-indigo-50 border-indigo-400 ring-1 ring-indigo-400' : 'bg-white border-slate-200 hover:border-indigo-300 hover:bg-slate-50' }}">
@@ -181,8 +181,8 @@
                                             <template x-if="col.field === 'type'">
                                                 <span class="text-[10px] px-2 py-1 rounded-md font-bold uppercase tracking-widest border shadow-sm"
                                                       :class="{
-                                                          'bg-emerald-50 text-emerald-600 border-emerald-200': trx.type === 'receive',
-                                                          'bg-rose-50 text-rose-600 border-rose-200': trx.type === 'pay',
+                                                          'bg-emerald-50 text-emerald-600 border-emerald-200': trx.type === 'receive' || trx.type === 'transfer_in',
+                                                          'bg-rose-50 text-rose-600 border-rose-200': trx.type === 'pay' || trx.type === 'transfer_out',
                                                           'bg-indigo-50 text-indigo-600 border-indigo-200': trx.type === 'profit',
                                                           'bg-orange-50 text-orange-600 border-orange-200': trx.type === 'spending'
                                                       }"
@@ -192,12 +192,12 @@
                                             
                                             {{-- Explanation --}}
                                             <template x-if="col.field === 'explanation'">
-                                                <span class="text-xs font-bold text-slate-700 max-w-[200px] truncate" title="trx.explanation" x-text="trx.explanation"></span>
+                                                <span class="text-xs font-bold text-slate-700 max-w-[200px] truncate" :title="trx.explanation" x-text="trx.explanation"></span>
                                             </template>
 
-                                            {{-- Note --}}
+                                            {{-- Note 🟢 CHANGED TO DISPLAY PURE NOTE ONLY --}}
                                             <template x-if="col.field === 'note'">
-                                                <span class="text-[11px] text-slate-400 max-w-[150px] truncate" x-text="trx.note || '-'"></span>
+                                                <span class="text-[11px] text-slate-400 max-w-[150px] truncate" :title="trx.display_note" x-text="trx.display_note"></span>
                                             </template>
                                             
                                             {{-- Currency --}}
@@ -247,7 +247,7 @@
                                     <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-3">
                                         <svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                     </div>
-                                    <span class="text-sm font-bold">{{ app()->getLocale() == 'ku' ? 'هیچ زانیارییەک نەدۆزرایەوە' : 'No records found' }}</span>
+                                    <span class="text-sm font-bold">{{ __('cashboxreport.no_records_found') }}</span>
                                 </div>
                             </td>
                         </tr>
@@ -261,8 +261,7 @@
             {{ $transactions->withQueryString()->links() }}
         </div>
     </div>
-
-    <script>
+<script>
         function ledgerManager() {
             return {
                 transactions: @json($transactions->items() ?? []),
@@ -274,19 +273,34 @@
                 sortAsc: true,
                 openFilter: null,
                 
+                translations: {
+                    moneyIn: '{{ __("cashboxreport.money_in") }}',
+                    moneyOut: '{{ __("cashboxreport.money_out") }}',
+                    profitAdded: '{{ __("cashboxreport.profit_added") }}',
+                    spendingDeducted: '{{ __("cashboxreport.spending_deducted") }}',
+                    transferIn: '{{ __("cashboxreport.transfer_in") }}',
+                    transferOut: '{{ __("cashboxreport.transfer_out") }}',
+                    receive: '{{ __("cashboxreport.receive") }}',
+                    pay: '{{ __("cashboxreport.pay") }}',
+                    profit: '{{ __("cashboxreport.profit") }}',
+                    spending: '{{ __("cashboxreport.spending") }}',
+                    transferToBox: '{{ __("cashboxreport.transfer_to_box") }}', 
+                    transferFromBox: '{{ __("cashboxreport.transfer_from_box") }}'
+                },
+                
                 columns: [
                     { field: 'id', label: '# ID', visible: true, width: 80 },
-                    { field: 'manual_date', label: '{{ app()->getLocale() == "ku" ? "بەروار" : "Date" }}', visible: true, width: 140 },
-                    { field: 'user_id', label: '{{ app()->getLocale() == "ku" ? "بەکارهێنەر" : "User" }}', visible: true, width: 100 },
-                    { field: 'statement_id', label: '{{ app()->getLocale() == "ku" ? "ژمارەی بەڵگە" : "Invoice ID" }}', visible: true, width: 100 },
-                    { field: 'type', label: '{{ app()->getLocale() == "ku" ? "جۆر" : "Type" }}', visible: true, width: 100 },
-                    { field: 'explanation', label: '{{ app()->getLocale() == "ku" ? "ڕوونکردنەوە" : "Explanation" }}', visible: true, width: 180 },
-                    { field: 'note', label: '{{ app()->getLocale() == "ku" ? "تێبینی" : "Note" }}', visible: true, width: 140 },
-                    { field: 'currency_id', label: '{{ app()->getLocale() == "ku" ? "جۆری پارە" : "Currency" }}', visible: true, width: 100 },
-                    { field: 'amount_in', label: '{{ app()->getLocale() == "ku" ? "هاتوو (+)" : "In (+)" }}', visible: true, width: 120 },
-                    { field: 'amount_out', label: '{{ app()->getLocale() == "ku" ? "دەرچوو (-)" : "Out (-)" }}', visible: true, width: 120 },
-                    { field: 'exchange_rate', label: '{{ app()->getLocale() == "ku" ? "نرخ" : "Ex. Rate" }}', visible: true, width: 90 },
-                    { field: 'running_balance', label: '{{ app()->getLocale() == "ku" ? "ماوەی جوڵە" : "Balance" }}', visible: true, width: 140 },
+                    { field: 'manual_date', label: '{{ __("cashboxreport.date") }}', visible: true, width: 140 },
+                    { field: 'user_id', label: '{{ __("cashboxreport.user") }}', visible: true, width: 100 },
+                    { field: 'statement_id', label: '{{ __("cashboxreport.invoice_id") }}', visible: true, width: 100 },
+                    { field: 'type', label: '{{ __("cashboxreport.type") }}', visible: true, width: 100 },
+                    { field: 'explanation', label: '{{ __("cashboxreport.explanation") }}', visible: true, width: 180 },
+                    { field: 'note', label: '{{ __("cashboxreport.note") }}', visible: true, width: 140 },
+                    { field: 'currency_id', label: '{{ __("cashboxreport.currency") }}', visible: true, width: 100 },
+                    { field: 'amount_in', label: '{{ __("cashboxreport.amount_in") }}', visible: true, width: 120 },
+                    { field: 'amount_out', label: '{{ __("cashboxreport.amount_out") }}', visible: true, width: 120 },
+                    { field: 'exchange_rate', label: '{{ __("cashboxreport.ex_rate") }}', visible: true, width: 90 },
+                    { field: 'running_balance', label: '{{ __("cashboxreport.balance") }}', visible: true, width: 140 },
                 ],
 
                 init() { 
@@ -294,31 +308,9 @@
                 },
 
                 dragStart(e, index) { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', index); e.target.classList.add('dragging'); },
-                drop(e, targetIndex) { 
-                    e.target.classList.remove('dragging');
-                    const draggedIndex = e.dataTransfer.getData('text/plain'); 
-                    if (draggedIndex === '') return; 
-                    const draggedCol = this.columns[draggedIndex]; 
-                    this.columns.splice(draggedIndex, 1); 
-                    this.columns.splice(targetIndex, 0, draggedCol);
-                },
-
-                initResize(e, index) { 
-                    const startX = e.clientX;
-                    const startWidth = this.columns[index].width; 
-                    const onMouseMove = (moveEvent) => { 
-                        const isRtl = document.dir === 'rtl';
-                        const diff = moveEvent.clientX - startX;
-                        this.columns[index].width = Math.max(80, startWidth + (isRtl ? -diff : diff)); 
-                    };
-                    const onMouseUp = () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); }; 
-                    window.addEventListener('mousemove', onMouseMove); 
-                    window.addEventListener('mouseup', onMouseUp);
-                },
-
-                sortBy(field) { 
-                    if (this.sortCol === field) this.sortAsc = !this.sortAsc; else { this.sortCol = field; this.sortAsc = true; } 
-                },
+                drop(e, targetIndex) { e.target.classList.remove('dragging'); const draggedIndex = e.dataTransfer.getData('text/plain'); if (draggedIndex === '') return; const draggedCol = this.columns[draggedIndex]; this.columns.splice(draggedIndex, 1); this.columns.splice(targetIndex, 0, draggedCol); },
+                initResize(e, index) { const startX = e.clientX; const startWidth = this.columns[index].width; const onMouseMove = (moveEvent) => { const isRtl = document.dir === 'rtl'; const diff = moveEvent.clientX - startX; this.columns[index].width = Math.max(80, startWidth + (isRtl ? -diff : diff)); }; const onMouseUp = () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); }; window.addEventListener('mousemove', onMouseMove); window.addEventListener('mouseup', onMouseUp); },
+                sortBy(field) { if (this.sortCol === field) this.sortAsc = !this.sortAsc; else { this.sortCol = field; this.sortAsc = true; } },
 
                 get processedTransactions() {
                     let runningTotals = {};
@@ -335,9 +327,9 @@
                     data.forEach(trx => {
                         let cashAmount = parseFloat(trx.amount);
 
-                        if (trx.type === 'receive' || trx.type === 'profit') {
+                        if (trx.type === 'receive' || trx.type === 'profit' || trx.type === 'transfer_in') {
                             runningTotals[trx.currency_id] += cashAmount;
-                        } else {
+                        } else if (trx.type === 'pay' || trx.type === 'spending' || trx.type === 'transfer_out') {
                             runningTotals[trx.currency_id] -= cashAmount;
                         }
                         
@@ -345,24 +337,47 @@
                     });
 
                     return data.map(trx => {
-                        let isKu = '{{ app()->getLocale() }}' === 'ku';
                         let typeName = this.getTypeBadge(trx.type);
                         let accName = trx.account ? ` (${trx.account.name})` : '';
                         
                         let explanation = '';
-                        if (trx.type === 'receive') explanation = isKu ? 'هاتنی پارە' + accName : 'Money In' + accName;
-                        else if (trx.type === 'pay') explanation = isKu ? 'دەرچوونی پارە' + accName : 'Money Out' + accName;
-                        else if (trx.type === 'profit') explanation = isKu ? 'قازانج هاتۆتە قاصە' : 'Profit Added';
-                        else if (trx.type === 'spending') explanation = isKu ? 'خەرجی دەرچووە' : 'Spending Deducted';
+                        let finalNote = trx.note || '-';
+
+                        if (trx.type === 'receive') explanation = this.translations.moneyIn + accName;
+                        else if (trx.type === 'pay') explanation = this.translations.moneyOut + accName;
+                        else if (trx.type === 'profit') explanation = this.translations.profitAdded;
+                        else if (trx.type === 'spending') explanation = this.translations.spendingDeducted;
                         
+                        // 🟢 MAGIC LOGIC: Now looks for the exact Name syntax we set in the controller!
+                        else if (trx.type === 'transfer_in' || trx.type === 'transfer_out') {
+                            if (typeof trx.note === 'string') {
+                                let parts = trx.note.split(' | ');
+                                let sysText = parts[0] || ''; 
+                                finalNote = parts[1] || '-'; 
+                                
+                                // Replace English with Translation
+                                sysText = sysText.replace('Transfer to: ', this.translations.transferToBox);
+                                sysText = sysText.replace('Transfer from: ', this.translations.transferFromBox);
+                                
+                                // Backward compatibility (just in case old data sneaks in)
+                                sysText = sysText.replace('Transfer to Cashbox #', this.translations.transferToBox);
+                                sysText = sysText.replace('Transfer from Cashbox #', this.translations.transferFromBox);
+                                
+                                explanation = sysText;
+                            } else {
+                                explanation = trx.type === 'transfer_in' ? this.translations.transferIn : this.translations.transferOut;
+                            }
+                        }
+
                         let cashAmount = parseFloat(trx.amount);
 
                         return { 
                             ...trx, 
                             type_name: typeName,
-                            explanation: explanation,
-                            amount_in: (trx.type === 'receive' || trx.type === 'profit') ? cashAmount : 0,
-                            amount_out: (trx.type === 'pay' || trx.type === 'spending') ? cashAmount : 0,
+                            explanation: explanation, 
+                            display_note: finalNote,  
+                            amount_in: (trx.type === 'receive' || trx.type === 'profit' || trx.type === 'transfer_in') ? cashAmount : 0,
+                            amount_out: (trx.type === 'pay' || trx.type === 'spending' || trx.type === 'transfer_out') ? cashAmount : 0,
                             running_balance: trx.page_balance
                         };
                     });
@@ -373,11 +388,22 @@
                         for (const col of this.columns) {
                             const filterVal = this.filters[col.field]?.toLowerCase();
                             if (!filterVal) continue;
+                            
                             let cellVal = '';
+                            
                             if (col.field === 'user_id') cellVal = trx.user?.name || '';
                             else if (col.field === 'currency_id') cellVal = trx.currency?.currency_type || '';
-                            else if (col.field === 'statement_id') cellVal = trx.statement_id || trx.id;
+                            else if (col.field === 'statement_id') cellVal = String(trx.statement_id || trx.id);
+                            else if (col.field === 'type') cellVal = trx.type_name || '';
+                            else if (col.field === 'note') cellVal = trx.display_note || ''; 
+                            else if (col.field === 'explanation') cellVal = trx.explanation || ''; // Added explanation to search!
+                            else if (col.field === 'amount_in') cellVal = this.formatMoney(trx.amount_in);
+                            else if (col.field === 'amount_out') cellVal = this.formatMoney(trx.amount_out);
+                            else if (col.field === 'running_balance') cellVal = this.formatMoney(trx.running_balance);
+                            else if (col.field === 'exchange_rate') cellVal = trx.exchange_rate ? this.formatMoney(trx.exchange_rate) : '-';
+                            else if (col.field === 'manual_date') cellVal = this.formatDate(trx.manual_date);
                             else cellVal = String(trx[col.field] || '');
+                            
                             if (!cellVal.toLowerCase().includes(filterVal)) return false;
                         }
                         return true;
@@ -412,11 +438,12 @@
                 },
 
                 getTypeBadge(type) {
-                    const isKu = '{{ app()->getLocale() }}' === 'ku';
-                    if (type === 'receive') return isKu ? 'وەرگرتن' : 'Receive';
-                    if (type === 'pay') return isKu ? 'پێدان' : 'Pay';
-                    if (type === 'profit') return isKu ? 'قازانج' : 'Profit';
-                    if (type === 'spending') return isKu ? 'خەرجی' : 'Spending';
+                    if (type === 'receive') return this.translations.receive;
+                    if (type === 'pay') return this.translations.pay;
+                    if (type === 'profit') return this.translations.profit;
+                    if (type === 'spending') return this.translations.spending;
+                    if (type === 'transfer_in') return this.translations.transferIn;
+                    if (type === 'transfer_out') return this.translations.transferOut;
                     return type;
                 }
             }

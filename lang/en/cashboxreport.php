@@ -1,0 +1,50 @@
+<?php
+
+return [
+    'cashbox_statement' => 'Cashbox Statement',
+    'branch'            => 'Branch',
+    'from'              => 'From',
+    'to'                => 'To',
+    'filter'            => 'Filter',
+    'clear_dates'       => 'Clear Dates',
+    'columns'           => 'Columns',
+    'back'              => 'Back',
+    'print'             => 'Print',
+    'all'               => 'All',
+    'all_currencies'    => 'All Currencies',
+    'no_records_found'  => 'No records found',
+    
+    // Table Headers
+    'date'              => 'Date',
+    'user'              => 'User',
+    'invoice_id'        => 'Invoice ID',
+    'type'              => 'Type',
+    'explanation'       => 'Explanation',
+    'note'              => 'Note',
+    'currency'          => 'Currency',
+    'amount_in'         => 'Amount In (+)',
+    'amount_out'        => 'Amount Out (-)',
+    'ex_rate'           => 'Ex. Rate',
+    'balance'           => 'Running Balance',
+    
+    // JS Logic Explanations & Badges
+    'money_in'          => 'Money In',
+    'money_out'         => 'Money Out',
+    'profit_added'      => 'Profit Added',
+    'spending_deducted' => 'Spending Deducted',
+    'transfer_in'       => 'Transfer In',
+    'transfer_out'      => 'Transfer Out',
+    
+    'receive'           => 'Receive',
+    'pay'               => 'Pay',
+    'profit'            => 'Profit',
+    'spending'          => 'Spending',
+    'cashbox_transfer'       => 'Cashbox Transfer',
+    'sender_cashbox'         => 'Sender Cashbox',
+    'select_cashbox'         => 'Select Cashbox',
+    'receiver_cashbox'       => 'Receiver Cashbox',
+    'income_expense_details' => 'Income / Expense Details',
+    'save_transfer'          => 'Save Transfer',
+    'multiply'               => 'Multiply (×)',
+    'divide'                 => 'Divide (÷)',
+];

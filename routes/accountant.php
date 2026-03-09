@@ -5,6 +5,7 @@ use App\Http\Controllers\Accountant\PayingController;
 use App\Http\Controllers\Accountant\CashboxReportController; // 🟢 Make sure this is imported!
 use App\Http\Controllers\Accountant\StatementController; // 🟢 Import This
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Accountant\CashboxTransferController;
 
 
 Route::middleware(['auth', 'web'])->prefix('accountant')->as('accountant.')->group(function () {
@@ -64,4 +65,14 @@ Route::middleware(['auth', 'web'])->prefix('accountant')->as('accountant.')->gro
  // ==========================================
  Route::get('/cashbox-reports', [CashboxReportController::class, 'index'])->name('cashbox_reports.index');
  Route::get('/cashbox-reports/{id}', [CashboxReportController::class, 'show'])->name('cashbox_reports.show');
+
+
+ // ==========================================
+    // 🔄 CASHBOX TRANSFERS
+    // ==========================================
+    Route::get('/transfers', [CashboxTransferController::class, 'index'])->name('transfers.index');
+    Route::get('/transfers/create', [CashboxTransferController::class, 'create'])->name('transfers.create');
+    Route::post('/transfers', [CashboxTransferController::class, 'store'])->name('transfers.store');
+
+    
 });
