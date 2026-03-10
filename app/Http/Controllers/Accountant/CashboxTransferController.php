@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Accountant;
 
 use App\Http\Controllers\Controller;
-use App\Models\Cashbox;
+use App\Models\CashBox;
 use App\Models\CurrencyConfig;
 use App\Models\CashboxTransfer;
 use App\Models\Transaction;
