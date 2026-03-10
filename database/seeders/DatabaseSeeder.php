@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash; // 🟢 Added this to securely hash the password!
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,11 +16,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // 🟢 Create your Admin user directly to bypass the Faker error in production
+        User::updateOrCreate(
+            ['email' => 'test@example.com'], // Your login email
+            [
+                'name' => 'Test User',
+                'password' => Hash::make('password123'), // Your login password
+            ]
+        );
+        
+        // Note: If you have a Spatie Role seeder, you would call it here like this:
+        // $this->call(RolesAndPermissionsSeeder::class);
     }
 }
