@@ -41,6 +41,6 @@ class Transaction extends Model
 
     public function cashbox()
     {
-        return $this->belongsTo(Cashbox::class);
+        return $this->belongsTo(CashBox::class);
     }
 }
