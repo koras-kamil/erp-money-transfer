@@ -158,10 +158,20 @@
                         {{ __('accountant.statement') }}
                     </a>
 
-                    {{-- 🟢 NEW: CASHBOX REPORT (قاسەکان) --}}
+                    {{-- 🟢 CASHBOX REPORT --}}
                     <a href="{{ route('accountant.cashbox_reports.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.cashbox_reports.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-                        {{ app()->getLocale() == 'ku' ? 'ڕاپۆرتی قاسەکان' : 'Cashbox Report' }}
+                        {{ __('menu.cashbox_report') }}
                     </a>
+
+                    {{-- 🟢 TRANSFERS --}}
+                    <a href="{{ route('accountant.transfers.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.transfers.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                        {{ __('menu.transfers') }}
+                    </a>
+
+                    <a href="{{ route('account_transfers.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('account_transfers.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                        {{ __('menu.account_transfers') }}
+                    </a>
+
                 </x-nav-group>
             </div>
         </div>

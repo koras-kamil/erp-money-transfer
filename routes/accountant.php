@@ -6,13 +6,11 @@ use App\Http\Controllers\Accountant\CashboxReportController; // 🟢 Make sure t
 use App\Http\Controllers\Accountant\StatementController; // 🟢 Import This
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Accountant\CashboxTransferController;
+use App\Http\Controllers\Accountant\AccountTransferController; // 🟢 IMPORTED HAWALA CONTROLLER!
 
 
 Route::middleware(['auth', 'web'])->prefix('accountant')->as('accountant.')->group(function () {
     
-    // ==========================================
-    // 🟢 RECEIVING ROUTES
-    // ==========================================
     // ==========================================
     // 🟢 RECEIVING ROUTES
     // ==========================================
@@ -31,10 +29,10 @@ Route::middleware(['auth', 'web'])->prefix('accountant')->as('accountant.')->gro
     Route::delete('/receiving/{id}', [ReceivingController::class, 'destroy'])->name('receiving.destroy');
     Route::post('/receiving/{id}/restore', [ReceivingController::class, 'restore'])->name('receiving.restore');
     Route::delete('/receiving/{id}/force-delete', [ReceivingController::class, 'forceDelete'])->name('receiving.force-delete');
+    
     // ==========================================
     // 🔴 PAYING ROUTES
     // ==========================================
-
     Route::get('/paying', [PayingController::class, 'index'])->name('paying.index');
     Route::post('/paying', [PayingController::class, 'store'])->name('paying.store');
     
@@ -50,6 +48,7 @@ Route::middleware(['auth', 'web'])->prefix('accountant')->as('accountant.')->gro
     Route::delete('/paying/{id}', [PayingController::class, 'destroy'])->name('paying.destroy');
     Route::post('/paying/{id}/restore', [PayingController::class, 'restore'])->name('paying.restore');
     Route::delete('/paying/{id}/force-delete', [PayingController::class, 'forceDelete'])->name('paying.force-delete');
+    
     // ==========================================
     // 🔵 STATEMENT ROUTES (Fixes RouteNotFoundException)
     // ==========================================
@@ -59,20 +58,27 @@ Route::middleware(['auth', 'web'])->prefix('accountant')->as('accountant.')->gro
     // Show specific user statement
     Route::get('/statement/{id}', [StatementController::class, 'show'])->name('statement.show');
 
+    // ==========================================
+    // 📊 CASHBOX REPORTS ROUTES
+    // ==========================================
+    Route::get('/cashbox-reports', [CashboxReportController::class, 'index'])->name('cashbox_reports.index');
+    Route::get('/cashbox-reports/{id}', [CashboxReportController::class, 'show'])->name('cashbox_reports.show');
 
     // ==========================================
- // 📊 CASHBOX REPORTS ROUTES
- // ==========================================
- Route::get('/cashbox-reports', [CashboxReportController::class, 'index'])->name('cashbox_reports.index');
- Route::get('/cashbox-reports/{id}', [CashboxReportController::class, 'show'])->name('cashbox_reports.show');
-
-
- // ==========================================
     // 🔄 CASHBOX TRANSFERS
     // ==========================================
     Route::get('/transfers', [CashboxTransferController::class, 'index'])->name('transfers.index');
     Route::get('/transfers/create', [CashboxTransferController::class, 'create'])->name('transfers.create');
     Route::post('/transfers', [CashboxTransferController::class, 'store'])->name('transfers.store');
 
-    
+});
+
+// ==========================================
+// 🟢 ACCOUNT TRANSFERS (HAWALA) 
+// (Moved outside the 'accountant.' prefix group so the name resolves correctly!)
+// ==========================================
+Route::middleware(['auth', 'web'])->group(function () {
+    Route::get('/accountant/account-transfers', [AccountTransferController::class, 'index'])->name('account_transfers.index');
+    Route::get('/accountant/account-transfers/create', [AccountTransferController::class, 'create'])->name('account_transfers.create');
+    Route::post('/accountant/account-transfers', [AccountTransferController::class, 'store'])->name('account_transfers.store');
 });

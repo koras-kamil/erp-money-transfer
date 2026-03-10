@@ -19,7 +19,8 @@ class CashboxTransferController extends Controller
             ->orderBy('manual_date', 'desc')
             ->paginate(20);
             
-        return view('accountant.transfers.index', compact('transfers'));
+        // 🟢 FIXED: Pointing to the new cashbox folder
+        return view('accountant.transfers.cashbox.index', compact('transfers'));
     }
 
     public function create()
@@ -51,7 +52,8 @@ class CashboxTransferController extends Controller
             }
         }
         
-        return view('accountant.transfers.create', compact('cashboxes', 'currencies', 'liveBalances'));
+        // 🟢 FIXED: Pointing to the cashbox folder and passing the correct variables
+        return view('accountant.transfers.cashbox.create', compact('cashboxes', 'currencies', 'liveBalances'));
     }
 
     public function store(Request $request)
@@ -147,6 +149,7 @@ class CashboxTransferController extends Controller
             ]);
         });
 
+        // 🟢 FIXED: Kept your original route name (accountant.transfers.index)
         return redirect()->route('accountant.transfers.index')->with('success', __('Transfer completed successfully.'));
     }
 }

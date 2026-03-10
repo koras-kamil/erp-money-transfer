@@ -27,7 +27,7 @@
     <div x-data="transferListManager()" x-init="init()" class="py-6 w-full min-w-0 bg-white min-h-screen" dir="{{ app()->getLocale() == 'ku' ? 'rtl' : 'ltr' }}">
         
         {{-- TOOLBAR WITH TABS --}}
-        <div class="mx-4 mb-6 flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-3 rounded-2xl shadow-sm border border-slate-200 no-print">
+        <div class="mx-4 mb-6 flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-3 rounded-2xl shadow-sm  no-print">
             
             <div class="flex flex-wrap items-center gap-3">
                 {{-- 🟢 NAVIGATION TABS --}}
