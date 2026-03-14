@@ -14,4 +14,6 @@ return [
     'cashbox_report' => 'ڕاپۆرتی قاسەکان',
     'transfers'      => 'گواستنەوەکان',
     'account_transfers' => 'گواستنەوەی هەژمارەکان (حەواڵە)',
+    'expenses' => 'خەرجییەکان',
+    'incomes'=>'داهات'
 ];

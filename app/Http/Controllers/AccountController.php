@@ -121,16 +121,33 @@ class AccountController extends Controller
         return back()->with('success', __('account.saved'));
     }
 
-    public function update(Request $request, $id)
+   public function update(Request $request, $id)
     {
         $account = Account::findOrFail($id);
+
+        // 🟢 NEW: QUICK UPLOAD BYPASS
+        // If it's a background request (AJAX) and we didn't send the 'code' field,
+        // we know it's just a Quick Image Upload. Only update the picture!
+        if ($request->ajax() && $request->hasFile('profile_picture') && !$request->has('code')) {
+            if($account->profile_picture) {
+                Storage::disk('public')->delete($account->profile_picture);
+            }
+            
+            $path = $request->file('profile_picture')->store('accounts', 'public');
+            $account->profile_picture = $path;
+            $account->save();
+            
+            return response()->json(['message' => 'Image updated successfully']);
+        }
+
+        // --- NORMAL EDIT WINDOW LOGIC BELOW ---
         $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|unique:accounts,code,'.$id,
             'supported_currency_ids' => 'required|array|min:1',
         ]);
 
-        // ✅ FIXED: Safely ignore _token and _method 
+        // Safely ignore _token and _method 
         $data = $request->except(['profile_picture', '_token', '_method']);
         
         $supported = $request->input('supported_currency_ids', []);
@@ -150,7 +167,6 @@ class AccountController extends Controller
         $account->update($data);
         return back()->with('success', __('account.updated'));
     }
-
     public function destroy($id)
     {
         $account = Account::findOrFail($id);

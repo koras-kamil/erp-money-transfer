@@ -54,9 +54,9 @@
 
                 <x-btn type="trash" href="{{ route('accounts.trash') }}" title="{{ __('account.trash') }}" />
                 
-                <div x-data="{ open: false }" class="relative">
-                    <x-btn type="columns" @click="open = !open" @click.outside="open = false" title="{{ __('account.columns') }}" />
-                    <div x-show="open" class="absolute top-full mt-3 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 p-3 ltr:right-0 rtl:left-0" style="display:none;">
+                <div x-data="{ open: false }" class="relative" @click.outside="open = false">
+                    <x-btn type="columns" @click="open = !open" title="{{ __('account.columns') }}" />
+                    <div x-show="open" @click.stop class="absolute top-full mt-3 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 p-3 ltr:right-0 rtl:left-0" style="display:none;">
                         <div class="flex justify-between items-center px-2 py-1 mb-2 border-b border-slate-100 pb-2">
                             <span class="text-[10px] font-bold text-slate-400 uppercase">{{ __('account.columns') }}</span>
                             <button @click="resetLayout(); open = false;" class="text-[10px] text-blue-500 hover:underline cursor-pointer">{{ __('account.reset_layout') }}</button>
@@ -123,23 +123,33 @@
                 </thead>
 
                 <tbody class="divide-y divide-slate-100 bg-white">
-                    <template x-for="acc in data" :key="acc.id">
-                        <tr class="bg-white hover:bg-slate-50 transition-colors group" :class="selectedIds.includes(acc.id) ? 'bg-indigo-50/10' : ''">
+                    <template x-for="(acc, index) in data" :key="acc.id">
+                        <tr class="transition-colors group hover:bg-slate-100" :class="selectedIds.includes(acc.id) ? 'bg-indigo-50/20' : (index % 2 === 0 ? 'bg-white' : 'bg-slate-50')">
                             <td class="px-4 py-2 text-center align-middle"><input type="checkbox" :value="acc.id" x-model="selectedIds" class="select-checkbox"></td>
                             <template x-for="col in columns" :key="col.field">
                                 <td x-show="col.visible" class="p-1 text-center" :class="col.class">
                                     <template x-if="col.field === 'id'"><div class="px-4 py-4 text-center font-mono text-xs text-slate-400" x-text="acc.id"></div></template>
-                                    <template x-if="col.field === 'image'">
-                                        <div @click="zoomImage(acc.image_url)" class="flex items-center justify-center cursor-pointer p-1">
-                                            <div class="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shadow-sm relative group-hover:scale-110 transition-transform">
-                                                <template x-if="acc.image_url"><img :src="acc.image_url" class="w-full h-full object-cover"></template>
-                                                <template x-if="!acc.image_url"><span class="text-[10px] font-bold text-slate-400" x-text="acc.initial"></span></template>
+                                    
+                                    {{-- Combined Image & Name logic with Quick Upload --}}
+                                    <template x-if="col.field === 'name'">
+                                        <div class="flex items-center justify-start gap-3 pl-4 h-full">
+                                            <div class="flex-shrink-0">
+                                                <template x-if="acc.image_url">
+                                                    <div @click="zoomImage(acc.image_url)" class="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shadow-sm relative group-hover:scale-110 transition-transform cursor-pointer">
+                                                        <img :src="acc.image_url" class="w-full h-full object-cover">
+                                                    </div>
+                                                </template>
+                                                <template x-if="!acc.image_url">
+                                                    <div title="Quick Upload Image" class="relative w-10 h-10 rounded-full bg-white border border-dashed border-slate-300 hover:border-indigo-500 hover:bg-indigo-50 flex items-center justify-center text-slate-400 hover:text-indigo-600 cursor-pointer transition-colors overflow-hidden group/upload">
+                                                        <input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" @change="quickUploadImage($event, acc)">
+                                                        <svg class="w-5 h-5 group-hover/upload:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                            <div class="flex flex-col text-left">
+                                                <a :href="'{{ url('accountant/statement') }}/' + acc.id" class="text-indigo-600 hover:text-indigo-800 hover:underline font-bold text-xs truncate transition-colors cursor-pointer" x-text="acc.name" title="View Account Statement"></a>
                                             </div>
                                         </div>
-                                    </template>
-                                    
-                                    <template x-if="col.field === 'name'">
-                                        <a :href="'{{ url('accountant/statement') }}/' + acc.id" class="px-3 block text-center text-indigo-600 hover:text-indigo-800 hover:underline font-bold text-xs truncate transition-colors cursor-pointer" x-text="acc.name" title="View Account Statement"></a>
                                     </template>
                                     
                                     <template x-if="col.field === 'secondary_name'"><span class="px-3 block text-center text-slate-500 font-normal text-xs truncate" x-text="acc.secondary_name || '-'"></span></template>
@@ -158,13 +168,21 @@
                                     <template x-if="col.field === 'debt_due_time'"><div class="text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1" :class="acc.debt_due_time > 0 ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-slate-50 text-slate-400 border-slate-100'"><span x-show="acc.debt_due_time > 0">⏳</span><span x-text="acc.debt_due_time > 0 ? acc.debt_due_time + ' {{ __('account.days') }}' : '-'"></span></span></div></template>
                                     <template x-if="col.field === 'created_by'"><div class="px-4 py-4 text-[10px] uppercase text-slate-500 font-bold text-center truncate" x-text="acc.creator_name"></div></template>
                                     <template x-if="col.field === 'created_at'"><div class="px-4 py-4 text-[10px] text-slate-400 font-normal text-center truncate" x-text="formatDate(acc.created_at)"></div></template>
-                                    <template x-if="col.field === 'location'"><div class="text-center"><button @click="viewMap(acc.location, acc.name)" class="p-1.5 rounded-full transition-colors" :class="acc.location ? 'text-indigo-600 hover:bg-indigo-50' : 'text-slate-300 cursor-not-allowed'" :disabled="!acc.location"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button></div></template>
+                                    
+                                    <template x-if="col.field === 'location'">
+                                        <div class="text-center">
+                                            <button @click="viewMap(acc.location, acc.name)" class="p-1.5 rounded-full transition-colors" :class="acc.location ? 'text-emerald-500 hover:bg-emerald-50' : 'text-slate-300 cursor-not-allowed'" :disabled="!acc.location">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                            </button>
+                                        </div>
+                                    </template>
+                                    
                                     <template x-if="col.field === 'is_active'"><div class="flex items-center justify-center"><input type="checkbox" :checked="acc.is_active" disabled class="w-4 h-4 text-indigo-600 rounded border-slate-300"></div></template>
                                     
-                                    <template x-if="!['id','image','name','secondary_name','branch_id','account_type','supported_currencies','debt_limit','debt_due_time','created_by','created_at','location','is_active'].includes(col.field)"><div class="px-3 text-xs text-slate-500 truncate text-center" x-text="acc[col.field.replace('_id', '_text')] || acc[col.field] || '-'"></div></template>
+                                    <template x-if="!['id','name','secondary_name','branch_id','account_type','supported_currencies','debt_limit','debt_due_time','created_by','created_at','location','is_active'].includes(col.field)"><div class="px-3 text-xs text-slate-500 truncate text-center" x-text="acc[col.field.replace('_id', '_text')] || acc[col.field] || '-'"></div></template>
                                 </td>
                             </template>
-                            <td class="px-3 py-2 text-center print:hidden sticky-action group-hover:bg-slate-50 transition-colors">
+                            <td class="px-3 py-2 text-center print:hidden sticky-action group-hover:bg-slate-100 transition-colors">
                                 <div class="flex items-center justify-center gap-2">
                                     <x-btn type="edit" @click="openEdit(acc)" title="{{ __('account.edit') }}" />
                                     <button @click="deleteRow(acc.delete_url)" class="p-1.5 text-red-600 hover:bg-red-100 rounded-lg transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
@@ -202,16 +220,16 @@
                     <div class="space-y-5">
                         <div x-data="{ openMulti: false }">
                             <label class="form-label">{{ __('account.supported_currencies') }} *</label>
-                            <div class="relative">
-                                <button type="button" @click="openMulti = !openMulti" @click.outside="openMulti = false" class="form-input bg-white text-left flex items-center justify-between">
+                            <div class="relative" @click.outside="openMulti = false">
+                                <button type="button" @click="openMulti = !openMulti" class="form-input bg-white text-left flex items-center justify-between">
                                     <span class="text-sm text-slate-700" x-text="item.supported_currency_ids.length > 0 ? item.supported_currency_ids.length + ' {{ __('account.selected') }}' : '{{ __('account.select_supported') }}'"></span>
                                     <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                 </button>
-                                <div x-show="openMulti" class="absolute z-10 mt-1 w-full bg-white shadow-xl rounded-xl border border-slate-100 max-h-48 overflow-y-auto py-1" style="display:none;">
+                                <div x-show="openMulti" @click.stop class="absolute z-10 mt-1 w-full bg-white shadow-xl rounded-xl border border-slate-100 max-h-48 overflow-y-auto py-1" style="display:none;">
                                     @foreach($currencies as $c)
-                                    <label class="flex items-center px-4 py-2 hover:bg-slate-50 cursor-pointer">
-                                        <input type="checkbox" value="{{ $c->id }}" x-model="item.supported_currency_ids" class="rounded text-indigo-600 w-4 h-4 border-slate-300 focus:ring-indigo-500 mr-2">
-                                        <span class="text-sm text-slate-700">{{ $c->currency_type }} ({{ $c->symbol }})</span>
+                                    <label class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors border-b border-slate-50 last:border-0">
+                                        <input type="checkbox" value="{{ $c->id }}" x-model="item.supported_currency_ids" class="rounded text-indigo-600 w-4 h-4 border-slate-300 focus:ring-indigo-500">
+                                        <span class="text-sm text-slate-700 font-medium">{{ $c->currency_type }} ({{ $c->symbol }})</span>
                                     </label>
                                     @endforeach
                                 </div>
@@ -257,9 +275,8 @@
                 
                 const defaultColumns = [
                     { field: 'id', label: '#', visible: true, width: 60, searchable: true },
-                    { field: 'image', label: "{{ __('account.image') }}", visible: true, width: 80, searchable: false },
                     { field: 'code', label: "{{ __('account.code') }}", visible: true, width: 100, searchable: true },
-                    { field: 'name', label: "{{ __('account.name') }}", visible: true, width: 180, searchable: true },
+                    { field: 'name', label: "{{ __('account.name') }}", visible: true, width: 220, searchable: true },
                     { field: 'secondary_name', label: "{{ __('account.secondary_name') }}", visible: true, width: 160, searchable: true },
                     { field: 'branch_id', label: "{{ __('account.branch') }}", visible: true, width: 140, searchable: false }, 
                     { field: 'account_type', label: "{{ __('account.type') }}", visible: true, width: 120, searchable: true },
@@ -276,10 +293,8 @@
                     { field: 'location', label: "{{ __('account.gps_location') }}", visible: true, width: 80, searchable: false },
                     { field: 'is_active', label: "{{ __('account.status') }}", visible: true, width: 80, searchable: false }
                 ];
-
                 let initialFilters = {};
                 defaultColumns.forEach(c => { initialFilters[c.field] = ''; });
-
                 return {
                     data: {!! json_encode($accounts->items(), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) !!},
                     pagination: {!! json_encode($accounts, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) !!},
@@ -309,12 +324,8 @@
 
                     dragStart(e, i) { this.draggingIndex = i; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', i); },
                     dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; },
-                    drop(e, targetIndex) { if (this.draggingIndex === null || this.draggingIndex === targetIndex) return;
-                        const element = this.columns.splice(this.draggingIndex, 1)[0]; this.columns.splice(targetIndex, 0, element); this.draggingIndex = null; this.saveState();
-                    },
-                    initResize(e, col) { const startX = e.clientX;
-                        const startWidth = parseInt(col.width) || 100; const onMouseMove = (ev) => { col.width = Math.max(50, (document.dir === 'rtl' ? startWidth - (ev.clientX - startX) : startWidth + (ev.clientX - startX))); }; const onMouseUp = () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); this.saveState(); }; window.addEventListener('mousemove', onMouseMove); window.addEventListener('mouseup', onMouseUp);
-                    },
+                    drop(e, targetIndex) { if (this.draggingIndex === null || this.draggingIndex === targetIndex) return; const element = this.columns.splice(this.draggingIndex, 1)[0]; this.columns.splice(targetIndex, 0, element); this.draggingIndex = null; this.saveState(); },
+                    initResize(e, col) { const startX = e.clientX; const startWidth = parseInt(col.width) || 100; const onMouseMove = (ev) => { col.width = Math.max(50, (document.dir === 'rtl' ? startWidth - (ev.clientX - startX) : startWidth + (ev.clientX - startX))); }; const onMouseUp = () => { window.removeEventListener('mousemove', onMouseMove); window.removeEventListener('mouseup', onMouseUp); this.saveState(); }; window.addEventListener('mousemove', onMouseMove); window.addEventListener('mouseup', onMouseUp); },
                     toggleAllSelection() { this.selectedIds = (this.selectedIds.length === this.data.length) ? [] : this.data.map(a => a.id); },
                     
                     deleteRow(url) {
@@ -330,10 +341,8 @@
                         else { if (confirm("{{ __('account.are_you_sure') }}")) document.getElementById('bulk-delete-form').submit(); }
                     },
                     
-                    // ✅ TRULY SMART FETCH DATA: Fixes empty search & caching
                     fetchData(pageUrl = null) { 
                         this.loading = true;
-                        
                         let targetUrl = new URL("{{ route('accounts.index') }}", window.location.origin); 
                         
                         if (pageUrl) {
@@ -347,15 +356,12 @@
                         if (this.params.sort) targetUrl.searchParams.set('sort', this.params.sort);
                         if (this.params.direction) targetUrl.searchParams.set('direction', this.params.direction);
                         
-                        // Fix for empty words: We force empty parameters to be appended so Laravel knows to clear them
                         for (let key in this.filters) { 
                             let val = this.filters[key];
                             targetUrl.searchParams.set(key, val !== null && val !== undefined ? val : '');
                         }
                         
-                        // Cache-buster: Prevents the browser from showing stuck data when deleting words
                         targetUrl.searchParams.set('_t', Date.now());
-                        
                         fetch(targetUrl.toString(), { 
                             headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } 
                         })
@@ -404,8 +410,82 @@
                         this.currentMapStyle = style;
                     },
                     zoomImage(url) { if(url) this.zoomedImage = url; },
-                    getLocation() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition( (p) => { this.item.location = p.coords.latitude + ',' + p.coords.longitude; }, (e) => { alert('GPS Error: ' + e.message); } ); } },
                     
+                    getLocation() { 
+                        if (navigator.geolocation) { 
+                            navigator.geolocation.getCurrentPosition( 
+                                (p) => { 
+                                    this.item.location = p.coords.latitude + ',' + p.coords.longitude; 
+                                }, 
+                                (e) => { 
+                                    alert('Could not get your exact GPS location. You can type your address manually, or click the Map icon to drop a pin!');
+                                    this.item.location = ''; 
+                                },
+                                { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 } 
+                            ); 
+                        } else {
+                            alert('Geolocation is not supported by your browser.');
+                        }
+                    },
+                    
+                   // 🟢 QUICK UPLOAD LOGIC (FOOLPROOF VERSION)
+    quickUploadImage(event, acc) {
+        let file = event.target.files[0];
+        if (!file) return;
+
+        this.loading = true;
+
+        let formData = new FormData();
+        
+        // Grab CSRF token securely
+        let tokenInput = document.querySelector('input[name="_token"]');
+        let token = tokenInput ? tokenInput.value : '';
+        formData.append('_token', token);
+        
+        // Send as POST, but tell Laravel it's a PUT
+        formData.append('_method', 'PUT'); 
+        formData.append('profile_picture', file);
+        
+        let url = acc.edit_url ? acc.edit_url : ('/accounts/' + acc.id);
+
+        fetch(url, {
+            method: 'POST', 
+            body: formData,
+            headers: { 
+                'Accept': 'application/json',
+                // 🚨 THIS IS THE MAGIC KEY: It tells the Controller this is a background upload!
+                'X-Requested-With': 'XMLHttpRequest', 
+                'X-CSRF-TOKEN': token 
+            }
+        })
+        .then(async response => {
+            if (!response.ok) {
+                // Catch the exact Laravel error so we aren't guessing anymore!
+                let text = await response.text();
+                let errorMessage = 'Upload failed';
+                try {
+                    let errData = JSON.parse(text);
+                    if (errData.errors) errorMessage = Object.values(errData.errors).flat().join('\n');
+                    else if (errData.message) errorMessage = errData.message;
+                } catch(e) {
+                    errorMessage = "Server Error. Please check your network or logs.";
+                }
+                throw new Error(errorMessage);
+            }
+            
+            // 🟢 Success! Instantly refresh the table
+            this.fetchData(); 
+            this.loading = false;
+        })
+        .catch(error => {
+            // It will now pop up with the exact reason it failed!
+            alert('Quick Upload Failed! Reason:\n\n' + error.message);
+            this.loading = false;
+        });
+        
+        event.target.value = ''; // Reset the input 
+    },
+
                     openCreate() { 
                         this.showModal = true;
                         this.editMode = false; this.fileName = '';

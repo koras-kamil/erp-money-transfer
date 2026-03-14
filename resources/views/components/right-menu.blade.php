@@ -139,40 +139,48 @@
             </div>
 
             <div @mouseenter="showTooltip($event, '{{ __('accountant.menu_title') }}')" @mouseleave="hideTooltip()">
-                <x-nav-group label="{{ __('accountant.menu_title') }}" :active="request()->routeIs('accountant.*')">
-                    <x-slot:icon>
-                        <div class="w-5 h-5 flex-shrink-0 flex items-center justify-center">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                        </div>
-                    </x-slot:icon>
-                    
-                    <a href="{{ route('accountant.receiving.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.receiving.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-                        {{ __('accountant.receiving_money') }}
-                    </a>
-                    
-                    <a href="{{ route('accountant.paying.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.paying.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-                        {{ __('accountant.paying_money') }}
-                    </a>
-                    
-                    <a href="{{ route('accountant.statement.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.statement.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-                        {{ __('accountant.statement') }}
-                    </a>
+               <x-nav-group label="{{ __('accountant.menu_title') }}" :active="request()->routeIs('accountant.*')">
+    <x-slot:icon>
+        <div class="w-5 h-5 flex-shrink-0 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+        </div>
+    </x-slot:icon>
+    
+    <a href="{{ route('accountant.receiving.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.receiving.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+        {{ __('accountant.receiving_money') }}
+    </a>
+    
+    <a href="{{ route('accountant.paying.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.paying.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+        {{ __('accountant.paying_money') }}
+    </a>
+    
+    <a href="{{ route('accountant.statement.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.statement.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+        {{ __('accountant.statement') }}
+    </a>
 
-                    {{-- 🟢 CASHBOX REPORT --}}
-                    <a href="{{ route('accountant.cashbox_reports.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.cashbox_reports.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-                        {{ __('menu.cashbox_report') }}
-                    </a>
+    {{-- 🟢 CASHBOX REPORT --}}
+    <a href="{{ route('accountant.cashbox_reports.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.cashbox_reports.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+        {{ __('menu.cashbox_report') }}
+    </a>
 
-                    {{-- 🟢 TRANSFERS --}}
-                    <a href="{{ route('accountant.transfers.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.transfers.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-                        {{ __('menu.transfers') }}
-                    </a>
+    {{-- 🟢 TRANSFERS --}}
+    <a href="{{ route('accountant.transfers.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.transfers.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+        {{ __('menu.transfers') }}
+    </a>
 
-                    <a href="{{ route('account_transfers.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('account_transfers.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-                        {{ __('menu.account_transfers') }}
-                    </a>
+    <a href="{{ route('account_transfers.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('account_transfers.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+        {{ __('menu.account_transfers') }}
+    </a>
+    
+    <a href="{{ route('accountant.expenses.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.expenses.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+        {{ __('menu.expenses') }}
+    </a>
 
-                </x-nav-group>
+    {{-- 🟢 INCOMES / PROFITS --}}
+    <a href="{{ route('accountant.incomes.index') }}" class="block px-2 py-1.5 text-[11px] font-medium rounded-lg transition-colors whitespace-nowrap {{ request()->routeIs('accountant.incomes.*') ? 'text-white bg-white/10' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+        {{ __('menu.incomes') }}
+    </a>
+</x-nav-group>
             </div>
         </div>
 

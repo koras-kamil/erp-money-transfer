@@ -14,4 +14,5 @@ return [
     'cashbox_report' => 'Cashbox Report',
     'transfers'      => 'Transfers',
     'account_transfers' => 'Account Transfers',
+    'expenses' => 'Expenses & Spending',
 ];
